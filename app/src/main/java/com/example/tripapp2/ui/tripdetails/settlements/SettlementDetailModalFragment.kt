@@ -84,11 +84,12 @@ class SettlementDetailModalFragment : DialogFragment() {
     }
 
     private fun setupData(detail: SettlementDetailUiModel) {
+        // ✅ ZMIANA: Używamy getString() dla resource stringów
         // Title and description
         val relationDesc = if (detail.isCurrentUserDebtor) {
-            "Ty winien ${detail.toUserName}"
+            getString(R.string.settlement_you_owe_user, detail.toUserName)
         } else {
-            "${detail.fromUserName} winna Tobie"
+            getString(R.string.settlement_user_owes_you, detail.fromUserName)
         }
         view?.findViewById<TextView>(R.id.relationDescription)?.text = relationDesc
 
@@ -218,9 +219,10 @@ class SettlementDetailModalFragment : DialogFragment() {
             customAmountInput.text.toString().toFloatOrNull()
         }
 
+        // ✅ ZMIANA: Używamy getString() zamiast .toString()
         // Walidacja
         if (!settleFullAmountCheckbox.isChecked && amount == null) {
-            customAmountLayout.error = "Podaj kwotę"
+            customAmountLayout.error = getString(R.string.error_amount_required)
             return
         }
 

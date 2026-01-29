@@ -61,39 +61,40 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
     }
 
     override fun setupCustomObservers() {
-        // Błędy walidacji
-        viewModel.titleError.observe(viewLifecycleOwner) { error ->
-            titleLayout.error = error
+        viewModel.titleError.observe(viewLifecycleOwner) { errorResId ->
+            titleLayout.error = errorResId?.let { getString(it) }
         }
 
-        viewModel.amountError.observe(viewLifecycleOwner) { error ->
-            amountLayout.error = error
+        viewModel.amountError.observe(viewLifecycleOwner) { errorResId ->
+            amountLayout.error = errorResId?.let { getString(it) }
         }
 
-        viewModel.categoryError.observe(viewLifecycleOwner) { error ->
-            categoryError.text = error
-            categoryError.visibility = if (error != null) View.VISIBLE else View.GONE
+        viewModel.categoryError.observe(viewLifecycleOwner) { errorResId ->
+            val errorText = errorResId?.let { getString(it) }
+            categoryError.text = errorText
+            categoryError.visibility = if (errorText != null) View.VISIBLE else View.GONE
 
-            // Zmień kolor ramki kategorii jeśli błąd
-            if (error != null) {
+            if (errorText != null) {
                 categoryCard.strokeColor = resources.getColor(R.color.error, null)
             } else {
                 categoryCard.strokeColor = resources.getColor(R.color.divider, null)
             }
         }
 
-        viewModel.dateError.observe(viewLifecycleOwner) { error ->
-            dateLayout.error = error
+        viewModel.dateError.observe(viewLifecycleOwner) { errorResId ->
+            dateLayout.error = errorResId?.let { getString(it) }
         }
 
-        viewModel.payerError.observe(viewLifecycleOwner) { error ->
-            payerError.text = error
-            payerError.visibility = if (error != null) View.VISIBLE else View.GONE
+        viewModel.payerError.observe(viewLifecycleOwner) { errorResId ->
+            val errorText = errorResId?.let { getString(it) }
+            payerError.text = errorText
+            payerError.visibility = if (errorText != null) View.VISIBLE else View.GONE
         }
 
-        viewModel.splitError.observe(viewLifecycleOwner) { error ->
-            splitError.text = error
-            splitError.visibility = if (error != null) View.VISIBLE else View.GONE
+        viewModel.splitError.observe(viewLifecycleOwner) { errorResId ->
+            val errorText = errorResId?.let { getString(it) }
+            splitError.text = errorText
+            splitError.visibility = if (errorText != null) View.VISIBLE else View.GONE
         }
 
         // Wybrana kategoria
@@ -129,9 +130,9 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
             if (payerId != null) {
                 val participants = viewModel.participants.value ?: emptyList()
                 val participant = participants.find { it.id == payerId }
-                payerButton.text = participant?.name ?: "Wybierz osobę"
+                payerButton.text = participant?.name ?: getString(R.string.error_payer_required)
             } else {
-                payerButton.text = "Wybierz osobę"
+                payerButton.text = getString(R.string.add_expense_payer_hint)
             }
         }
 
@@ -141,7 +142,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
             if (selectedCount > 0) {
                 splitButton.text = "$selectedCount os."
             } else {
-                splitButton.text = "Kliknij aby ustawić podział"
+                splitButton.text = getString(R.string.add_expense_split_hint)
             }
         }
 
@@ -172,7 +173,14 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
 
         viewModel.expenseAddedEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { message ->
-                showMessage(message)
+                val displayMessage = if (message.startsWith("EXPENSE_ADDED_SUCCESS_RES_ID:")) {
+                    val resId = message.substringAfter(":").toIntOrNull()
+                    resId?.let { getString(it) } ?: message
+                } else {
+                    message
+                }
+
+                showMessage(displayMessage)
                 // Nawigacja powrotna po dodaniu wydatku
                 (activity as? DashboardActivity)?.apply {
                     tripBottomNav.selectedItemId = R.id.menu_costs
@@ -266,7 +274,6 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         }
 
         createButton.setOnClickListener {
-            // DODAJ TO NA POCZĄTKU:
             // Schowaj klawiaturę
             val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(requireView().windowToken, 0)
@@ -284,7 +291,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
 
     private fun showDatePicker() {
         val picker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText("Wybierz datę")
+            .setTitleText(getString(R.string.add_expense_date_hint))
             .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
             .build()
 
@@ -301,7 +308,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
             .setTimeFormat(TimeFormat.CLOCK_24H)
             .setHour(calendar.get(Calendar.HOUR_OF_DAY))
             .setMinute(calendar.get(Calendar.MINUTE))
-            .setTitleText("Wybierz godzinę")
+            .setTitleText(getString(R.string.add_expense_time_hint))
             .build()
 
         picker.show(parentFragmentManager, "TIME_PICKER")
@@ -315,7 +322,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         val amount = viewModel.amount.value?.toFloatOrNull() ?: 0f
 
         if (amount <= 0) {
-            showMessage("Najpierw podaj kwotę wydatku")
+            showMessage(getString(R.string.error_amount_required_before_split))
             return
         }
 
@@ -328,19 +335,19 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
     private fun showPayerDialog() {
         val participants = viewModel.participants.value ?: emptyList()
         if (participants.isEmpty()) {
-            showMessage("Brak uczestników")
+            showMessage(getString(R.string.error_no_participants))
             return
         }
 
         val names = participants.map { it.name }.toTypedArray()
 
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Kto płacił?")
+            .setTitle(getString(R.string.add_expense_payer_hint))
             .setItems(names) { _, which ->
                 val selected = participants[which]
                 viewModel.onPayerSelected(selected.id)
             }
-            .setNegativeButton("Anuluj", null)
+            .setNegativeButton(R.string.dialog_button_cancel, null)
             .show()
     }
 
@@ -350,7 +357,8 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
 
     override fun onLoadingStateChanged(isLoading: Boolean) {
         createButton.isEnabled = !isLoading
-        createButton.text = if (isLoading) "Dodawanie..." else "UTWÓRZ"
+        createButton.text = if (isLoading) getString(R.string.add_expense_button_loading)
+        else getString(R.string.add_expense_button)
     }
 
     companion object {

@@ -3,6 +3,7 @@ package com.example.tripapp2.ui.tripdetails.settlements
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -95,7 +96,7 @@ class TripSettlementsViewModel(
                 }
 
             } catch (e: Exception) {
-                showError(e.message ?: "Nie udało się załadować szczegółów")
+                showError(e.message ?:  R.string.error_trip_details_load_failed.toString())
             }
         }
     }

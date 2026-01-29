@@ -44,16 +44,17 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
     }
 
     override fun setupCustomObservers() {
-        viewModel.nameError.observe(viewLifecycleOwner) { error ->
-            tripNameLayout.error = error
+        // ✅ ZMIANA: Błędy walidacji - konwertuj Int? na String?
+        viewModel.nameError.observe(viewLifecycleOwner) { errorResId ->
+            tripNameLayout.error = errorResId?.let { getString(it) }
         }
 
-        viewModel.currencyError.observe(viewLifecycleOwner) { error ->
-            tripCurrencyLayout.error = error
+        viewModel.currencyError.observe(viewLifecycleOwner) { errorResId ->
+            tripCurrencyLayout.error = errorResId?.let { getString(it) }
         }
 
-        viewModel.dateError.observe(viewLifecycleOwner) { error ->
-            tripDateLayout.error = error
+        viewModel.dateError.observe(viewLifecycleOwner) { errorResId ->
+            tripDateLayout.error = errorResId?.let { getString(it) }
         }
 
         viewModel.showDatePickerEvent.observe(viewLifecycleOwner) { event ->
@@ -68,9 +69,17 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
             }
         }
 
+        // ✅ ZMIANA: Parsuj message i konwertuj jeśli potrzeba
         viewModel.tripCreatedEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { message ->
-                showMessage(message)
+                // Sprawdź czy message zawiera resource ID
+                val displayMessage = if (message.startsWith("RES_ID:")) {
+                    val resId = message.substringAfter(":").toIntOrNull()
+                    resId?.let { getString(it) } ?: message
+                } else {
+                    message
+                }
+                showMessage(displayMessage)
             }
         }
     }
@@ -123,7 +132,7 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
 
     private fun showDateRangePicker() {
         val picker = MaterialDatePicker.Builder.dateRangePicker()
-            .setTitleText("Wybierz zakres dat")
+            .setTitleText(getString(R.string.create_trip_date_hint))
             .build()
 
         picker.show(parentFragmentManager, TAG_DATE_PICKER)
@@ -147,6 +156,11 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
 
     override fun onLoadingStateChanged(isLoading: Boolean) {
         createButton.isEnabled = !isLoading
-        createButton.text = if (isLoading) "Tworzenie..." else "Utwórz"
+        // ✅ ZMIANA: Użyj getString() zamiast .toString()
+        createButton.text = if (isLoading) {
+            getString(R.string.create_trip_button_loading)
+        } else {
+            getString(R.string.create_trip_button)
+        }
     }
 }

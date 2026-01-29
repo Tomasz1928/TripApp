@@ -87,10 +87,16 @@ class ExpenseDetailModalFragment : DialogFragment() {
             secondaryAmountView.visibility = View.GONE
         }
 
+        // ✅ ZMIANA: Używamy getString() zamiast interpolacji R.string
         // Info
-        body.findViewById<TextView>(R.id.expenseDescription).text = "Opis: \n${detail.description}"
-        body.findViewById<TextView>(R.id.expenseDate).text = "Data: ${detail.date}"
-        body.findViewById<TextView>(R.id.expensePayer).text = "Płacił: ${detail.payerName}"
+        val descriptionLabel = getString(R.string.expense_detail_description_label)
+        body.findViewById<TextView>(R.id.expenseDescription).text = "$descriptionLabel\n${detail.description}"
+
+        val dateLabel = getString(R.string.expense_detail_date_label)
+        body.findViewById<TextView>(R.id.expenseDate).text = "$dateLabel ${detail.date}"
+
+        val payerLabel = getString(R.string.expense_detail_payer_label)
+        body.findViewById<TextView>(R.id.expensePayer).text = "$payerLabel ${detail.payerName}"
 
         // Dynamiczne nagłówki kolumn
         setupDynamicHeaders(body, detail)

@@ -130,6 +130,7 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
                 emptyState.hide()
                 showError(state.message)
             }
+
         }
     }
 
@@ -139,20 +140,21 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
     private fun displayBalance(balance: UserBalanceUiModel) {
         balanceAmount.text = balance.formattedBalance
 
+        // ✅ ZMIANA: Używamy getString() zamiast .toString()
         when (balance.balanceStatus) {
             BalanceStatusUi.NA_PLUSIE -> {
                 balanceAmount.setTextColor(resources.getColor(R.color.success, null))
-                balanceStatus.text = "na plusie"
+                balanceStatus.text = getString(R.string.settlements_balance_positive)
                 balanceStatus.setTextColor(resources.getColor(R.color.success, null))
             }
             BalanceStatusUi.NA_MINUSIE -> {
                 balanceAmount.setTextColor(resources.getColor(R.color.error, null))
-                balanceStatus.text = "na minusie"
+                balanceStatus.text = getString(R.string.settlements_balance_negative)
                 balanceStatus.setTextColor(resources.getColor(R.color.error, null))
             }
             BalanceStatusUi.ROZLICZONY -> {
                 balanceAmount.setTextColor(resources.getColor(R.color.text_secondary, null))
-                balanceStatus.text = "rozliczony"
+                balanceStatus.text = getString(R.string.settlements_balance_settled)
                 balanceStatus.setTextColor(resources.getColor(R.color.text_secondary, null))
             }
         }
@@ -179,13 +181,21 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
     private fun createRelationView(relation: SettlementRelationUiModel): View {
         val view = layoutInflater.inflate(R.layout.item_settlement_relation, relationsContainer, false)
 
+        // ✅ ZMIANA: Używamy getString() dla tworzenia opisów
         // Description
-        val description = if (relation.currentUserIsDebtor) {
-            "Ty winien ${relation.toUserName}"
-        } else if (relation.isCurrentUserInvolved) {
-            "${relation.fromUserName} winna Tobie"
-        } else {
-            "${relation.fromUserName} winien ${relation.toUserName}"
+        val description = when {
+            relation.currentUserIsDebtor -> {
+                val label = getString(R.string.settlements_you_owe)
+                "$label ${relation.toUserName}"
+            }
+            relation.isCurrentUserInvolved -> {
+                val label = getString(R.string.settlements_owed_to_you)
+                "${relation.fromUserName} $label"
+            }
+            else -> {
+                // Dla tego przypadku może być potrzebny dodatkowy string w strings.xml
+                "${relation.fromUserName} → ${relation.toUserName}"
+            }
         }
 
         view.findViewById<TextView>(R.id.relationDescription).text = description

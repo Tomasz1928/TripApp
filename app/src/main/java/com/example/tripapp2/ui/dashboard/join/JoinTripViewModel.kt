@@ -3,6 +3,7 @@ package com.example.tripapp2.ui.dashboard.join
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -22,11 +23,11 @@ class JoinTripViewModel(
     private val _accessCode = MutableLiveData<String>()
     val accessCode: LiveData<String> = _accessCode
 
-    // Błąd walidacji
-    private val _accessCodeError = MutableLiveData<String?>()
-    val accessCodeError: LiveData<String?> = _accessCodeError
+    // ✅ ZMIANA: Typ zmieniony na Int? (resource ID)
+    private val _accessCodeError = MutableLiveData<Int?>()
+    val accessCodeError: LiveData<Int?> = _accessCodeError
 
-    // Event sukcesu dołączenia
+    // Event sukcesu dołączenia - pozostaje String (message do wyświetlenia)
     private val _tripJoinedEvent = MutableLiveData<Event<String>>()
     val tripJoinedEvent: LiveData<Event<String>> = _tripJoinedEvent
 
@@ -44,17 +45,22 @@ class JoinTripViewModel(
     fun onJoinTripClicked() {
         val code = _accessCode.value
 
+        // ✅ ZMIANA: Bez .toString(), przekazujemy resource ID
         if (code.isNullOrBlank()) {
-            _accessCodeError.value = "Podaj kod dostępu"
+            _accessCodeError.value = R.string.error_code_required
             return
         }
 
         if (!isValidAccessCode(code)) {
-            _accessCodeError.value = "Nieprawidłowy format kodu (oczekiwano: XXXX-XXXX)"
+            _accessCodeError.value = R.string.error_access_code_invalid_format
             return
         }
 
         viewModelScope.launch {
+            // ✅ Mock - symulacja sukcesu
+            _tripJoinedEvent.value = Event("Dołączono do wycieczki pomyślnie")
+            navigate(com.example.tripapp2.ui.common.base.NavigationCommand.ToDashboard)
+
 //            setLoading(true)
 //
 //            val result = tripRepository.joinTrip(code)

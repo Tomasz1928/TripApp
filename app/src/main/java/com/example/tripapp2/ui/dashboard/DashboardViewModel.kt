@@ -1,7 +1,9 @@
 package com.example.tripapp2.ui.dashboard
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.NavigationCommand
@@ -46,9 +48,12 @@ class DashboardViewModel(
                 }
 
             } catch (e: Exception) {
-                _dashboardState.value = DashboardState.Error(
-                    e.message ?: "Wystąpił błąd podczas ładowania"
-                )
+                // ✅ ZMIANA: Użyj showError() zamiast przekazywać message do State
+                // Error state nie powinien zawierać message - to jest obsługiwane przez BaseViewModel
+                showError(e.message ?: "Wystąpił błąd podczas ładowania wycieczek")
+
+                // Opcjonalnie: możesz też ustawić Empty state, żeby pokazać placeholder
+                _dashboardState.value = DashboardState.Empty
             }
         }
     }

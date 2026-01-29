@@ -94,7 +94,7 @@
             style="@style/Button.Primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/dashboard_view_details"
+            android:text="@string/trip_card_details_button"
             android:layout_marginTop="@dimen/spacing_small"/>
 
         <Button
@@ -102,7 +102,7 @@
             style="@style/Button.Primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/dashboard_view_costs"
+            android:text="@string/trip_card_view_costs_button"
             android:layout_marginTop="@dimen/spacing_small"/>
 
         <Button
@@ -110,7 +110,7 @@
             style="@style/Button.Primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/dashboard_add_cost"
+            android:text="@string/trip_card_add_cost_button"
             android:layout_marginTop="@dimen/spacing_small"
             android:layout_marginBottom="@dimen/spacing_small"/>
     </LinearLayout>

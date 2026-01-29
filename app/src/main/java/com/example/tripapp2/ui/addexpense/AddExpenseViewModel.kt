@@ -3,6 +3,7 @@ package com.example.tripapp2.ui.addexpense
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -39,24 +40,23 @@ class AddExpenseViewModel(
     private val _expenseSplit = MutableLiveData<ExpenseSplit>()
     val expenseSplit: LiveData<ExpenseSplit> = _expenseSplit
 
-    // Błędy walidacji
-    private val _titleError = MutableLiveData<String?>()
-    val titleError: LiveData<String?> = _titleError
+    private val _titleError = MutableLiveData<Int?>()
+    val titleError: LiveData<Int?> = _titleError
 
-    private val _amountError = MutableLiveData<String?>()
-    val amountError: LiveData<String?> = _amountError
+    private val _amountError = MutableLiveData<Int?>()
+    val amountError: LiveData<Int?> = _amountError
 
-    private val _categoryError = MutableLiveData<String?>()
-    val categoryError: LiveData<String?> = _categoryError
+    private val _categoryError = MutableLiveData<Int?>()
+    val categoryError: LiveData<Int?> = _categoryError
 
-    private val _dateError = MutableLiveData<String?>()
-    val dateError: LiveData<String?> = _dateError
+    private val _dateError = MutableLiveData<Int?>()
+    val dateError: LiveData<Int?> = _dateError
 
-    private val _payerError = MutableLiveData<String?>()
-    val payerError: LiveData<String?> = _payerError
+    private val _payerError = MutableLiveData<Int?>()
+    val payerError: LiveData<Int?> = _payerError
 
-    private val _splitError = MutableLiveData<String?>()
-    val splitError: LiveData<String?> = _splitError
+    private val _splitError = MutableLiveData<Int?>()
+    val splitError: LiveData<Int?> = _splitError
 
     // Lista uczestników wycieczki
     private val _participants = MutableLiveData<List<SplitParticipant>>()
@@ -102,7 +102,6 @@ class AddExpenseViewModel(
             }
         }
     }
-
 
     // Aktualizacja pól
     fun onTitleChanged(title: String) {
@@ -181,45 +180,47 @@ class AddExpenseViewModel(
             setLoading(true)
             kotlinx.coroutines.delay(1000) // Mock
             setLoading(false)
-            _expenseAddedEvent.value = Event("Wydatek dodany pomyślnie!")
+            // ✅ ZMIANA: Przekazujemy resource ID, ale będzie konwertowany w Fragment
+            _expenseAddedEvent.value = Event("EXPENSE_ADDED_SUCCESS_RES_ID:${R.string.expense_added_success}")
         }
     }
 
     private fun validateForm(): Boolean {
         var isValid = true
 
+        // ✅ ZMIANA: Bez .toString(), przekazujemy resource ID
         if (_title.value.isNullOrBlank()) {
-            _titleError.value = "Podaj tytuł wydatku"
+            _titleError.value = R.string.error_title_required
             isValid = false
         } else if (_title.value!!.length > 40) {
-            _titleError.value = "Tytuł nie może być dłuższy niż 40 znaków"
+            _titleError.value = R.string.error_title_too_long
             isValid = false
         }
 
         if (_selectedCategory.value == null) {
-            _categoryError.value = "Wybierz kategorię"
+            _categoryError.value = R.string.error_category_required
             isValid = false
         }
 
         val amountStr = _amount.value
         if (amountStr.isNullOrBlank()) {
-            _amountError.value = "Podaj kwotę"
+            _amountError.value = R.string.error_amount_required
             isValid = false
         } else {
             val amountFloat = amountStr.toFloatOrNull()
             if (amountFloat == null || amountFloat <= 0) {
-                _amountError.value = "Podaj prawidłową kwotę"
+                _amountError.value = R.string.error_amount_invalid
                 isValid = false
             }
         }
 
         if (_dateTime.value == null) {
-            _dateError.value = "Wybierz datę i godzinę"
+            _dateError.value = R.string.error_date_time_required
             isValid = false
         }
 
         if (_selectedPayer.value == null) {
-            _payerError.value = "Wybierz kto płacił"
+            _payerError.value = R.string.error_payer_required
             isValid = false
         }
 
@@ -227,10 +228,10 @@ class AddExpenseViewModel(
         val amountFloat = _amount.value?.toFloatOrNull() ?: 0f
         if (split == null || !split.isValid(amountFloat)) {
             _splitError.value = when {
-                split == null -> "Ustaw podział kosztów"
-                split.getSelectedParticipants().isEmpty() -> "Wybierz przynajmniej jedną osobę"
-                split.splitType == SplitType.MANUAL -> "Suma podziału nie zgadza się z kwotą wydatku"
-                else -> "Nieprawidłowy podział"
+                split == null -> R.string.error_split_required
+                split.getSelectedParticipants().isEmpty() -> R.string.error_split_no_participants
+                split.splitType == SplitType.MANUAL -> R.string.error_split_invalid
+                else -> R.string.error_split_required
             }
             isValid = false
         }

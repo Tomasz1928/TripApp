@@ -3,6 +3,7 @@ package com.example.tripapp2.ui.tripdetails.costs
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -64,14 +65,14 @@ class TripCostsViewModel(
                     _costsState.value = TripCostsState.Empty
                 } else {
                     allExpenses = expenses.map { expense ->
-                        expense.toDetailUiModel(currentUserId = currentUserId, trip.currency )
+                        expense.toDetailUiModel(currentUserId = currentUserId, trip.currency)
                     }
                     applyFilter(_currentFilter.value ?: ExpenseFilter.ALL)
                 }
             }.onFailure { error ->
-                _costsState.value = TripCostsState.Error(
-                    error.message ?: "Nie udało się załadować wydatków"
-                )
+                // ✅ ZMIANA: Użyj showError() zamiast Error state
+                showError(error.message ?: "Nie udało się załadować wydatków")
+                _costsState.value = TripCostsState.Empty
             }
         }
     }
@@ -86,11 +87,10 @@ class TripCostsViewModel(
             ExpenseFilter.ALL -> allExpenses
             ExpenseFilter.MINE -> allExpenses.filter { it.isMine }
             ExpenseFilter.PAID_BY_ME -> allExpenses.filter {
-                it.payerId == "Adam" // Mock - w prawdziwej app porównanie ID
+                it.payerId == currentUserId // ✅ Używamy currentUserId zamiast hardcoded "Adam"
             }
-
             ExpenseFilter.PAID_BY_OTHERS -> allExpenses.filter {
-                it.payerId != "ADAM"
+                it.payerId != currentUserId // ✅ Używamy currentUserId
             }
         }
 
@@ -112,7 +112,7 @@ class TripCostsViewModel(
 
         val searchResults = allExpenses.filter { expense ->
             expense.name.contains(query, ignoreCase = true) ||
-                    expense.payerId.contains(query, ignoreCase = true)
+                    expense.payerName.contains(query, ignoreCase = true) // ✅ Używamy payerName zamiast payerId
         }
 
         if (searchResults.isEmpty()) {
@@ -135,18 +135,19 @@ class TripCostsViewModel(
             }
             result.onSuccess { trip ->
                 if (trip == null) {
-                    _costsState.value = TripCostsState.Error("Nie znaleziono wycieczki")
+                    // ✅ ZMIANA: Użyj showError()
+                    showError("Nie znaleziono wycieczki")
                     return@launch
                 }
 
-                val expense = trip.expenses.find { it.id ==expenseId }
-                    expense?.let {
-                        val detailModel = it.toDetailUiModel(currentUserId, trip.currency)
-                        _showExpenseDetailEvent.value = Event(detailModel)
-                    }
+                val expense = trip.expenses.find { it.id == expenseId }
+                expense?.let {
+                    val detailModel = it.toDetailUiModel(currentUserId, trip.currency)
+                    _showExpenseDetailEvent.value = Event(detailModel)
                 }
             }
         }
+    }
 
     /**
      * Obsługa kliknięcia w filtr
@@ -160,6 +161,6 @@ class TripCostsViewModel(
      * Obsługa wyszukiwania
      */
     fun onSearchClicked() {
-//        showMessage("Wyszukiwanie będzie zaimplementowane w przyszłości")
+        // Placeholder - funkcjonalność do zaimplementowania
     }
 }

@@ -25,9 +25,9 @@ class CategoryPickerDialog(
         recyclerView.layoutManager = GridLayoutManager(context, 3)
 
         dialog = AlertDialog.Builder(context)
-            .setTitle("Wybierz kategorię")
+            .setTitle(R.string.add_expense_category_hint)
             .setView(view)
-            .setNegativeButton("Anuluj", null)
+            .setNegativeButton(R.string.dialog_button_cancel, null)
             .create()
 
         // Adapter AFTER dialog is created

@@ -20,7 +20,7 @@
             style="@style/Text.Title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/dashboard_no_trips"
+            android:text="@string/dashboard_no_trips_message"
             android:layout_marginBottom="@dimen/margin_medium"/>
 
         <Button
@@ -28,7 +28,7 @@
             style="@style/Button.Primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/dashboard_join_trip"
+            android:text="@string/placeholder_join_button"
             android:layout_marginBottom="@dimen/spacing_small"/>
 
         <Button
@@ -36,6 +36,6 @@
             style="@style/Button.Primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/dashboard_create_trip"/>
+            android:text="@string/placeholder_create_button"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
