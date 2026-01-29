@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ========================================= -->
+    <!-- TEXT STYLES - Style tekstów -->
+    <!-- ========================================= -->
+
+    <!-- Base Text Style -->
+    <style name="Text">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans</item>
+    </style>
+
+    <!-- Display - Bardzo duże nagłówki (32sp) -->
+    <style name="Text.Display">
+        <item name="android:textSize">@dimen/text_size_display</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Heading - Duże nagłówki (28sp) -->
+    <style name="Text.Heading">
+        <item name="android:textSize">@dimen/text_size_heading</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Title - Tytuły (18-22sp) -->
+    <style name="Text.Title">
+        <item name="android:textSize">@dimen/text_size_title</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Text.Title.Large">
+        <item name="android:textSize">@dimen/text_size_title_large</item>
+    </style>
+
+    <style name="Text.Title.Medium">
+        <item name="android:textSize">@dimen/text_size_title_medium</item>
+    </style>
+
+    <!-- Body - Tekst podstawowy (14-16sp) -->
+    <style name="Text.Body">
+        <item name="android:textSize">@dimen/text_size_body</item>
+    </style>
+
+    <style name="Text.Body.Large">
+        <item name="android:textSize">@dimen/text_size_body_large</item>
+    </style>
+
+    <style name="Text.Body.Bold">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Text.Body.Secondary">
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <!-- Caption - Małe teksty (11-12sp) -->
+    <style name="Text.Caption">
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="Text.Caption.Uppercase">
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">@dimen/text_size_caption</item>
+    </style>
+
+    <!-- Label - Etykiety pól (12sp) -->
+    <style name="Text.Label">
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <!-- Counter - Licznik znaków (w ramce) -->
+    <style name="Text.Counter">
+        <item name="android:textSize">@dimen/text_size_caption</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- INPUT STYLES - Style pól tekstowych -->
+    <!-- ========================================= -->
+
+    <style name="InputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/input_corner_radius</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/input_corner_radius</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/input_corner_radius</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/input_corner_radius</item>
+        <item name="hintTextColor">@color/text_hint</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+    </style>
+
+    <style name="InputEditText">
+        <item name="android:textSize">@dimen/text_size_body</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- BUTTON STYLES - Style przycisków -->
+    <!-- ========================================= -->
+
+    <!-- Base Button Style -->
+    <style name="Button">
+        <item name="android:fontFamily">@font/plus_jakarta_sans</item>
+    </style>
+
+    <style name="Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="backgroundTint">@color/primary</item>
+        <item name="android:textSize">@dimen/text_size_body_large</item>
+        <item name="cornerRadius">@dimen/button_corner_radius</item>
+        <item name="android:minHeight">@dimen/button_height_default</item>
+    </style>
+
+    <style name="Button.Filter" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/button_height_small</item>
+        <item name="android:paddingStart">@dimen/padding_medium</item>
+        <item name="android:paddingEnd">@dimen/padding_medium</item>
+        <item name="android:paddingTop">@dimen/padding_tiny</item>
+        <item name="android:paddingBottom">@dimen/padding_tiny</item>
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">@dimen/corner_radius_large</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <!-- Legacy alias -->
+    <style name="TripFilterButton" parent="Button.Filter"/>
+
+    <!-- ========================================= -->
+    <!-- CARD STYLES - Style kart -->
+    <!-- ========================================= -->
+
+    <style name="Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="cardBackgroundColor">@color/surface</item>
+    </style>
+
+    <style name="Card.Trip">
+        <item name="cardCornerRadius">@dimen/card_corner_radius_large</item>
+        <item name="cardElevation">@dimen/card_elevation_high</item>
+    </style>
+
+    <style name="Card.Expense">
+        <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+    </style>
+
+    <style name="Card.Modal">
+        <item name="cardCornerRadius">@dimen/modal_corner_radius</item>
+        <item name="cardElevation">@dimen/elevation_modal</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- INFO CARD - Karta informacyjna (TripDetails) -->
+    <!-- ========================================= -->
+
+    <style name="Card.Info">
+        <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_small</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- CONTAINER STYLES - Style kontenerów -->
+    <!-- ========================================= -->
+
+    <!-- Base Container Style -->
+    <style name="Container">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="Container.Centered">
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="Container.Form">
+        <item name="android:layout_width">0dp</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- HEADER IMAGE - Obrazek nagłówka -->
+    <!-- ========================================= -->
+
+    <style name="HeaderImage">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:scaleType">centerCrop</item>
+        <item name="android:contentDescription">@string/cd_header_image</item>
+    </style>
+</resources>

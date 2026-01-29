@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollViewTripDetails"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/margin_medium">
+
+            <!-- Header Image -->
+            <FrameLayout
+                android:id="@+id/headerImageContainer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_percent="0.35">
+
+                <ImageView
+                    android:id="@+id/headerImage"
+                    style="@style/HeaderImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/header_trip_details"/>
+            </FrameLayout>
+
+            <!-- Back Button -->
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="@dimen/icon_size_xxlarge"
+                android:layout_height="@dimen/icon_size_xxlarge"
+                android:layout_marginStart="@dimen/margin_medium"
+                android:layout_marginTop="@dimen/margin_medium"
+                android:padding="@dimen/padding_small"
+                android:src="@drawable/ic_back_arrow"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_back_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/headerImageContainer"/>
+
+            <!-- Trip Title -->
+            <TextView
+                android:id="@+id/tripTitle"
+                style="@style/Text.Heading"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Zakopane 2024"
+                android:paddingStart="@dimen/padding_default"
+                android:paddingEnd="@dimen/padding_default"
+                app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- Trip Subtitle -->
+            <TextView
+                android:id="@+id/tripSubtitle"
+                style="@style/Text.Body.Secondary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Wspólne chodzenie po szlakach i biesiadowanie"
+                android:paddingStart="@dimen/padding_default"
+                android:paddingEnd="@dimen/padding_default"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                app:layout_constraintTop_toBottomOf="@id/tripTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- Info Container -->
+            <LinearLayout
+                android:id="@+id/infoContainer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="@dimen/padding_default"
+                android:paddingStart="@dimen/padding_default"
+                android:paddingEnd="@dimen/padding_default"
+                android:layout_marginTop="@dimen/margin_medium"
+                app:layout_constraintTop_toBottomOf="@id/tripSubtitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <!-- Your Expenses Card -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Card.Info"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/padding_medium"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_large"
+                            android:layout_height="@dimen/icon_size_large"
+                            android:src="@drawable/ic_wallet"
+                            android:contentDescription="@string/cd_wallet_icon"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_small">
+
+                            <TextView
+                                style="@style/Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/trip_details_total_expenses_label"/>
+
+                            <TextView
+                                android:id="@+id/totalExpenses"
+                                style="@style/Text.Body.Bold"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0,00 PLN"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Date Card -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Card.Info"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/padding_medium"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_large"
+                            android:layout_height="@dimen/icon_size_large"
+                            android:src="@drawable/ic_calendar"
+                            android:contentDescription="@string/cd_calendar_icon"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_small">
+
+                            <TextView
+                                style="@style/Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/trip_details_date_label"/>
+
+                            <TextView
+                                android:id="@+id/tripDate"
+                                style="@style/Text.Body.Bold"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="12.08 - 18.08.2024"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Access Code Card -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Card.Info"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/padding_medium"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_large"
+                            android:layout_height="@dimen/icon_size_large"
+                            android:src="@drawable/ic_trip_code"
+                            android:contentDescription="@string/cd_key_icon"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_small">
+
+                            <TextView
+                                style="@style/Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/trip_details_access_code_label"/>
+
+                            <TextView
+                                android:id="@+id/tripAccessCode"
+                                style="@style/Text.Body.Bold"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ZAKO-2024"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Settlements Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/settlementsCard"
+                    style="@style/Card.Info"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/padding_medium"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_large"
+                            android:layout_height="@dimen/icon_size_large"
+                            android:src="@drawable/ic_wallet"
+                            android:contentDescription="@string/cd_wallet_icon"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_small">
+
+                            <TextView
+                                style="@style/Text.Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ROZLICZENIA"/>
+
+                            <TextView
+                                android:id="@+id/settlementsStatus"
+                                style="@style/Text.Body.Bold"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Zobacz szczegóły"/>
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_medium"
+                            android:layout_height="@dimen/icon_size_medium"
+                            android:src="@drawable/ic_back_arrow"
+                            android:rotation="180"
+                            android:contentDescription="@string/cd_back_button"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

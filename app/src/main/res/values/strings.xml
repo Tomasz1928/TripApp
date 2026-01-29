@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">TripApp2</string>
+
+    <!-- ========================================= -->
+    <!-- LOGIN & REGISTER -->
+    <!-- ========================================= -->
+
+    <!-- Login -->
+    <string name="login_title">Witaj z powrotem</string>
+    <string name="login_username_hint">Nazwa użytkownika</string>
+    <string name="login_password_hint">Hasło</string>
+    <string name="login_button">Zaloguj się</string>
+    <string name="login_no_account">Nie masz konta?</string>
+    <string name="login_create_account">Załóż konto</string>
+
+    <!-- Register -->
+    <string name="register_title">Załóż konto</string>
+    <string name="register_username_hint">Nazwa użytkownika</string>
+    <string name="register_password_hint">Hasło</string>
+    <string name="register_button">Utwórz konto</string>
+    <string name="register_have_account">Masz już konto?</string>
+    <string name="register_login">Zaloguj się</string>
+
+    <!-- ========================================= -->
+    <!-- DASHBOARD -->
+    <!-- ========================================= -->
+
+    <string name="dashboard_welcome_small">Witaj ponownie,</string>
+    <string name="dashboard_title">Twoje Podróże</string>
+    <string name="dashboard_no_trips">Brak podróży</string>
+    <string name="dashboard_join_trip">Dołącz do podróży</string>
+    <string name="dashboard_create_trip">Stwórz podróż</string>
+    <string name="dashboard_view_details">Zobacz szczegóły</string>
+    <string name="dashboard_view_costs">Zobacz koszty</string>
+    <string name="dashboard_add_cost">Dodaj koszty</string>
+
+    <!-- ========================================= -->
+    <!-- CREATE TRIP -->
+    <!-- ========================================= -->
+
+    <string name="create_trip_title">Utwórz podróż</string>
+    <string name="create_trip_name_hint">Nazwa podróży</string>
+    <string name="create_trip_currency_hint">Waluta</string>
+    <string name="create_trip_date_hint">Wybierz zakres dat</string>
+    <string name="create_trip_date_picker_title">Wybierz zakres dat</string>
+    <string name="create_trip_description_hint">Opis podróży</string>
+    <string name="create_trip_button">Utwórz</string>
+
+    <!-- ========================================= -->
+    <!-- JOIN TRIP -->
+    <!-- ========================================= -->
+
+    <string name="join_trip_title">Dołącz do podróży</string>
+    <string name="join_trip_code_hint">Wpisz kod podróży</string>
+    <string name="join_trip_button">Dołącz</string>
+
+    <!-- ========================================= -->
+    <!-- TRIP DETAILS -->
+    <!-- ========================================= -->
+
+    <string name="trip_details_your_expenses">Twoje wydatki</string>
+    <string name="trip_details_date">Termin</string>
+    <string name="trip_details_access_code">Kod dostępu</string>
+    <string name="trip_details_total_expenses_label">TWOJE WYDATKI</string>
+    <string name="trip_details_date_label">TERMIN</string>
+    <string name="trip_details_access_code_label">KOD DOSTĘPU</string>
+
+    <!-- ========================================= -->
+    <!-- TRIP COSTS -->
+    <!-- ========================================= -->
+
+    <string name="trip_costs_filter_all">Wszystkie</string>
+    <string name="trip_costs_filter_mine">Dot. mnie</string>
+    <string name="trip_costs_filter_paid_by_me">Płaciłem ja</string>
+    <string name="trip_costs_filter_paid_by_others">Płacili inni</string>
+    <string name="trip_costs_search">Szukaj</string>
+    <string name="trip_costs_no_expenses">Brak wydatków</string>
+
+    <!-- ========================================= -->
+    <!-- EXPENSE DETAIL -->
+    <!-- ========================================= -->
+
+    <string name="expense_detail_description_label">Opis:</string>
+    <string name="expense_detail_date_label">Data:</string>
+    <string name="expense_detail_payer_label">Płacił:</string>
+    <string name="expense_detail_split_label">Podział kosztów:</string>
+
+    <!-- ========================================= -->
+    <!-- ADD EXPENSE - Dodawanie wydatku -->
+    <!-- ========================================= -->
+
+    <!-- Tytuły -->
+    <string name="add_expense_title">Dodaj wydatek</string>
+
+    <!-- Pola formularza -->
+    <string name="add_expense_title_hint">Tytuł wydatku</string>
+    <string name="add_expense_description_hint">Opis (opcjonalnie)</string>
+    <string name="add_expense_category_hint">Wybierz kategorię</string>
+    <string name="add_expense_amount_hint">Kwota</string>
+    <string name="add_expense_currency_hint">Waluta</string>
+    <string name="add_expense_date_hint">Data</string>
+    <string name="add_expense_time_hint">Godzina</string>
+    <string name="add_expense_payer_hint">Kto płacił?</string>
+    <string name="add_expense_split_hint">Podział kosztów</string>
+    <string name="add_expense_button">Dodaj wydatek</string>
+
+    <!-- Kategorie -->
+    <string name="category_accommodation">Nocleg</string>
+    <string name="category_activities">Aktywności</string>
+    <string name="category_car_rent">Wynajem auta</string>
+    <string name="category_clothing">Ubrania</string>
+    <string name="category_drinks">Napoje</string>
+    <string name="category_electronics">Elektronika</string>
+    <string name="category_flights">Loty</string>
+    <string name="category_food">Jedzenie</string>
+    <string name="category_fuel">Paliwo</string>
+    <string name="category_groceries">Zakupy spożywcze</string>
+    <string name="category_other_fees">Inne opłaty</string>
+    <string name="category_souvenirs">Pamiątki</string>
+    <string name="category_train">Pociąg</string>
+    <string name="category_transport">Transport</string>
+
+    <!-- Split Modal -->
+    <string name="split_modal_title">Podział kosztów</string>
+    <string name="split_type_equal">Po równo</string>
+    <string name="split_type_manual">Ręczny podział</string>
+    <string name="split_participants_label">Kto uczestniczy?</string>
+    <string name="split_total_label">Suma podziału:</string>
+    <string name="split_save_button">Zapisz</string>
+
+    <!-- Błędy Add Expense -->
+    <string name="error_title_required">Podaj tytuł wydatku</string>
+    <string name="error_title_too_long">Tytuł nie może być dłuższy niż 40 znaków</string>
+    <string name="error_amount_required">Podaj kwotę</string>
+    <string name="error_amount_invalid">Podaj prawidłową kwotę</string>
+    <string name="error_category_required">Wybierz kategorię</string>
+    <string name="error_date_time_required">Wybierz datę i godzinę</string>
+    <string name="error_payer_required">Wybierz kto płacił</string>
+    <string name="error_split_required">Ustaw podział kosztów</string>
+    <string name="error_split_no_participants">Wybierz przynajmniej jedną osobę</string>
+    <string name="error_split_amount_mismatch">Suma podziału nie zgadza się z kwotą wydatku</string>
+
+    <!-- Sukces -->
+    <string name="expense_added_success">Wydatek dodany pomyślnie!</string>
+
+    <!-- ========================================= -->
+    <!-- SETTLEMENTS - Rozliczenia -->
+    <!-- ========================================= -->
+
+    <string name="settlements_title">Podsumowanie Rozliczeń</string>
+    <string name="settlements_balance_positive">NA PLUSIE</string>
+    <string name="settlements_balance_negative">NA MINUSIE</string>
+    <string name="settlements_balance_settled">ROZLICZONY</string>
+    <string name="settlements_owed_to_you">Winni Tobie</string>
+    <string name="settlements_you_owe">Ty winien</string>
+    <string name="settlements_all_settled">Wszystko rozliczone! 🎉</string>
+    <string name="settlements_all_settled_description">Wszyscy uczestnicy są na zero. Świetna robota!</string>
+    <string name="settlements_settle_button">Rozlicz</string>
+    <string name="settlements_settled_badge">ROZLICZONE</string>
+    <string name="settlements_placeholder_badge">OCZEKUJE</string>
+    <string name="settlements_detail_title">Szczegóły rozliczenia</string>
+    <string name="settlements_detail_breakdown">Rozbicie po walutach:</string>
+    <string name="settlements_detail_mark_settled">Oznacz jako rozliczone</string>
+    <string name="settlements_detail_info">Po kliknięciu "Rozlicz" system oznaczy ten dług jako spłacony. Upewnij się, że pieniądze zostały faktycznie przekazane.</string>
+    <string name="settlements_marked_as_settled">Rozliczenie zostało potwierdzone</string>
+    <string name="settlements_error_loading">Nie udało się załadować rozliczeń</string>
+    <string name="settlements_error_settling">Nie udało się potwierdzić rozliczenia</string>
+
+    <!-- ========================================= -->
+    <!-- MODAL -->
+    <!-- ========================================= -->
+
+    <string name="modal_expenses_title">Twoje wydatki</string>
+    <string name="modal_expenses_total">Suma: %1$s %2$s</string>
+    <string name="modal_close">Zamknij</string>
+
+    <!-- ========================================= -->
+    <!-- BOTTOM NAVIGATION -->
+    <!-- ========================================= -->
+
+    <!-- Dashboard Nav -->
+    <string name="nav_dashboard">Pulpit</string>
+    <string name="nav_add_trip">Nowa podróż</string>
+    <string name="nav_join_trip">Dołącz do</string>
+    <string name="nav_settings">Ustawienia</string>
+
+    <!-- Trip Nav -->
+    <string name="nav_overview">Szczegóły</string>
+    <string name="nav_self_expenses">Dodaj wydatek</string>
+    <string name="nav_costs">Koszty</string>
+    <string name="nav_participants">Uczestnicy</string>
+
+    <!-- ========================================= -->
+    <!-- CONTENT DESCRIPTIONS (Accessibility) -->
+    <!-- ========================================= -->
+
+    <string name="cd_header_image">Obrazek nagłówka</string>
+    <string name="cd_back_button">Powrót</string>
+    <string name="cd_close_button">Zamknij</string>
+    <string name="cd_calendar_icon">Ikona kalendarza</string>
+    <string name="cd_wallet_icon">Ikona portfela</string>
+    <string name="cd_key_icon">Ikona klucza</string>
+    <string name="cd_category_icon">Ikona kategorii</string>
+
+    <!-- ========================================= -->
+    <!-- ERRORS & VALIDATION -->
+    <!-- ========================================= -->
+
+    <string name="error_field_required">To pole jest wymagane</string>
+    <string name="error_username_required">Podaj nazwę użytkownika</string>
+    <string name="error_password_required">Podaj hasło</string>
+    <string name="error_trip_name_required">Podaj nazwę podróży</string>
+    <string name="error_currency_required">Wybierz walutę</string>
+    <string name="error_date_required">Wybierz zakres dat</string>
+    <string name="error_code_required">Podaj kod dostępu</string>
+    <string name="error_generic">Wystąpił błąd</string>
+
+    <!-- ========================================= -->
+    <!-- MISC -->
+    <!-- ========================================= -->
+
+    <string name="loading">Ładowanie…</string>
+    <string name="copied_to_clipboard">Skopiowano do schowka</string>
+    <string name="access_code_copied">Skopiowano kod dostępu</string>
+
+</resources>

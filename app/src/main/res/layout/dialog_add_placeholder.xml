@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/padding_default">
+
+    <TextView
+        style="@style/Text.Body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Podaj nazwę dla nowego uczestnika. Zostanie wygenerowany dla niego kod dostępu do wycieczki."
+        android:layout_marginBottom="@dimen/spacing_medium"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/nicknameLayout"
+        style="@style/InputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nazwa uczestnika">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/nicknameInput"
+            style="@style/InputEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLength="30"
+            android:inputType="textCapWords"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        style="@style/Text.Caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_tiny"
+        android:text="2-30 znaków"/>
+
+</LinearLayout>

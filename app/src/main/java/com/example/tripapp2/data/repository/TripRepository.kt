@@ -1,0 +1,148 @@
+package com.example.tripapp2.data.repository
+
+import com.example.tripapp2.data.model.*
+import kotlinx.coroutines.delay
+
+class TripRepository private constructor() {
+
+    private val tripsCache = mutableMapOf<String, TripDto>()
+    private val initialDataCache = mutableListOf<TripListDto>()
+
+    companion object {
+        @Volatile
+        private var INSTANCE: TripRepository? = null
+
+        fun getInstance(): TripRepository {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: TripRepository().also { INSTANCE = it }
+            }
+        }
+    }
+
+
+    suspend fun loadInitialData():Result<TripListDto>{
+
+        return try {
+            val response = fetchInitData()
+            saveInitDataToCache(response)
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
+    private suspend fun fetchInitData(): TripListDto {
+        return MockData.getTripList()
+    }
+
+
+
+    private fun saveInitDataToCache(initialData:TripListDto) {
+        initialDataCache.add(initialData)
+        initialData.trips?.forEach{
+            trip -> tripsCache[trip.id] = trip
+        }
+    }
+
+    suspend fun getTripDetails(tripId: String):TripDto?{
+        return tripsCache[tripId]
+    }
+
+    suspend fun getFullInitDetails():List<TripListDto>{
+    return initialDataCache
+    }
+
+    suspend fun getCurrentUserInfo():UserInfoDto{
+        return MockData.getUsrInfo()
+    }
+
+
+
+    /**
+     * Tworzy nową wycieczkę
+     */
+//    suspend fun createTrip(
+//        title: String,
+//        description: String,
+//        dateStart: Long,
+//        dateEnd: Long,
+//        currency: String
+//    ): Result<TripDto> {
+//        return try {
+//            delay(500)
+//
+//            val newTrip = TripDto(
+//                id = "trip_${System.currentTimeMillis()}",
+//                title = title,
+//                description = description,
+//                dateStart = dateStart,
+//                dateEnd = dateEnd,
+//                currency = currency,
+//                accessCode = generateAccessCode(),
+//                totalExpenses = 0f,
+//                categories = emptyList(),
+//                expenses = emptyList(),
+//                participants = emptyList()
+//            )
+//
+//            Result.success(newTrip)
+//        } catch (e: Exception) {
+//            Result.failure(e)
+//        }
+//    }
+
+    /**
+     * Dołącza do wycieczki po kodzie dostępu
+     */
+//    suspend fun joinTrip(accessCode: String): Result<TripDto> {
+//        return try {
+//            delay(500)
+//
+//            val trip = getMockTrips().find { it.accessCode == accessCode }
+//            if (trip != null) {
+//                Result.success(trip)
+//            } else {
+//                Result.failure(Exception("Nieprawidłowy kod dostępu"))
+//            }
+//        } catch (e: Exception) {
+//            Result.failure(e)
+//        }
+//    }
+
+    /**
+     * Pobiera wydatki dla wycieczki
+     */
+//    suspend fun getExpensesForTrip(tripId: String): Result<List<ExpenseDto>> {
+//        return try {
+//            delay(300)
+//
+//            val trip = getMockTrips().find { it.id == tripId }
+//            Result.success(trip?.expenses ?: emptyList())
+//        } catch (e: Exception) {
+//            Result.failure(e)
+//        }
+//    }
+
+    /**
+     * Oznacza rozliczenie jako spłacone
+     * W przyszłości: POST /api/trips/{tripId}/settlements/{settlementId}/settle
+     */
+    suspend fun markSettlementAsPaid(
+        tripId: String,
+        fromUserId: String,
+        toUserId: String,
+        amount: Float,
+        currency: String
+    ): Result<Boolean> {
+        return try {
+            delay(800) // Symulacja API call
+
+            // Mock - zawsze sukces
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+}

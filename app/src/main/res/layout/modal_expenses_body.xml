@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/modalBodyRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/padding_default">
+
+    <!-- Total Cost -->
+    <TextView
+        android:id="@+id/totalCostText"
+        style="@style/Text.Body.Large"
+        android:textStyle="bold"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Suma: 0,00 PLN"
+        android:paddingBottom="@dimen/spacing_small"/>
+
+    <!-- Separator -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider"
+        android:layout_marginBottom="@dimen/spacing_small"/>
+
+    <!-- Scrollable List -->
+    <ScrollView
+        android:id="@+id/scrollCosts"
+        android:layout_width="match_parent"
+        android:layout_height="150dp">
+
+        <LinearLayout
+            android:id="@+id/expensesListContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+    </ScrollView>
+</LinearLayout>

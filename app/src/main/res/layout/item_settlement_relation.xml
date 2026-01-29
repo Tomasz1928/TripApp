@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/padding_medium"
+        android:gravity="center_vertical"
+        android:minHeight="80dp">
+
+        <!-- Avatar/Icon Container -->
+        <FrameLayout
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="@dimen/spacing_medium">
+
+            <!-- From User Avatar -->
+            <View
+                android:id="@+id/fromUserAvatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="start|center_vertical"
+                android:background="@drawable/bg_circle_primary"/>
+
+            <!-- Arrow Icon -->
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_back_arrow"
+                android:rotation="180"
+                app:tint="@color/text_secondary"/>
+
+            <!-- To User Avatar -->
+            <View
+                android:id="@+id/toUserAvatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|center_vertical"
+                android:background="@drawable/bg_circle_success"/>
+        </FrameLayout>
+
+        <!-- Names and Amount -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Description -->
+            <TextView
+                android:id="@+id/relationDescription"
+                style="@style/Text.Body.Large"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ania winna Tobie"/>
+
+            <!-- Amount -->
+            <TextView
+                android:id="@+id/relationAmount"
+                style="@style/Text.Title.Medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="110 PLN"
+                android:textColor="@color/primary"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <!-- Rozlicz Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/settleButton"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Rozlicz"
+            android:textSize="12sp"
+            android:minHeight="40dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            app:cornerRadius="20dp"
+            app:backgroundTint="@color/primary"/>
+
+        <!-- OK Badge (settled) -->
+        <LinearLayout
+            android:id="@+id/settledBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_back_arrow"
+                app:tint="@color/success"/>
+
+            <TextView
+                style="@style/Text.Body.Bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OK"
+                android:textColor="@color/success"
+                android:layout_marginStart="4dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

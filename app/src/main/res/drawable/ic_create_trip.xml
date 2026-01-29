@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+
+    <!-- Góry -->
+    <path
+        android:fillColor="#136DEC"
+        android:pathData="M10,100 L40,50 L70,90 L100,40 L118,100 Z" />
+
+    <!-- Symbol plus nad szczytem -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M60,20 L68,20 L68,28 L76,28 L76,36 L68,36 L68,44 L60,44 L60,36 L52,36 L52,28 L60,28 Z" />
+</vector>

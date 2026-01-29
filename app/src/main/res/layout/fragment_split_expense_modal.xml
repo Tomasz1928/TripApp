@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Card.Modal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/modal_margin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_default">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/Text.Title"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="@string/split_modal_title"/>
+
+            <ImageView
+                android:id="@+id/closeButton"
+                android:layout_width="@dimen/modal_close_button_size"
+                android:layout_height="@dimen/modal_close_button_size"
+                android:src="@drawable/ic_back_arrow"
+                android:contentDescription="@string/cd_close_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/padding_tiny"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+        </LinearLayout>
+
+        <!-- Separator -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_small"/>
+
+        <!-- Całkowity koszt -->
+        <TextView
+            android:id="@+id/totalExpenseLabel"
+            style="@style/Text.Body.Bold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Całkowity koszt: 0.00 PLN"
+            android:gravity="center"
+            android:textColor="@color/primary"/>
+
+        <!-- przycisk: rozdziel po równo? -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/equalSplitButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="Podziel po równo"
+            android:textSize="@dimen/text_size_small"/>
+
+        <!-- Label: Kto uczestniczy? -->
+        <TextView
+            style="@style/Text.Body.Bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/split_participants_label"
+            android:layout_marginTop="@dimen/spacing_medium"/>
+
+        <!-- Scrollable Participants List -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginTop="@dimen/spacing_small">
+
+            <LinearLayout
+                android:id="@+id/participantsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+        </ScrollView>
+
+        <!-- Suma podziału -->
+        <TextView
+            android:id="@+id/totalLabel"
+            style="@style/Text.Body.Large"
+            android:textStyle="bold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Suma: 0.00"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:gravity="end"/>
+
+        <!-- Komunikat o różnicy (ukryty gdy OK) -->
+        <TextView
+            android:id="@+id/differenceLabel"
+            style="@style/Text.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_tiny"
+            android:gravity="end"
+            android:textColor="@color/error"
+            android:visibility="gone"/>
+
+        <!-- Save Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/saveButton"
+            style="@style/Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/split_save_button"/>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

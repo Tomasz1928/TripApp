@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollViewCreateTrip"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/margin_medium">
+
+            <!-- Header Image -->
+            <FrameLayout
+                android:id="@+id/headerImageContainer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_percent="0.35">
+
+                <ImageView
+                    android:id="@+id/headerImage"
+                    style="@style/HeaderImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/header_create_trip" />
+            </FrameLayout>
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/title"
+                style="@style/Text.Display"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/create_trip_title"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/spacing_small"
+                app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- Name + Currency Container -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/nameCurrencyContainer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:layout_constraintTop_toBottomOf="@id/title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.9">
+
+                <!-- Trip Name -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/TripCreateLayout"
+                    style="@style/InputLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/TripCurrencyLayout"
+                    app:layout_constraintWidth_percent="0.65">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/TripNameInput"
+                        style="@style/InputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/create_trip_name_hint"
+                        android:textSize="@dimen/text_size_body"
+                        android:inputType="textPersonName"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Currency Dropdown -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/TripCurrencyLayout"
+                    style="@style/InputLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    app:layout_constraintStart_toEndOf="@id/TripCreateLayout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/TripCreateLayout"
+                    app:layout_constraintBottom_toBottomOf="@id/TripCreateLayout"
+                    app:endIconMode="dropdown_menu">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/TripCurrencyInput"
+                        style="@style/InputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:hint="@string/create_trip_currency_hint"
+                        android:inputType="text"
+                        android:gravity="center_vertical"
+                        android:paddingStart="@dimen/padding_medium"
+                        android:paddingEnd="@dimen/padding_medium"
+                        android:textSize="@dimen/text_size_body"
+                        android:dropDownHeight="150dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Date Picker -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/TripDateLayout"
+                style="@style/InputLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:layout_constraintTop_toBottomOf="@id/nameCurrencyContainer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.9">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/TripDateInput"
+                    style="@style/InputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/create_trip_date_hint"
+                    android:textSize="@dimen/text_size_body"
+                    android:focusable="false"
+                    android:clickable="true"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Description -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/TripDescriptionLayout"
+                style="@style/InputLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:layout_constraintTop_toBottomOf="@id/TripDateLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.9">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/TripDescriptionInput"
+                    style="@style/InputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_height_multiline"
+                    android:hint="@string/create_trip_description_hint"
+                    android:textSize="@dimen/text_size_small"
+                    android:inputType="textMultiLine"
+                    android:gravity="top"
+                    android:scrollHorizontally="false"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Create Button -->
+            <Button
+                android:id="@+id/TripCreateBtn"
+                style="@style/Button.Primary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:text="@string/create_trip_button"
+                app:layout_constraintTop_toBottomOf="@id/TripDescriptionLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.9"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

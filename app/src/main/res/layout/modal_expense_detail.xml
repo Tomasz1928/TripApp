@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/expenseBodyRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/padding_small"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header: icon + name + category + amount -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="@dimen/padding_medium">
+
+            <ImageView
+                android:id="@+id/expenseCategoryIcon"
+                android:layout_width="@dimen/icon_size_xlarge"
+                android:layout_height="@dimen/icon_size_xlarge"
+                android:contentDescription="@string/cd_category_icon"
+                android:layout_marginEnd="@dimen/spacing_medium"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/expenseName"
+                    style="@style/Text.Body.Large"
+                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Obiad w restauracji"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="end">
+
+                <TextView
+                    android:id="@+id/expenseAmountMain"
+                    style="@style/Text.Body.Bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/primary"
+                    android:text="120 PLN"/>
+
+                <TextView
+                    android:id="@+id/expenseAmountSecondary"
+                    style="@style/Text.Caption"
+                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/secondary"
+                    android:text="25 EUR"
+                    android:visibility="gone"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Separator -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider"
+            android:layout_marginBottom="@dimen/spacing_medium"/>
+
+        <!-- Date and Payer -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="@dimen/padding_medium">
+
+            <TextView
+                android:id="@+id/expenseDate"
+                style="@style/Text.Caption"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Data: 12.01.2026"/>
+
+            <TextView
+                android:id="@+id/expensePayer"
+                style="@style/Text.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Płacił: Anna"/>
+        </LinearLayout>
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/expenseDescription"
+            style="@style/Text.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Opis: \nLunch w centrum miasta"
+            android:paddingBottom="@dimen/padding_medium"/>
+
+        <!-- Separator -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider"
+            android:layout_marginBottom="@dimen/spacing_medium"/>
+
+        <!-- Header Row for Currencies -->
+        <LinearLayout
+            android:id="@+id/sharedWithHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="@dimen/spacing_tiny"
+            android:gravity="center_vertical">
+
+            <TextView
+                style="@style/Text.Caption"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="Osoba"
+                android:textColor="@color/text_secondary"
+                android:gravity="start"/>
+
+            <TextView
+                android:id="@+id/headerCostCurrency"
+                style="@style/Text.Caption"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:textColor="@color/primary"
+                android:gravity="end"/>
+
+            <TextView
+                android:id="@+id/headerTripCurrency"
+                style="@style/Text.Caption"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:textColor="@color/secondary"
+                android:gravity="end"/>
+        </LinearLayout>
+
+        <!-- Shared With Container -->
+        <LinearLayout
+            android:id="@+id/sharedWithContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+
+    </LinearLayout>
+</ScrollView>

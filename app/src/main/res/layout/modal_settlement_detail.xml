@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Card.Modal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/modal_margin">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_default">
+
+            <!-- Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/modalTitle"
+                    style="@style/Text.Title"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="Szczegóły rozliczenia"/>
+
+                <ImageView
+                    android:id="@+id/closeButton"
+                    android:layout_width="@dimen/modal_close_button_size"
+                    android:layout_height="@dimen/modal_close_button_size"
+                    android:src="@drawable/ic_back_arrow"
+                    android:contentDescription="@string/cd_close_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="@dimen/padding_tiny"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+            </LinearLayout>
+
+            <!-- Separator -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_small"/>
+
+            <!-- Relation Description -->
+            <TextView
+                android:id="@+id/relationDescription"
+                style="@style/Text.Body.Large"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ania winna Tobie"
+                android:layout_marginBottom="@dimen/spacing_medium"/>
+
+            <!-- Main Currency Section -->
+            <TextView
+                style="@style/Text.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GŁÓWNA WALUTA"
+                android:layout_marginBottom="@dimen/spacing_tiny"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/mainCurrencyCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="2dp"
+                app:cardBackgroundColor="@color/surface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/padding_medium"
+                    android:gravity="center_vertical">
+
+                    <RadioButton
+                        android:id="@+id/mainCurrencyRadio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/spacing_small">
+
+                        <TextView
+                            android:id="@+id/mainCurrencyLabel"
+                            style="@style/Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PLN"/>
+
+                        <TextView
+                            android:id="@+id/mainCurrencyAmount"
+                            style="@style/Text.Body.Bold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="110,00 PLN"
+                            android:textColor="@color/primary"
+                            android:textSize="18sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Other Currencies Section -->
+            <TextView
+                android:id="@+id/otherCurrenciesLabel"
+                style="@style/Text.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="POZOSTAŁE WALUTY"
+                android:layout_marginBottom="@dimen/spacing_tiny"/>
+
+            <LinearLayout
+                android:id="@+id/otherCurrenciesContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="@dimen/spacing_medium"/>
+
+            <!-- Separator -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"
+                android:layout_marginBottom="@dimen/spacing_medium"/>
+
+            <!-- Amount Input Section -->
+            <TextView
+                style="@style/Text.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="KWOTA DO ROZLICZENIA"
+                android:layout_marginBottom="@dimen/spacing_tiny"/>
+
+            <!-- Rozlicz całość checkbox -->
+            <CheckBox
+                android:id="@+id/settleFullAmountCheckbox"
+                style="@style/Text.Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rozlicz całą kwotę"
+                android:checked="true"
+                android:layout_marginBottom="@dimen/spacing_small"/>
+
+            <!-- Custom Amount Input -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/customAmountLayout"
+                style="@style/InputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Wpisz kwotę"
+                android:visibility="gone">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/customAmountInput"
+                    style="@style/InputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Confirm Button -->
+            <Button
+                android:id="@+id/confirmSettlementButton"
+                style="@style/Button.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:text="Potwierdź rozliczenie"/>
+        </LinearLayout>
+    </ScrollView>
+</androidx.cardview.widget.CardView>

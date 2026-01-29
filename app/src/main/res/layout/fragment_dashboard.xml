@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:paddingBottom="@dimen/margin_medium">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Welcome Small Text -->
+        <TextView
+            android:id="@+id/welcomeSmall"
+            style="@style/Text.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dashboard_welcome_small"
+            android:layout_marginStart="@dimen/spacing_large"
+            android:layout_marginTop="@dimen/spacing_large"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <!-- Dashboard Title -->
+        <TextView
+            android:id="@+id/dashboardTitle"
+            style="@style/Text.Title.Large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dashboard_title"
+            android:layout_marginStart="@dimen/spacing_large"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/welcomeSmall"/>
+
+        <!-- Trips RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/tripsRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:paddingStart="@dimen/spacing_large"
+            android:paddingEnd="@dimen/spacing_large"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:nestedScrollingEnabled="true"
+            app:layout_constraintTop_toBottomOf="@id/dashboardTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

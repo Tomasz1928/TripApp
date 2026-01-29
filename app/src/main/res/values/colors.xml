@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ========================================= -->
+    <!-- PRIMARY COLORS - Główne kolory aplikacji -->
+    <!-- ========================================= -->
+    <color name="primary">#136DEC</color>
+    <color name="secondary">#FF6F00</color>
+    <color name="background">#F6F7F8</color>
+
+    <!-- ========================================= -->
+    <!-- TEXT COLORS - Kolory tekstu -->
+    <!-- ========================================= -->
+    <color name="text_primary">#0D131B</color>
+    <color name="text_secondary">#4C6C9A</color>
+    <color name="text_hint">#9CA3AF</color>
+
+    <!-- ========================================= -->
+    <!-- CATEGORY COLORS - Kolory kategorii wydatków -->
+    <!-- ========================================= -->
+    <color name="category_food">#34D399</color>         <!-- Emerald 400 -->
+    <color name="category_transport">#F59E0B</color>    <!-- Amber 500 -->
+    <color name="category_accommodation">#136DEC</color><!-- Blue (primary) -->
+    <color name="category_entertainment">#F43F5E</color><!-- Rose 500 -->
+    <color name="category_shopping">#A855F7</color>     <!-- Purple 500 -->
+    <color name="category_other">#6B7280</color>        <!-- Gray 500 -->
+
+    <!-- Legacy aliases (do usunięcia po pełnej migracji) -->
+    <color name="emerald_400">#34D399</color>
+    <color name="orange_400">#F97316</color>
+    <color name="green_400">#10B981</color>
+
+    <!-- ========================================= -->
+    <!-- BOTTOM NAVIGATION - Kolory bottom nav -->
+    <!-- ========================================= -->
+    <color name="bottom_nav_background">#FFFFFF</color>
+    <color name="bottom_nav_active_bg">#1AFFFFFF</color>
+    <color name="bottom_nav_inactive">#9CA3AF</color>
+
+    <!-- ========================================= -->
+    <!-- UI ELEMENTS - Elementy interfejsu -->
+    <!-- ========================================= -->
+    <color name="divider">#E5E7EB</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="error">#EF4444</color>
+    <color name="success">#10B981</color>
+    <color name="warning">#F59E0B</color>
+
+    <!-- ========================================= -->
+    <!-- STATE COLORS - Stany elementów -->
+    <!-- ========================================= -->
+    <color name="ripple">#1A136DEC</color>
+    <color name="pressed">#33136DEC</color>
+    <color name="disabled">#9CA3AF</color>
+
+    <!-- ========================================= -->
+    <!-- TRANSPARENT - Przezroczystości -->
+    <!-- ========================================= -->
+    <color name="transparent">#00000000</color>
+    <color name="overlay_dark">#80000000</color>
+    <color name="overlay_light">#4DFFFFFF</color>
+</resources>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scrollViewJoinTrip"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="none"
+    android:background="@color/background">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/margin_medium">
+
+        <!-- Header Image -->
+        <FrameLayout
+            android:id="@+id/headerImageContainer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHeight_percent="0.35">
+
+            <ImageView
+                android:id="@+id/headerImage"
+                style="@style/HeaderImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/header_join_trip"/>
+        </FrameLayout>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/title"
+            style="@style/Text.Display"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/join_trip_title"
+            android:gravity="center"
+            android:layout_marginTop="@dimen/spacing_small"
+            app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Access Code Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/TripJoinLayout"
+            style="@style/InputLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            app:layout_constraintTop_toBottomOf="@id/title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_percent="0.9">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/TripJoinInput"
+                style="@style/InputEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/join_trip_code_hint"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Join Button -->
+        <Button
+            android:id="@+id/JoinTripBtn"
+            style="@style/Button.Primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/join_trip_button"
+            app:layout_constraintTop_toBottomOf="@id/TripJoinLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_percent="0.9"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

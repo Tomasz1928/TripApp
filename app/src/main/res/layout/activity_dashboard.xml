@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <!-- DASHBOARD FLOW -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/dashboardContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <!-- TRIP DETAILS FLOW -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/tripContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
+
+    <!-- DASHBOARD NAV -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/dashboardBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:menu="@menu/dashboard_bottom_nav"
+        app:labelVisibilityMode="unlabeled"
+        app:itemIconSize="@dimen/bottom_nav_icon_size"
+        app:itemIconTint="@null"/>
+
+    <!-- TRIP DETAILS NAV -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/tripBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:visibility="gone"
+        app:menu="@menu/trip_bottom_nav"
+        app:labelVisibilityMode="unlabeled"
+        app:itemIconSize="@dimen/bottom_nav_icon_size"
+        app:itemIconTint="@null"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

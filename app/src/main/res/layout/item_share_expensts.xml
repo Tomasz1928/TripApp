@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="@dimen/spacing_tiny"
+    android:gravity="center_vertical">
+
+    <!-- Imię osoby - ZAWSZE widoczne (must have) -->
+    <TextView
+        android:id="@+id/sharePerson"
+        style="@style/Text.Body.Bold"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:text="Anna"
+        android:gravity="start"/>
+
+    <!-- Kwota w cost currency - ZAWSZE widoczna (must have) -->
+    <TextView
+        android:id="@+id/shareAmountMain"
+        style="@style/Text.Body.Bold"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:text="123,56 PLN"
+        android:textColor="@color/primary"
+        android:gravity="end"/>
+
+    <!-- Kwota w trip currency - dynamicznie widoczna gdy trip currency != cost currency -->
+    <TextView
+        android:id="@+id/shareAmountSecondary"
+        style="@style/Text.Caption"
+        android:textStyle="bold"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:text="12,45 EUR"
+        android:textColor="@color/secondary"
+        android:gravity="end"
+        android:visibility="gone"/>
+</LinearLayout>
