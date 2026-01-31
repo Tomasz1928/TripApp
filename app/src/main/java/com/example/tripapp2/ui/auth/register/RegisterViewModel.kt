@@ -3,6 +3,7 @@ package com.example.tripapp2.ui.auth.register
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.tripapp2.R
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
 import kotlinx.coroutines.delay
@@ -23,14 +24,14 @@ class RegisterViewModel : BaseViewModel() {
     private val _password = MutableLiveData<String>()
     val password: LiveData<String> = _password
 
-    // Błędy walidacji
-    private val _usernameError = MutableLiveData<String?>()
-    val usernameError: LiveData<String?> = _usernameError
+    // ✅ ZMIANA: Typ zmieniony na Int? (resource ID)
+    private val _usernameError = MutableLiveData<Int?>()
+    val usernameError: LiveData<Int?> = _usernameError
 
-    private val _passwordError = MutableLiveData<String?>()
-    val passwordError: LiveData<String?> = _passwordError
+    private val _passwordError = MutableLiveData<Int?>()
+    val passwordError: LiveData<Int?> = _passwordError
 
-    // Event sukcesu rejestracji
+    // ✅ ZMIANA: Pozostawiam String (message do wyświetlenia)
     private val _registerSuccessEvent = MutableLiveData<Event<String>>()
     val registerSuccessEvent: LiveData<Event<String>> = _registerSuccessEvent
 
@@ -71,11 +72,13 @@ class RegisterViewModel : BaseViewModel() {
             setLoading(false)
 
             if (success) {
-                _registerSuccessEvent.value = Event("Konto utworzone pomyślnie!")
+                // ✅ ZMIANA: Przekazujemy specjalny marker, który będzie parsowany w Activity
+                _registerSuccessEvent.value = Event("RES_ID:${R.string.register_success}")
                 // Automatyczne przejście do logowania po 1s
                 delay(1000)
                 _navigateToLoginEvent.value = Event(Unit)
             } else {
+                // ✅ ZMIANA: showError przyjmuje String, więc używamy hardcoded stringa
                 showError("Nie udało się utworzyć konta")
             }
         }
@@ -95,20 +98,21 @@ class RegisterViewModel : BaseViewModel() {
         var isValid = true
 
         val username = _username.value
+        // ✅ ZMIANA: Bez .toString(), przekazujemy resource ID
         if (username.isNullOrBlank()) {
-            _usernameError.value = "Podaj nazwę użytkownika"
+            _usernameError.value = R.string.error_username_required
             isValid = false
         } else if (username.length < 3) {
-            _usernameError.value = "Nazwa użytkownika musi mieć min. 3 znaki"
+            _usernameError.value = R.string.error_username_too_short
             isValid = false
         }
 
         val password = _password.value
         if (password.isNullOrBlank()) {
-            _passwordError.value = "Podaj hasło"
+            _passwordError.value = R.string.error_password_required
             isValid = false
         } else if (password.length < 6) {
-            _passwordError.value = "Hasło musi mieć min. 6 znaków"
+            _passwordError.value = R.string.error_password_too_short
             isValid = false
         }
 

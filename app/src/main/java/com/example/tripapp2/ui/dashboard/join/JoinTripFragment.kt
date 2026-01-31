@@ -30,8 +30,9 @@ class JoinTripFragment : KeyboardAwareFragment<JoinTripViewModel>(R.layout.fragm
     }
 
     override fun setupCustomObservers() {
-        viewModel.accessCodeError.observe(viewLifecycleOwner) { error ->
-            tripJoinLayout.error = error
+        // ✅ ZMIANA: Konwertuj Int? na String?
+        viewModel.accessCodeError.observe(viewLifecycleOwner) { errorResId ->
+            tripJoinLayout.error = errorResId?.let { getString(it) }
         }
 
         viewModel.tripJoinedEvent.observe(viewLifecycleOwner) { event ->
@@ -73,6 +74,11 @@ class JoinTripFragment : KeyboardAwareFragment<JoinTripViewModel>(R.layout.fragm
 
     override fun onLoadingStateChanged(isLoading: Boolean) {
         joinButton.isEnabled = !isLoading
-        joinButton.text = if (isLoading) "Dołączanie..." else "Dołącz"
+        // ✅ ZMIANA: Użyj getString() zamiast .toString()
+        joinButton.text = if (isLoading) {
+            getString(R.string.join_trip_button_loading)
+        } else {
+            getString(R.string.join_trip_button)
+        }
     }
 }

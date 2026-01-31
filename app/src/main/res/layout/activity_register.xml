@@ -115,7 +115,7 @@
                 style="@style/Text.Body"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/register_have_account"/>
+                android:text="@string/register_has_account"/>
 
             <TextView
                 android:id="@+id/loginRedirect"

@@ -130,12 +130,12 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
                 // FAB widoczny w empty state - musi być, żeby dodać pierwszego!
                 addParticipantFab.show()
             }
-            is TripParticipantsState.Error -> {
-                participantsContainer.hide()
-                emptyState.hide()
-                addParticipantFab.hide()
-                showError(state.message)
-            }
+             is TripParticipantsState.Error -> {
+                 participantsContainer.hide()
+                 emptyState.hide()
+                 addParticipantFab.hide()
+                 showError(state.message)
+             }
         }
     }
 
@@ -163,10 +163,12 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
     ): View {
         val view = layoutInflater.inflate(R.layout.item_participant, participantsContainer, false)
 
+        // ✅ ZMIANA: Używamy getString() dla label + wartość
         // Podstawowe info
         view.findViewById<TextView>(R.id.participantNickname).text = participant.nickname
+        val expensesLabel = getString(R.string.participants_expenses_label)
         view.findViewById<TextView>(R.id.participantExpenses).text =
-            "Wydatki: ${participant.formattedExpenses}"
+            "$expensesLabel ${participant.formattedExpenses}"
 
         // Badges
         val ownerBadge = view.findViewById<MaterialCardView>(R.id.ownerBadge)
@@ -246,13 +248,13 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
         val nicknameInput = dialogView.findViewById<TextInputEditText>(R.id.nicknameInput)
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Dodaj uczestnika")
+            .setTitle(R.string.participants_dialog_add_title)
             .setView(dialogView)
-            .setPositiveButton("Dodaj") { _, _ ->
+            .setPositiveButton(R.string.dialog_button_add) { _, _ ->
                 val nickname = nicknameInput.text.toString()
                 viewModel.addPlaceholder(nickname)
             }
-            .setNegativeButton("Anuluj", null)
+            .setNegativeButton(R.string.dialog_button_cancel, null)
             .show()
     }
 
@@ -268,13 +270,14 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
         val copyButton = dialogView.findViewById<MaterialButton>(R.id.copyCodeButton)
         copyButton.setOnClickListener {
             copyToClipboard(event.accessCode)
-            showMessage("Skopiowano kod dostępu")
+            // ✅ ZMIANA: Używamy getString() zamiast .toString()
+            showMessage(getString(R.string.copied_to_clipboard))
         }
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Uczestnik dodany")
+            .setTitle(R.string.participants_dialog_added_title)
             .setView(dialogView)
-            .setPositiveButton("OK", null)
+            .setPositiveButton(R.string.dialog_button_ok, null)
             .show()
     }
 
@@ -283,16 +286,14 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
      */
     private fun showDetachUserDialog(participant: ParticipantUiModel) {
         AlertDialog.Builder(requireContext())
-            .setTitle("Odłącz użytkownika")
+            .setTitle(R.string.participants_dialog_detach_title)
             .setMessage(
-                "Czy na pewno chcesz odłączyć ${participant.nickname}?\n\n" +
-                        "Użytkownik stanie się placeholderem z nowym kodem dostępu. " +
-                        "Będzie mógł ponownie dołączyć używając nowego kodu."
+                getString(R.string.participants_dialog_detach_message, participant.nickname)
             )
-            .setPositiveButton("Odłącz") { _, _ ->
+            .setPositiveButton(R.string.dialog_button_detach) { _, _ ->
                 viewModel.detachUser(participant.id, participant.nickname)
             }
-            .setNegativeButton("Anuluj", null)
+            .setNegativeButton(R.string.dialog_button_cancel, null)
             .show()
     }
 
@@ -301,15 +302,14 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
      */
     private fun showDeletePlaceholderDialog(participant: ParticipantUiModel) {
         AlertDialog.Builder(requireContext())
-            .setTitle("Usuń placeholdera")
+            .setTitle(R.string.participants_dialog_delete_title)
             .setMessage(
-                "Czy na pewno chcesz usunąć placeholdera ${participant.nickname}?\n\n" +
-                        "Ta akcja jest nieodwracalna. Wszystkie dane związane z tym placeholderem zostaną usunięte."
+                getString(R.string.participants_dialog_delete_message, participant.nickname)
             )
-            .setPositiveButton("Usuń") { _, _ ->
+            .setPositiveButton(R.string.dialog_button_delete) { _, _ ->
                 viewModel.removePlaceholder(participant.id, participant.nickname)
             }
-            .setNegativeButton("Anuluj", null)
+            .setNegativeButton(R.string.dialog_button_cancel, null)
             .show()
     }
 
@@ -318,7 +318,8 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
      */
     private fun copyToClipboard(text: String) {
         val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("Access Code", text)
+        // ✅ ZMIANA: Używamy getString() zamiast .toString()
+        val clip = ClipData.newPlainText(getString(R.string.trip_details_access_code), text)
         clipboard.setPrimaryClip(clip)
     }
 

@@ -1,52 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- App Name -->
-    <string name="app_name">TripApp2</string>
+    <!-- ========================================= -->
+    <!-- APP INFO -->
+    <!-- ========================================= -->
+
+    <string name="app_name">TripApp</string>
 
     <!-- ========================================= -->
-    <!-- LOGIN & REGISTER -->
+    <!-- AUTH - Autoryzacja -->
     <!-- ========================================= -->
 
     <!-- Login -->
-    <string name="login_title">Witaj z powrotem</string>
+    <string name="login_title">Zaloguj się</string>
     <string name="login_username_hint">Nazwa użytkownika</string>
     <string name="login_password_hint">Hasło</string>
     <string name="login_button">Zaloguj się</string>
+    <string name="login_button_loading">Logowanie…</string>
     <string name="login_no_account">Nie masz konta?</string>
     <string name="login_create_account">Załóż konto</string>
+    <string name="error_login_invalid_credentials">Nieprawidłowa nazwa użytkownika lub hasło</string>
 
     <!-- Register -->
     <string name="register_title">Załóż konto</string>
     <string name="register_username_hint">Nazwa użytkownika</string>
     <string name="register_password_hint">Hasło</string>
     <string name="register_button">Utwórz konto</string>
-    <string name="register_have_account">Masz już konto?</string>
+    <string name="register_button_loading">Tworzenie…</string>
+    <string name="register_has_account">Masz już konto?</string>
     <string name="register_login">Zaloguj się</string>
+    <string name="register_success">Konto utworzone pomyślnie!</string>
+    <string name="error_register_failed">Nie udało się utworzyć konta</string>
+    <string name="error_username_too_short">Nazwa użytkownika musi mieć min. 3 znaki</string>
+    <string name="error_password_too_short">Hasło musi mieć min. 6 znaków</string>
 
     <!-- ========================================= -->
     <!-- DASHBOARD -->
     <!-- ========================================= -->
-
     <string name="dashboard_welcome_small">Witaj ponownie,</string>
-    <string name="dashboard_title">Twoje Podróże</string>
-    <string name="dashboard_no_trips">Brak podróży</string>
-    <string name="dashboard_join_trip">Dołącz do podróży</string>
-    <string name="dashboard_create_trip">Stwórz podróż</string>
-    <string name="dashboard_view_details">Zobacz szczegóły</string>
-    <string name="dashboard_view_costs">Zobacz koszty</string>
-    <string name="dashboard_add_cost">Dodaj koszty</string>
+    <string name="dashboard_title">Moje podróże</string>
+    <string name="dashboard_no_trips_message">Brak podróży</string>
+
+    <!-- Trip Card -->
+    <string name="trip_card_details_button">SZCZEGÓŁY</string>
+    <string name="trip_card_view_costs_button">Zobacz koszty</string>
+    <string name="trip_card_add_cost_button">Dodaj koszty</string>
+
+    <!-- Placeholder Card -->
+    <string name="placeholder_join_button">Dołącz do podróży</string>
+    <string name="placeholder_create_button">Utwórz podróż</string>
 
     <!-- ========================================= -->
     <!-- CREATE TRIP -->
     <!-- ========================================= -->
 
-    <string name="create_trip_title">Utwórz podróż</string>
+    <string name="create_trip_title">Nowa podróż</string>
     <string name="create_trip_name_hint">Nazwa podróży</string>
+    <string name="create_trip_description_hint">Opis (opcjonalnie)</string>
     <string name="create_trip_currency_hint">Waluta</string>
-    <string name="create_trip_date_hint">Wybierz zakres dat</string>
-    <string name="create_trip_date_picker_title">Wybierz zakres dat</string>
-    <string name="create_trip_description_hint">Opis podróży</string>
+    <string name="create_trip_date_hint">Zakres dat</string>
     <string name="create_trip_button">Utwórz</string>
+    <string name="create_trip_button_loading">Tworzenie…</string>
+    <string name="create_trip_success">Wycieczka utworzona pomyślnie!</string>
+    <string name="error_trip_name_too_short">Nazwa wycieczki musi mieć min. 3 znaki</string>
+    <string name="error_date_range_invalid">Data zakończenia musi być po dacie rozpoczęcia</string>
 
     <!-- ========================================= -->
     <!-- JOIN TRIP -->
@@ -55,6 +71,8 @@
     <string name="join_trip_title">Dołącz do podróży</string>
     <string name="join_trip_code_hint">Wpisz kod podróży</string>
     <string name="join_trip_button">Dołącz</string>
+    <string name="join_trip_button_loading">Dołączanie…</string>
+    <string name="error_access_code_invalid_format">Nieprawidłowy format kodu (oczekiwano: XXXX-XXXX)</string>
 
     <!-- ========================================= -->
     <!-- TRIP DETAILS -->
@@ -66,6 +84,7 @@
     <string name="trip_details_total_expenses_label">TWOJE WYDATKI</string>
     <string name="trip_details_date_label">TERMIN</string>
     <string name="trip_details_access_code_label">KOD DOSTĘPU</string>
+    <string name="error_trip_details_load_failed">Nie udało się załadować szczegółów wycieczki</string>
 
     <!-- ========================================= -->
     <!-- TRIP COSTS -->
@@ -105,6 +124,8 @@
     <string name="add_expense_payer_hint">Kto płacił?</string>
     <string name="add_expense_split_hint">Podział kosztów</string>
     <string name="add_expense_button">Dodaj wydatek</string>
+    <string name="add_expense_button_loading">Dodawanie…</string>
+    <string name="add_expense_payer_dialog_title">Kto płacił?</string>
 
     <!-- Kategorie -->
     <string name="category_accommodation">Nocleg</string>
@@ -129,21 +150,62 @@
     <string name="split_participants_label">Kto uczestniczy?</string>
     <string name="split_total_label">Suma podziału:</string>
     <string name="split_save_button">Zapisz</string>
+    <string name="split_total_cost_label">Całkowity koszt: %.2f</string>
+    <string name="split_sum_zero">Suma: 0.00</string>
+    <string name="split_sum_format">Suma: %.2f</string>
+    <string name="split_excess_format">Nadmiar: %.2f</string>
+    <string name="split_missing_format">Brakuje: %.2f</string>
+    <string name="error_split_invalid">Popraw podział — suma nie zgadza się lub brak uczestników</string>
 
     <!-- Błędy Add Expense -->
     <string name="error_title_required">Podaj tytuł wydatku</string>
     <string name="error_title_too_long">Tytuł nie może być dłuższy niż 40 znaków</string>
     <string name="error_amount_required">Podaj kwotę</string>
     <string name="error_amount_invalid">Podaj prawidłową kwotę</string>
+    <string name="error_amount_required_before_split">Najpierw podaj kwotę wydatku</string>
     <string name="error_category_required">Wybierz kategorię</string>
     <string name="error_date_time_required">Wybierz datę i godzinę</string>
     <string name="error_payer_required">Wybierz kto płacił</string>
     <string name="error_split_required">Ustaw podział kosztów</string>
     <string name="error_split_no_participants">Wybierz przynajmniej jedną osobę</string>
     <string name="error_split_amount_mismatch">Suma podziału nie zgadza się z kwotą wydatku</string>
+    <string name="error_no_participants">Brak uczestników</string>
 
     <!-- Sukces -->
     <string name="expense_added_success">Wydatek dodany pomyślnie!</string>
+
+    <!-- ========================================= -->
+    <!-- TRIP PARTICIPANTS -->
+    <!-- ========================================= -->
+
+    <string name="participants_title">Uczestnicy</string>
+    <string name="participants_owner_badge">WŁAŚCICIEL</string>
+    <string name="participants_active_badge">AKTYWNY</string>
+    <string name="participants_placeholder_badge">OCZEKUJE</string>
+    <string name="participants_expenses_label">Wydatki: </string>
+    <string name="participants_copy_code">Kopiuj kod</string>
+
+    <!-- Dialogi -->
+    <string name="participants_dialog_add_title">Dodaj uczestnika</string>
+    <string name="participants_dialog_added_title">Uczestnik dodany</string>
+    <string name="participants_dialog_detach_title">Odłącz użytkownika</string>
+    <string name="participants_dialog_detach_message">Czy na pewno chcesz odłączyć %s?\n\nUżytkownik stanie się placeholderem z nowym kodem dostępu. Będzie mógł ponownie dołączyć używając nowego kodu.</string>
+    <string name="participants_dialog_delete_title">Usuń placeholdera</string>
+    <string name="participants_dialog_delete_message">Czy na pewno chcesz usunąć placeholdera %s?\n\nTa akcja jest nieodwracalna. Wszystkie dane związane z tym placeholderem zostaną usunięte.</string>
+
+    <!-- Dialog layouts -->
+    <string name="dialog_add_placeholder_description">Podaj nazwę dla nowego uczestnika. Zostanie wygenerowany dla niego kod dostępu do wycieczki.</string>
+    <string name="dialog_add_placeholder_hint">Nazwa uczestnika</string>
+    <string name="dialog_add_placeholder_length_info">2–30 znaków</string>
+    <string name="dialog_placeholder_added_participant_label">UCZESTNIK</string>
+    <string name="dialog_placeholder_added_code_label">KOD DOSTĘPU</string>
+    <string name="dialog_placeholder_added_info">Wyślij ten kod uczestnikowi, aby mógł dołączyć do wycieczki. Kod będzie również widoczny na liście uczestników.</string>
+    <string name="dialog_placeholder_added_copy_button">Kopiuj kod</string>
+
+    <!-- Walidacja -->
+    <string name="error_participant_name_required">Podaj nazwę uczestnika</string>
+    <string name="error_participant_name_too_short">Nazwa musi mieć min. 2 znaki</string>
+    <string name="error_participant_name_too_long">Nazwa nie może być dłuższa niż 30 znaków</string>
 
     <!-- ========================================= -->
     <!-- SETTLEMENTS - Rozliczenia -->
@@ -155,6 +217,7 @@
     <string name="settlements_balance_settled">ROZLICZONY</string>
     <string name="settlements_owed_to_you">Winni Tobie</string>
     <string name="settlements_you_owe">Ty winien</string>
+    <string name="settlements_owed_to_owed">winien</string>
     <string name="settlements_all_settled">Wszystko rozliczone! 🎉</string>
     <string name="settlements_all_settled_description">Wszyscy uczestnicy są na zero. Świetna robota!</string>
     <string name="settlements_settle_button">Rozlicz</string>
@@ -167,6 +230,8 @@
     <string name="settlements_marked_as_settled">Rozliczenie zostało potwierdzone</string>
     <string name="settlements_error_loading">Nie udało się załadować rozliczeń</string>
     <string name="settlements_error_settling">Nie udało się potwierdzić rozliczenia</string>
+    <string name="settlement_you_owe_user">Ty winien %s</string>
+    <string name="settlement_user_owes_you">%s winna Tobie</string>
 
     <!-- ========================================= -->
     <!-- MODAL -->
@@ -175,6 +240,12 @@
     <string name="modal_expenses_title">Twoje wydatki</string>
     <string name="modal_expenses_total">Suma: %1$s %2$s</string>
     <string name="modal_close">Zamknij</string>
+
+    <!-- ========================================= -->
+    <!-- CATEGORY PICKER -->
+    <!-- ========================================= -->
+
+    <string name="category_picker_title">Wybierz kategorię</string>
 
     <!-- ========================================= -->
     <!-- BOTTOM NAVIGATION -->
@@ -203,6 +274,18 @@
     <string name="cd_wallet_icon">Ikona portfela</string>
     <string name="cd_key_icon">Ikona klucza</string>
     <string name="cd_category_icon">Ikona kategorii</string>
+    <string name="cd_success_icon">Sukces</string>
+
+    <!-- ========================================= -->
+    <!-- DIALOG BUTTONS - Wspólne przyciski -->
+    <!-- ========================================= -->
+
+    <string name="dialog_button_add">Dodaj</string>
+    <string name="dialog_button_cancel">Anuluj</string>
+    <string name="dialog_button_ok">OK</string>
+    <string name="dialog_button_detach">Odłącz</string>
+    <string name="dialog_button_delete">Usuń</string>
+    <string name="dialog_button_save">Zapisz</string>
 
     <!-- ========================================= -->
     <!-- ERRORS & VALIDATION -->
@@ -216,6 +299,7 @@
     <string name="error_date_required">Wybierz zakres dat</string>
     <string name="error_code_required">Podaj kod dostępu</string>
     <string name="error_generic">Wystąpił błąd</string>
+    <string name="error_unknown">Wystąpił nieznany błąd</string>
 
     <!-- ========================================= -->
     <!-- MISC -->

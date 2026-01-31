@@ -56,7 +56,7 @@ class SplitExpenseModalFragment : DialogFragment() {
         setupParticipants()
         setupButtons()
         updateTotal()
-        totalExpenseLabel.text = "Całkowity koszt: %.2f".format(totalAmount)
+        totalExpenseLabel.text = String.format(getString(R.string.split_total_cost_label), totalAmount)
     }
 
     override fun onStart() {
@@ -139,14 +139,14 @@ class SplitExpenseModalFragment : DialogFragment() {
         val selected = split.getSelectedParticipants()
 
         if (selected.isEmpty()) {
-            totalLabel.text = "Suma: 0.00"
+            totalLabel.text = getString(R.string.split_sum_zero)
             differenceLabel.visibility = View.GONE
             totalLabel.setTextColor(resources.getColor(R.color.text_secondary, null))
             return
         }
 
         val total = split.getManualTotal()
-        totalLabel.text = String.format("Suma: %.2f", total)
+        totalLabel.text = String.format(getString(R.string.split_sum_format), total)
 
         // Oblicz różnicę
         val difference = total - totalAmount
@@ -162,9 +162,9 @@ class SplitExpenseModalFragment : DialogFragment() {
             differenceLabel.visibility = View.VISIBLE
 
             if (difference > 0) {
-                differenceLabel.text = String.format("Nadmiar: %.2f", difference)
+                differenceLabel.text = String.format(getString(R.string.split_excess_format), difference)
             } else {
-                differenceLabel.text = String.format("Brakuje: %.2f", -difference)
+                differenceLabel.text = String.format(getString(R.string.split_missing_format), -difference)
             }
         }
     }
@@ -188,7 +188,7 @@ class SplitExpenseModalFragment : DialogFragment() {
             if (!split.isValid(totalAmount)) {
                 Toast.makeText(
                     requireContext(),
-                    "Popraw podział - suma nie zgadza się lub brak uczestników",
+                    getString(R.string.error_split_invalid),
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener

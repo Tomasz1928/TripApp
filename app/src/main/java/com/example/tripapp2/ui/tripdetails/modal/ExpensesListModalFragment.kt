@@ -39,8 +39,9 @@ class ExpensesListModalFragment : DialogFragment() {
 
         val expensesList = expenses ?: return
 
+        // ✅ ZMIANA: Używamy getString() zamiast .toString()
         // Setup modal
-        view.findViewById<TextView>(R.id.modalTitle).text = "Twoje wydatki"
+        view.findViewById<TextView>(R.id.modalTitle).text = getString(R.string.modal_expenses_title)
         view.findViewById<ImageView>(R.id.closeButton).setOnClickListener { dismiss() }
 
         // Setup body
@@ -67,6 +68,7 @@ class ExpensesListModalFragment : DialogFragment() {
         // Total in main currency (pierwszy w liście) - PRIMARY
         if (expenses.isNotEmpty()) {
             val mainExpense = expenses.first()
+            // ✅ OPCJONALNE: Możesz użyć getString() z formatowaniem jeśli chcesz
             totalCostText.text = "Suma: ${mainExpense.formattedAmount}"
             totalCostText.textSize = 18f
             totalCostText.setTextColor(resources.getColor(R.color.primary, null))

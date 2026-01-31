@@ -3,6 +3,7 @@ package com.example.tripapp2.ui.auth.login
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.tripapp2.R
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
 import kotlinx.coroutines.delay
@@ -23,12 +24,11 @@ class LoginViewModel : BaseViewModel() {
     private val _password = MutableLiveData<String>()
     val password: LiveData<String> = _password
 
-    // Błędy walidacji
-    private val _usernameError = MutableLiveData<String?>()
-    val usernameError: LiveData<String?> = _usernameError
+    private val _usernameError = MutableLiveData<Int?>()
+    val usernameError: LiveData<Int?> = _usernameError
 
-    private val _passwordError = MutableLiveData<String?>()
-    val passwordError: LiveData<String?> = _passwordError
+    private val _passwordError = MutableLiveData<Int?>()
+    val passwordError: LiveData<Int?> = _passwordError
 
     // Event sukcesu logowania
     private val _loginSuccessEvent = MutableLiveData<Event<Unit>>()
@@ -92,12 +92,12 @@ class LoginViewModel : BaseViewModel() {
         var isValid = true
 
         if (_username.value.isNullOrBlank()) {
-            _usernameError.value = "Podaj nazwę użytkownika"
+            _usernameError.value = R.string.error_username_required
             isValid = false
         }
 
         if (_password.value.isNullOrBlank()) {
-            _passwordError.value = "Podaj hasło"
+            _passwordError.value = R.string.error_password_required
             isValid = false
         }
 

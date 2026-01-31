@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
+import com.example.tripapp2.R
 import com.example.tripapp2.databinding.ActivityRegisterBinding
 import com.example.tripapp2.ui.auth.login.LoginActivity
 
@@ -54,22 +55,33 @@ class RegisterActivity : AppCompatActivity() {
         // Loading state
         viewModel.isLoading.observe(this) { isLoading ->
             binding.registerBtn.isEnabled = !isLoading
-            binding.registerBtn.text = if (isLoading) "Tworzenie..." else "Utwórz konto"
+            binding.registerBtn.text = if (isLoading) {
+                getString(R.string.register_button_loading)
+            } else {
+                getString(R.string.register_button)
+            }
         }
 
-        // Błędy walidacji
-        viewModel.usernameError.observe(this) { error ->
-            binding.usernameLayout.error = error
+        // ✅ ZMIANA: Błędy walidacji - konwertuj Int? na String?
+        viewModel.usernameError.observe(this) { errorResId ->
+            binding.usernameLayout.error = errorResId?.let { getString(it) }
         }
 
-        viewModel.passwordError.observe(this) { error ->
-            binding.passwordLayout.error = error
+        viewModel.passwordError.observe(this) { errorResId ->
+            binding.passwordLayout.error = errorResId?.let { getString(it) }
         }
 
-        // Sukces rejestracji
+        // ✅ ZMIANA: Sukces rejestracji - parsuj message i konwertuj jeśli potrzeba
         viewModel.registerSuccessEvent.observe(this) { event ->
             event.getContentIfNotHandled()?.let { message ->
-                android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
+                // Sprawdź czy message zawiera resource ID
+                val displayMessage = if (message.startsWith("RES_ID:")) {
+                    val resId = message.substringAfter(":").toIntOrNull()
+                    resId?.let { getString(it) } ?: message
+                } else {
+                    message
+                }
+                android.widget.Toast.makeText(this, displayMessage, android.widget.Toast.LENGTH_SHORT).show()
             }
         }
 

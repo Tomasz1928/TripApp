@@ -3,6 +3,7 @@ package com.example.tripapp2.ui.dashboard.create
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -32,21 +33,21 @@ class CreateTripViewModel(
     private val _description = MutableLiveData<String>()
     val description: LiveData<String> = _description
 
-    // Błędy walidacji
-    private val _nameError = MutableLiveData<String?>()
-    val nameError: LiveData<String?> = _nameError
+    // ✅ ZMIANA: Typ zmieniony na Int? (resource ID)
+    private val _nameError = MutableLiveData<Int?>()
+    val nameError: LiveData<Int?> = _nameError
 
-    private val _currencyError = MutableLiveData<String?>()
-    val currencyError: LiveData<String?> = _currencyError
+    private val _currencyError = MutableLiveData<Int?>()
+    val currencyError: LiveData<Int?> = _currencyError
 
-    private val _dateError = MutableLiveData<String?>()
-    val dateError: LiveData<String?> = _dateError
+    private val _dateError = MutableLiveData<Int?>()
+    val dateError: LiveData<Int?> = _dateError
 
     // Event pokazania date pickera
     private val _showDatePickerEvent = MutableLiveData<Event<Unit>>()
     val showDatePickerEvent: LiveData<Event<Unit>> = _showDatePickerEvent
 
-    // Event sukcesu utworzenia wycieczki
+    // ✅ Event sukcesu - pozostaje String (message do wyświetlenia)
     private val _tripCreatedEvent = MutableLiveData<Event<String>>()
     val tripCreatedEvent: LiveData<Event<String>> = _tripCreatedEvent
 
@@ -93,6 +94,11 @@ class CreateTripViewModel(
         val desc = _description.value ?: ""
 
         viewModelScope.launch {
+            // ✅ Mock - symulacja sukcesu
+            // Przekazujemy marker, który będzie parsowany w Fragment
+            _tripCreatedEvent.value = Event("RES_ID:${R.string.create_trip_success}")
+            navigate(com.example.tripapp2.ui.common.base.NavigationCommand.ToDashboard)
+
 //            setLoading(true)
 //
 //            val result = tripRepository.createTrip(
@@ -106,7 +112,7 @@ class CreateTripViewModel(
 //            setLoading(false)
 //
 //            result.onSuccess { trip ->
-//                _tripCreatedEvent.value = Event("Wycieczka utworzona pomyślnie!")
+//                _tripCreatedEvent.value = Event("RES_ID:${R.string.create_trip_success}")
 //                navigate(NavigationCommand.ToDashboard)
 //            }.onFailure { error ->
 //                showError(error.message ?: "Nie udało się utworzyć wycieczki")
@@ -120,19 +126,30 @@ class CreateTripViewModel(
     private fun validateForm(): Boolean {
         var isValid = true
 
+        // ✅ ZMIANA: Bez .toString(), przekazujemy resource ID
         if (_tripName.value.isNullOrBlank()) {
-            _nameError.value = "Podaj nazwę wycieczki"
+            _nameError.value = R.string.error_trip_name_required
+            isValid = false
+        } else if (_tripName.value!!.length < 3) {
+            _nameError.value = R.string.error_trip_name_too_short
             isValid = false
         }
 
         if (_currency.value.isNullOrBlank()) {
-            _currencyError.value = "Wybierz walutę"
+            _currencyError.value = R.string.error_currency_required
             isValid = false
         }
 
         if (_dateRange.value == null) {
-            _dateError.value = "Wybierz zakres dat"
+            _dateError.value = R.string.error_date_required
             isValid = false
+        } else {
+            // Sprawdź czy data końca jest po dacie początku
+            val (start, end) = _dateRange.value!!
+            if (end < start) {
+                _dateError.value = R.string.error_date_range_invalid
+                isValid = false
+            }
         }
 
         return isValid
