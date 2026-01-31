@@ -95,6 +95,7 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
             is TripDetailsState.Success -> {
                 displayTripDetails(state.details)
             }
+            // ✅ OPCJONALNE: Możesz usunąć Error state (obsługiwany przez BaseFragment)
             is TripDetailsState.Error -> {
                 showError(state.message)
             }
@@ -137,7 +138,8 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
      */
     private fun copyToClipboard(text: String) {
         val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("Access Code", text)
+        // ✅ ZMIANA: Używamy getString() dla labela zamiast hardcoded string
+        val clip = ClipData.newPlainText(getString(R.string.trip_details_access_code), text)
         clipboard.setPrimaryClip(clip)
     }
 
