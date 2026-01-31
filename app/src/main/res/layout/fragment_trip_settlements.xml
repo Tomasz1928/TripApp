@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Trip Settlements Fragment Layout
+    Struktura: Obrazek (35%) → Nagłówek → Treść (Rozliczenia)
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,47 +10,55 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <!-- Header Image -->
+    <!-- ================================== -->
+    <!-- HEADER IMAGE - 35% wysokości ekranu -->
+    <!-- ================================== -->
     <FrameLayout
         android:id="@+id/headerImageContainer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        style="@style/HeaderImageContainer"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.25">
+        app:layout_constraintHeight_percent="0.35">
 
         <ImageView
             android:id="@+id/headerImage"
             style="@style/HeaderImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/header_trip_details"/>
+            android:src="@drawable/header_l_settlements"/>
     </FrameLayout>
 
-    <!-- Back Button -->
+    <!-- Back Button (na obrazku) -->
     <ImageView
         android:id="@+id/backButton"
-        android:layout_width="@dimen/icon_size_xxlarge"
-        android:layout_height="@dimen/icon_size_xxlarge"
-        android:layout_marginStart="@dimen/margin_medium"
-        android:layout_marginTop="@dimen/margin_medium"
-        android:padding="@dimen/padding_small"
-        android:src="@drawable/ic_back_arrow"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/cd_back_button"
-        android:elevation="8dp"
+        style="@style/BackButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="@id/headerImageContainer"/>
 
-    <!-- Scrollable Content -->
+    <!-- ================================== -->
+    <!-- NAGŁÓWEK WIDOKU (WYŚRODKOWANY) -->
+    <!-- ================================== -->
+    <TextView
+        android:id="@+id/settlementsTitle"
+        style="@style/Text.Heading.Screen"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/settlements_title"
+        android:gravity="center"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ================================== -->
+    <!-- TREŚĆ - Rozliczenia -->
+    <!-- ================================== -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollViewSettlements"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+        app:layout_constraintTop_toBottomOf="@id/settlementsTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -55,41 +67,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/padding_default">
+            android:padding="@dimen/padding_default"
+            android:paddingBottom="@dimen/spacing_large">
 
-            <!-- Title -->
-            <TextView
-                android:id="@+id/settlementTitle"
-                style="@style/Text.Heading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Podsumowanie Rozliczeń"
-                android:layout_marginBottom="@dimen/spacing_small"/>
-
-            <!-- User Balance Card -->
+            <!-- Balance Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/balanceCard"
                 style="@style/Card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_medium"
-                app:cardCornerRadius="@dimen/card_corner_radius_large"
-                app:cardElevation="@dimen/card_elevation">
+                android:layout_marginBottom="@dimen/spacing_medium">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="@dimen/padding_default">
+                    android:padding="@dimen/padding_default"
+                    android:gravity="center">
 
                     <!-- Balance Amount -->
                     <TextView
                         android:id="@+id/balanceAmount"
-                        style="@style/Text.Display"
+                        style="@style/Text.Title.Large"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="+128,33 EUR"
-                        android:textColor="@color/success"/>
+                        android:textColor="@color/success"
+                        android:layout_marginTop="@dimen/spacing_tiny"/>
 
                     <!-- Balance Status -->
                     <TextView
@@ -103,9 +107,7 @@
 
                     <!-- Separator -->
                     <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/divider"
+                        style="@style/Divider"
                         android:layout_marginVertical="@dimen/spacing_medium"/>
 
                     <!-- Breakdown -->
@@ -183,11 +185,7 @@
             <!-- Empty State -->
             <LinearLayout
                 android:id="@+id/emptyState"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="@dimen/padding_large"
+                style="@style/EmptyState"
                 android:visibility="gone">
 
                 <TextView

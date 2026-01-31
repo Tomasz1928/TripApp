@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Spacing - Marginesy i Paddingi -->
+    <!-- ========================================= -->
+    <!-- SPACING - Marginesy i Paddingi -->
+    <!-- Spójna skala: 4, 8, 12, 16, 24, 32 -->
+    <!-- ========================================= -->
+
     <dimen name="spacing_tiny">4dp</dimen>
     <dimen name="spacing_small">8dp</dimen>
     <dimen name="spacing_medium">12dp</dimen>
@@ -21,7 +25,11 @@
     <dimen name="padding_default">16dp</dimen>
     <dimen name="padding_large">24dp</dimen>
 
-    <!-- Rozmiary Tekstu -->
+    <!-- ========================================= -->
+    <!-- TEXT SIZES - Rozmiary tekstu -->
+    <!-- Spójna skala typograficzna -->
+    <!-- ========================================= -->
+
     <dimen name="text_size_tiny">10sp</dimen>
     <dimen name="text_size_caption">11sp</dimen>
     <dimen name="text_size_small">12sp</dimen>
@@ -33,61 +41,119 @@
     <dimen name="text_size_heading">28sp</dimen>
     <dimen name="text_size_display">32sp</dimen>
 
-    <!-- Corner Radius -->
+    <!-- ========================================= -->
+    <!-- CORNER RADIUS - Zaokrąglenia rogów -->
+    <!-- ========================================= -->
+
     <dimen name="corner_radius_small">8dp</dimen>
     <dimen name="corner_radius_medium">12dp</dimen>
     <dimen name="corner_radius_large">16dp</dimen>
     <dimen name="corner_radius_xlarge">20dp</dimen>
 
-    <!-- Elevation -->
+    <!-- ========================================= -->
+    <!-- ELEVATION - Cienie -->
+    <!-- ========================================= -->
+
     <dimen name="elevation_card">2dp</dimen>
     <dimen name="elevation_modal">8dp</dimen>
+    <dimen name="elevation_fab">6dp</dimen>
 
-    <!-- Icon Sizes -->
+    <!-- ========================================= -->
+    <!-- ICON SIZES - Rozmiary ikon -->
+    <!-- ========================================= -->
+
     <dimen name="icon_size_small">16dp</dimen>
     <dimen name="icon_size_medium">24dp</dimen>
     <dimen name="icon_size_large">32dp</dimen>
     <dimen name="icon_size_xlarge">36dp</dimen>
     <dimen name="icon_size_xxlarge">40dp</dimen>
 
-    <!-- Button -->
+    <!-- ========================================= -->
+    <!-- BUTTON - Przyciski -->
+    <!-- ========================================= -->
+
     <dimen name="button_height_default">48dp</dimen>
     <dimen name="button_height_small">32dp</dimen>
     <dimen name="button_corner_radius">12dp</dimen>
 
-    <!-- Card -->
+    <!-- ========================================= -->
+    <!-- CARD - Karty -->
+    <!-- ========================================= -->
+
     <dimen name="card_corner_radius">12dp</dimen>
     <dimen name="card_corner_radius_large">20dp</dimen>
     <dimen name="card_elevation">2dp</dimen>
     <dimen name="card_elevation_high">8dp</dimen>
 
-    <!-- Input Fields -->
+    <!-- ========================================= -->
+    <!-- INPUT FIELDS - Pola tekstowe -->
+    <!-- ========================================= -->
+
     <dimen name="input_corner_radius">12dp</dimen>
     <dimen name="input_height">56dp</dimen>
     <dimen name="input_height_multiline">80dp</dimen>
 
-    <!-- Bottom Navigation -->
+    <!-- ========================================= -->
+    <!-- HEADER IMAGE - Obrazek nagłówka -->
+    <!-- KRYTYCZNE: 35% wysokości ekranu -->
+    <!-- ========================================= -->
+
+    <!-- Procent wysokości dla obrazka nagłówka -->
+    <item name="header_image_height_percent" format="float" type="dimen">0.35</item>
+
+    <!-- Fallback dla starszych layoutów (dla devices z małym ekranem) -->
+    <dimen name="header_image_height_min">200dp</dimen>
+    <dimen name="header_image_height_max">300dp</dimen>
+
+    <!-- ========================================= -->
+    <!-- BOTTOM NAVIGATION -->
+    <!-- ========================================= -->
+
     <dimen name="bottom_nav_height">56dp</dimen>
     <dimen name="bottom_nav_icon_size">36dp</dimen>
+    <dimen name="bottom_nav_padding">80dp</dimen>
 
-    <!-- Header Image Height (35% ekranu) -->
-    <dimen name="header_image_height_percent">0.35</dimen>
+    <!-- ========================================= -->
+    <!-- TRIP CARD - Karta podróży -->
+    <!-- ========================================= -->
 
-    <!-- Trip Card -->
     <dimen name="trip_card_width">300dp</dimen>
     <dimen name="trip_card_margin">16dp</dimen>
 
-    <!-- Legend Item -->
+    <!-- ========================================= -->
+    <!-- LEGEND ITEM - Elementy legendy -->
+    <!-- ========================================= -->
+
     <dimen name="legend_dot_size">12dp</dimen>
     <dimen name="legend_item_margin">8dp</dimen>
     <dimen name="legend_text_size">12sp</dimen>
 
-    <!-- Expense Item -->
+    <!-- ========================================= -->
+    <!-- EXPENSE ITEM - Element wydatku -->
+    <!-- ========================================= -->
+
     <dimen name="expense_item_height">56dp</dimen>
     <dimen name="expense_item_margin">8dp</dimen>
 
-    <!-- Modal -->
+    <!-- ========================================= -->
+    <!-- INFO ROW - Wiersz informacyjny -->
+    <!-- ========================================= -->
+
+    <dimen name="info_row_height">72dp</dimen>
+
+    <!-- ========================================= -->
+    <!-- MODAL - Okna modalne -->
+    <!-- ========================================= -->
+
     <dimen name="modal_margin">24dp</dimen>
     <dimen name="modal_corner_radius">16dp</dimen>
     <dimen name="modal_close_button_size">32dp</dimen>
+
+    <!-- ========================================= -->
+    <!-- FORM WIDTH PERCENT -->
+    <!-- Spójna szerokość formularzy (90% ekranu) -->
+    <!-- ========================================= -->
+
+    <item name="form_width_percent" format="float" type="dimen">0.9</item>
+
 </resources>

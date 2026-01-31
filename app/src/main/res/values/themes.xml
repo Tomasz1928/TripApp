@@ -1,19 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Base application theme. -->
+    <!-- ========================================= -->
+    <!-- BASE APPLICATION THEME -->
+    <!-- ========================================= -->
     <style name="Theme.TripApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
+        <!-- Primary brand color -->
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/text_on_primary</item>
+        <item name="colorPrimaryContainer">@color/primary_light</item>
 
-        <!-- Background color -->
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+
+        <!-- Background colors -->
         <item name="android:colorBackground">@color/background</item>
-        <item name="colorSurface">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorSurfaceVariant">@color/background</item>
 
         <!-- Text colors -->
         <item name="colorOnBackground">@color/text_primary</item>
         <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+
+        <!-- Error color -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@android:color/white</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+
+        <!-- Default text appearance -->
+        <item name="android:textViewStyle">@style/Text</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans</item>
+
+        <!-- Input field styling -->
+        <item name="textInputStyle">@style/InputLayout</item>
+
+        <!-- Button styling -->
+        <item name="materialButtonStyle">@style/Button.Primary</item>
+        <item name="materialButtonOutlinedStyle">@style/Button.Secondary</item>
+
+        <!-- Card styling -->
+        <item name="materialCardViewStyle">@style/Card</item>
+
+        <!-- Ripple color -->
+        <item name="android:colorControlHighlight">@color/ripple</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- SPLASH SCREEN THEME -->
+    <!-- ========================================= -->
+    <style name="Theme.TripApp.Splash" parent="Theme.TripApp">
+        <item name="android:windowBackground">@color/primary</item>
+        <item name="android:statusBarColor">@color/primary</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- DIALOG THEME -->
+    <!-- ========================================= -->
+    <style name="Theme.TripApp.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.TripApp.Dialog</item>
+    </style>
+
+    <style name="ShapeAppearance.TripApp.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/modal_corner_radius</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- BOTTOM SHEET THEME -->
+    <!-- ========================================= -->
+    <style name="Theme.TripApp.BottomSheet" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheet.TripApp</item>
+    </style>
+
+    <style name="BottomSheet.TripApp" parent="Widget.Material3.BottomSheet">
+        <item name="shapeAppearance">@style/ShapeAppearance.TripApp.BottomSheet</item>
+        <item name="backgroundTint">@color/surface</item>
+    </style>
+
+    <style name="ShapeAppearance.TripApp.BottomSheet" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">@dimen/modal_corner_radius</item>
+        <item name="cornerSizeTopRight">@dimen/modal_corner_radius</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
     </style>
 
 </resources>

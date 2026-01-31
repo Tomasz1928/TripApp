@@ -4,6 +4,8 @@
     <!-- PRIMARY COLORS - Główne kolory aplikacji -->
     <!-- ========================================= -->
     <color name="primary">#136DEC</color>
+    <color name="primary_dark">#0D5BC4</color>
+    <color name="primary_light">#4A8FF0</color>
     <color name="secondary">#FF6F00</color>
     <color name="background">#F6F7F8</color>
 
@@ -13,16 +15,17 @@
     <color name="text_primary">#0D131B</color>
     <color name="text_secondary">#4C6C9A</color>
     <color name="text_hint">#9CA3AF</color>
+    <color name="text_on_primary">#FFFFFF</color>
 
     <!-- ========================================= -->
     <!-- CATEGORY COLORS - Kolory kategorii wydatków -->
     <!-- ========================================= -->
-    <color name="category_food">#34D399</color>         <!-- Emerald 400 -->
-    <color name="category_transport">#F59E0B</color>    <!-- Amber 500 -->
-    <color name="category_accommodation">#136DEC</color><!-- Blue (primary) -->
-    <color name="category_entertainment">#F43F5E</color><!-- Rose 500 -->
-    <color name="category_shopping">#A855F7</color>     <!-- Purple 500 -->
-    <color name="category_other">#6B7280</color>        <!-- Gray 500 -->
+    <color name="category_food">#34D399</color>
+    <color name="category_transport">#F59E0B</color>
+    <color name="category_accommodation">#136DEC</color>
+    <color name="category_entertainment">#F43F5E</color>
+    <color name="category_shopping">#A855F7</color>
+    <color name="category_other">#6B7280</color>
 
     <!-- Legacy aliases (do usunięcia po pełnej migracji) -->
     <color name="emerald_400">#34D399</color>
@@ -46,6 +49,13 @@
     <color name="warning">#F59E0B</color>
 
     <!-- ========================================= -->
+    <!-- INPUT STROKE - Kolory obramowania pól -->
+    <!-- ========================================= -->
+    <color name="input_stroke_default">#D1D5DB</color>
+    <color name="input_stroke_focused">@color/primary</color>
+    <color name="input_stroke_error">@color/error</color>
+
+    <!-- ========================================= -->
     <!-- STATE COLORS - Stany elementów -->
     <!-- ========================================= -->
     <color name="ripple">#1A136DEC</color>
@@ -58,4 +68,8 @@
     <color name="transparent">#00000000</color>
     <color name="overlay_dark">#80000000</color>
     <color name="overlay_light">#4DFFFFFF</color>
+
+    <!-- Header overlay gradient -->
+    <color name="header_overlay_start">#00000000</color>
+    <color name="header_overlay_end">#40000000</color>
 </resources>

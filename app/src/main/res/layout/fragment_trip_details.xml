@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Trip Details Fragment Layout
+    Struktura: Obrazek (35%) → Nagłówek → Treść
+-->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -16,13 +20,14 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/margin_medium">
+            android:paddingBottom="@dimen/bottom_nav_padding">
 
-            <!-- Header Image -->
+            <!-- ================================== -->
+            <!-- HEADER IMAGE - 35% wysokości ekranu -->
+            <!-- ================================== -->
             <FrameLayout
                 android:id="@+id/headerImageContainer"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
+                style="@style/HeaderImageContainer"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -31,39 +36,31 @@
                 <ImageView
                     android:id="@+id/headerImage"
                     style="@style/HeaderImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/header_trip_details"/>
+                    android:src="@drawable/header_l_trip_details"/>
             </FrameLayout>
 
-            <!-- Back Button -->
+            <!-- Back Button (na obrazku) -->
             <ImageView
                 android:id="@+id/backButton"
-                android:layout_width="@dimen/icon_size_xxlarge"
-                android:layout_height="@dimen/icon_size_xxlarge"
-                android:layout_marginStart="@dimen/margin_medium"
-                android:layout_marginTop="@dimen/margin_medium"
-                android:padding="@dimen/padding_small"
-                android:src="@drawable/ic_back_arrow"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/cd_back_button"
+                style="@style/BackButton"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@id/headerImageContainer"/>
 
-            <!-- Trip Title -->
+            <!-- ================================== -->
+            <!-- NAGŁÓWEK - Tytuł i opis wycieczki (WYŚRODKOWANE) -->
+            <!-- ================================== -->
             <TextView
                 android:id="@+id/tripTitle"
-                style="@style/Text.Heading"
+                style="@style/Text.Heading.Screen"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Zakopane 2024"
-                android:paddingStart="@dimen/padding_default"
-                android:paddingEnd="@dimen/padding_default"
+                android:gravity="center"
+                android:textAlignment="center"
                 app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Trip Subtitle -->
             <TextView
                 android:id="@+id/tripSubtitle"
                 style="@style/Text.Body.Secondary"
@@ -73,11 +70,15 @@
                 android:paddingStart="@dimen/padding_default"
                 android:paddingEnd="@dimen/padding_default"
                 android:layout_marginTop="@dimen/spacing_tiny"
+                android:gravity="center"
+                android:textAlignment="center"
                 app:layout_constraintTop_toBottomOf="@id/tripTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Info Container -->
+            <!-- ================================== -->
+            <!-- TREŚĆ - Karty informacyjne -->
+            <!-- ================================== -->
             <LinearLayout
                 android:id="@+id/infoContainer"
                 android:layout_width="0dp"
@@ -86,7 +87,7 @@
                 android:paddingTop="@dimen/padding_default"
                 android:paddingStart="@dimen/padding_default"
                 android:paddingEnd="@dimen/padding_default"
-                android:layout_marginTop="@dimen/margin_medium"
+                android:layout_marginTop="@dimen/spacing_medium"
                 app:layout_constraintTop_toBottomOf="@id/tripSubtitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -95,7 +96,7 @@
                 <com.google.android.material.card.MaterialCardView
                     style="@style/Card.Info"
                     android:layout_width="match_parent"
-                    android:layout_height="72dp">
+                    android:layout_height="@dimen/info_row_height">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -137,7 +138,7 @@
                 <com.google.android.material.card.MaterialCardView
                     style="@style/Card.Info"
                     android:layout_width="match_parent"
-                    android:layout_height="72dp">
+                    android:layout_height="@dimen/info_row_height">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -179,7 +180,7 @@
                 <com.google.android.material.card.MaterialCardView
                     style="@style/Card.Info"
                     android:layout_width="match_parent"
-                    android:layout_height="72dp">
+                    android:layout_height="@dimen/info_row_height">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -212,8 +213,15 @@
                                 style="@style/Text.Body.Bold"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="ZAKO-2024"/>
+                                android:text="XXXX-XXXX"
+                                android:textColor="@color/primary"/>
                         </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_medium"
+                            android:layout_height="@dimen/icon_size_medium"
+                            android:src="@drawable/ic_copy"
+                            android:contentDescription="@string/copied_to_clipboard"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -222,7 +230,7 @@
                     android:id="@+id/settlementsCard"
                     style="@style/Card.Info"
                     android:layout_width="match_parent"
-                    android:layout_height="72dp"
+                    android:layout_height="@dimen/info_row_height"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground">

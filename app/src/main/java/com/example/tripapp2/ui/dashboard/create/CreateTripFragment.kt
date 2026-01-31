@@ -19,7 +19,7 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
 
     override val viewModel: CreateTripViewModel by viewModels()
 
-    private lateinit var tripNameLayout: TextInputLayout
+//    private lateinit var tripNameLayout: TextInputLayout
     private lateinit var tripNameInput: TextInputEditText
     private lateinit var tripCurrencyLayout: TextInputLayout
     private lateinit var tripCurrencyInput: AutoCompleteTextView
@@ -45,9 +45,9 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
 
     override fun setupCustomObservers() {
         // ✅ ZMIANA: Błędy walidacji - konwertuj Int? na String?
-        viewModel.nameError.observe(viewLifecycleOwner) { errorResId ->
-            tripNameLayout.error = errorResId?.let { getString(it) }
-        }
+//        viewModel.nameError.observe(viewLifecycleOwner) { errorResId ->
+//            tripNameLayout.error = errorResId?.let { getString(it) }
+//        }
 
         viewModel.currencyError.observe(viewLifecycleOwner) { errorResId ->
             tripCurrencyLayout.error = errorResId?.let { getString(it) }
@@ -87,7 +87,7 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
     private fun initializeViews() {
         val view = requireView()
 
-        tripNameLayout = view.findViewById(R.id.TripCreateLayout)
+//        tripNameLayout = view.findViewById(R.id.TripCreateLayout)
         tripNameInput = view.findViewById(R.id.TripNameInput)
         tripCurrencyLayout = view.findViewById(R.id.TripCurrencyLayout)
         tripCurrencyInput = view.findViewById(R.id.TripCurrencyInput)
