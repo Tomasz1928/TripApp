@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Trip Costs Fragment Layout
+    Struktura: Obrazek (35%) → Nagłówek (Filtry) → Treść (Lista wydatków)
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,11 +10,12 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <!-- Header Image -->
+    <!-- ================================== -->
+    <!-- HEADER IMAGE - 35% wysokości ekranu -->
+    <!-- ================================== -->
     <FrameLayout
         android:id="@+id/headerImageContainer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        style="@style/HeaderImageContainer"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,12 +24,27 @@
         <ImageView
             android:id="@+id/headerImage"
             style="@style/HeaderImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/header_add_const"/>
+            android:src="@drawable/header_l_cost_list"/>
     </FrameLayout>
 
-    <!-- Filters + Search -->
+    <!-- ================================== -->
+    <!-- NAGŁÓWEK - Tytuł sekcji (WYŚRODKOWANY) -->
+    <!-- ================================== -->
+    <TextView
+        android:id="@+id/costsTitle"
+        style="@style/Text.Heading.Screen"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/nav_costs"
+        android:gravity="center"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ================================== -->
+    <!-- FILTRY - Przewijalne poziomo -->
+    <!-- ================================== -->
     <HorizontalScrollView
         android:id="@+id/filtersScroll"
         android:layout_width="0dp"
@@ -32,7 +52,7 @@
         android:scrollbars="none"
         android:paddingTop="@dimen/spacing_small"
         android:paddingBottom="@dimen/spacing_small"
-        app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+        app:layout_constraintTop_toBottomOf="@id/costsTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -89,12 +109,15 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <!-- Scrollable Expenses Container -->
+    <!-- ================================== -->
+    <!-- TREŚĆ - Lista wydatków -->
+    <!-- ================================== -->
     <ScrollView
         android:id="@+id/scrollExpensesContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
+        android:clipToPadding="false"
         app:layout_constraintTop_toBottomOf="@id/filtersScroll"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -107,7 +130,8 @@
             android:orientation="vertical"
             android:paddingStart="@dimen/padding_default"
             android:paddingEnd="@dimen/padding_default"
-            android:layout_marginTop="@dimen/spacing_small"/>
+            android:paddingTop="@dimen/spacing_small"
+            android:paddingBottom="@dimen/bottom_nav_padding"/>
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

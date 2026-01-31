@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Add Expense Fragment Layout
+    Struktura: Obrazek (35%) → Nagłówek (wyśrodkowany) → Treść formularza
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,14 +10,49 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <!-- Scrollable Form (z obrazkiem na górze) -->
+    <!-- ================================== -->
+    <!-- HEADER IMAGE - 35% wysokości ekranu -->
+    <!-- ================================== -->
+    <FrameLayout
+        android:id="@+id/headerImageContainer"
+        style="@style/HeaderImageContainer"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.35">
+
+        <ImageView
+            android:id="@+id/headerImage"
+            style="@style/HeaderImage"
+            android:src="@drawable/header_l_add_cost"/>
+    </FrameLayout>
+
+    <!-- ================================== -->
+    <!-- NAGŁÓWEK WIDOKU (WYŚRODKOWANY) -->
+    <!-- ================================== -->
+    <TextView
+        android:id="@+id/title"
+        style="@style/Text.Heading.Screen"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/add_expense_title"
+        android:gravity="center"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ================================== -->
+    <!-- TREŚĆ - Formularz wydatku (scrollowalny) -->
+    <!-- ================================== -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollViewAddExpense"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         android:clipToPadding="false"
-        app:layout_constraintTop_toTopOf="parent"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -21,311 +60,279 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="@dimen/padding_default"
+            android:paddingBottom="@dimen/bottom_nav_padding">
 
-            <!-- Header Image (wewnątrz scrolla) -->
+            <!-- Tytuł -->
             <FrameLayout
-                android:id="@+id/headerImageContainer"
                 android:layout_width="match_parent"
-                android:layout_height="250dp">
+                android:layout_height="wrap_content">
 
-                <ImageView
-                    android:id="@+id/headerImage"
-                    style="@style/HeaderImage"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/titleLayout"
+                    style="@style/InputLayout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/header_add_const"/>
+                    android:layout_height="wrap_content"
+                    android:hint="@string/add_expense_title_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/titleInput"
+                        style="@style/InputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLength="40"
+                        android:inputType="textCapSentences"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/titleCounter"
+                    style="@style/Text.Counter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginEnd="@dimen/padding_medium"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:text="0/40"/>
             </FrameLayout>
 
-            <!-- Formularz -->
+            <!-- Opis -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/descriptionLayout"
+                    style="@style/InputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/add_expense_description_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/descriptionInput"
+                        style="@style/InputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/input_height_multiline"
+                        android:maxLength="200"
+                        android:inputType="textMultiLine"
+                        android:gravity="top"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/descriptionCounter"
+                    style="@style/Text.Counter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginEnd="@dimen/padding_medium"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:text="0/200"/>
+            </FrameLayout>
+
+            <!-- Kategoria -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/categoryCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                app:cardCornerRadius="@dimen/input_corner_radius"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/divider"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/input_height"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/padding_medium"
+                    android:paddingEnd="@dimen/padding_medium">
+
+                    <ImageView
+                        android:id="@+id/categoryIcon"
+                        android:layout_width="@dimen/icon_size_large"
+                        android:layout_height="@dimen/icon_size_large"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:visibility="gone"
+                        android:contentDescription="@string/cd_category_icon"/>
+
+                    <TextView
+                        android:id="@+id/categoryInput"
+                        style="@style/InputEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:hint="@string/add_expense_category_hint"
+                        android:gravity="center_vertical"
+                        android:background="@android:color/transparent"
+                        android:textColorHint="@color/text_hint"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/categoryError"
+                style="@style/Text.Error"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/padding_medium"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                android:visibility="gone"/>
+
+            <!-- Kwota + Waluta -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/padding_default"
-                android:paddingBottom="100dp">
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/spacing_medium">
 
-                <!-- Tytuł -->
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/amountLayout"
+                    style="@style/InputLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:hint="@string/add_expense_amount_hint">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/titleLayout"
-                        style="@style/InputLayout"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/amountInput"
+                        style="@style/InputEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/add_expense_title_hint">
+                        android:inputType="numberDecimal"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/titleInput"
-                            style="@style/InputEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:maxLength="40"
-                            android:inputType="textCapSentences"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:id="@+id/titleCounter"
-                        style="@style/Text.Counter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:layout_marginEnd="@dimen/padding_medium"
-                        android:layout_marginTop="8dp"
-                        android:text="0/40"/>
-                </FrameLayout>
-
-                <!-- Opis -->
-                <FrameLayout
-                    android:layout_width="match_parent"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/currencyLayout"
+                    style="@style/InputLayout"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_small">
+                    android:layout_weight="0.4"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:hint="@string/add_expense_currency_hint"
+                    app:endIconMode="dropdown_menu">
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/descriptionLayout"
-                        style="@style/InputLayout"
+                    <AutoCompleteTextView
+                        android:id="@+id/currencyInput"
+                        style="@style/InputEditText.Dropdown"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/add_expense_description_hint">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/descriptionInput"
-                            style="@style/InputEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="@dimen/input_height_multiline"
-                            android:maxLength="200"
-                            android:inputType="textMultiLine"
-                            android:gravity="top"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:id="@+id/descriptionCounter"
-                        style="@style/Text.Counter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:layout_marginEnd="@dimen/padding_medium"
-                        android:layout_marginTop="8dp"
-                        android:text="0/200"/>
-                </FrameLayout>
-
-                <!-- Kategoria (z ikonką w ramce) -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/categoryCard"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_small"
-                    app:cardCornerRadius="@dimen/input_corner_radius"
-                    app:cardElevation="0dp"
-                    app:strokeColor="@color/divider"
-                    app:strokeWidth="1dp"
-                    app:cardBackgroundColor="@android:color/transparent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/input_height"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="@dimen/padding_medium"
-                        android:paddingEnd="@dimen/padding_medium">
-
-                        <!-- Ikona kategorii -->
-                        <ImageView
-                            android:id="@+id/categoryIcon"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_marginEnd="@dimen/spacing_small"
-                            android:visibility="gone"
-                            android:contentDescription="@string/cd_category_icon"/>
-
-                        <!-- Input kategorii (bez ramki) -->
-                        <TextView
-                            android:id="@+id/categoryInput"
-                            style="@style/InputEditText"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:hint="@string/add_expense_category_hint"
-                            android:gravity="center_vertical"
-                            android:background="@android:color/transparent"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Błąd kategorii -->
-                <TextView
-                    android:id="@+id/categoryError"
-                    style="@style/Text.Caption"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/padding_medium"
-                    android:layout_marginTop="@dimen/spacing_tiny"
-                    android:textColor="@color/error"
-                    android:visibility="gone"/>
-
-                <!-- Kwota + Waluta -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="@dimen/spacing_small">
-
-                    <!-- Kwota -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/amountLayout"
-                        style="@style/InputLayout"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.6"
-                        android:hint="@string/add_expense_amount_hint">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/amountInput"
-                            style="@style/InputEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="numberDecimal"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- Waluta -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/currencyLayout"
-                        style="@style/InputLayout"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.4"
-                        android:layout_marginStart="@dimen/spacing_small"
-                        android:hint="@string/add_expense_currency_hint"
-                        app:endIconMode="dropdown_menu">
-
-                        <AutoCompleteTextView
-                            android:id="@+id/currencyInput"
-                            style="@style/InputEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="text"
-                            android:paddingStart="@dimen/padding_medium"
-                            android:paddingEnd="@dimen/padding_medium"
-                            android:dropDownHeight="150dp"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-
-                <!-- Data + Godzina -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="@dimen/spacing_small">
-
-                    <!-- Data -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/dateLayout"
-                        style="@style/InputLayout"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.6"
-                        android:hint="@string/add_expense_date_hint">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/dateInput"
-                            style="@style/InputEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:focusable="false"
-                            android:clickable="true"
-                            android:inputType="none"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- Godzina -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/timeLayout"
-                        style="@style/InputLayout"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.4"
-                        android:layout_marginStart="@dimen/spacing_small"
-                        android:hint="@string/add_expense_time_hint">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/timeInput"
-                            style="@style/InputEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:focusable="false"
-                            android:clickable="true"
-                            android:inputType="none"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-
-                <!-- Kto płacił -->
-                <TextView
-                    style="@style/Text.Label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_small"
-                    android:text="@string/add_expense_payer_hint"/>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/payerButton"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_tiny"
-                    android:text="Wybierz osobę"
-                    android:textAlignment="viewStart"
-                    android:gravity="start|center_vertical"
-                    app:icon="@drawable/ic_settings"
-                    app:iconGravity="end"/>
-
-                <TextView
-                    android:id="@+id/payerError"
-                    style="@style/Text.Caption"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/error"
-                    android:visibility="gone"/>
-
-                <!-- Podział kosztów -->
-                <TextView
-                    style="@style/Text.Label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_small"
-                    android:text="@string/add_expense_split_hint"/>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/splitButton"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_tiny"
-                    android:text="Kliknij aby ustawić podział"
-                    android:textAlignment="viewStart"
-                    android:gravity="start|center_vertical"
-                    app:icon="@drawable/ic_settings"
-                    app:iconGravity="end"/>
-
-                <TextView
-                    android:id="@+id/splitError"
-                    style="@style/Text.Caption"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/error"
-                    android:visibility="gone"/>
-
-                <!-- Przycisk UTWÓRZ -->
-                <Button
-                    android:id="@+id/createButton"
-                    style="@style/Button.Primary"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_large"
-                    android:text="UTWÓRZ"/>
+                        android:inputType="none"
+                        android:dropDownHeight="150dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
+
+            <!-- Data + Godzina -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/spacing_medium">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/dateLayout"
+                    style="@style/InputLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:hint="@string/add_expense_date_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/dateInput"
+                        style="@style/InputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:inputType="none"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/timeLayout"
+                    style="@style/InputLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:hint="@string/add_expense_time_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/timeInput"
+                        style="@style/InputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:inputType="none"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <!-- Kto płacił -->
+            <TextView
+                style="@style/Text.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:text="@string/add_expense_payer_hint"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/payerButton"
+                style="@style/Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                android:text="Wybierz osobę"
+                android:textAlignment="viewStart"
+                android:gravity="start|center_vertical"
+                app:icon="@drawable/ic_settings"
+                app:iconGravity="end"/>
+
+            <TextView
+                android:id="@+id/payerError"
+                style="@style/Text.Error"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
+
+            <!-- Podział kosztów -->
+            <TextView
+                style="@style/Text.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:text="@string/add_expense_split_hint"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/splitButton"
+                style="@style/Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                android:text="Kliknij aby ustawić podział"
+                android:textAlignment="viewStart"
+                android:gravity="start|center_vertical"
+                app:icon="@drawable/ic_settings"
+                app:iconGravity="end"/>
+
+            <TextView
+                android:id="@+id/splitError"
+                style="@style/Text.Error"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
+
+            <!-- Przycisk UTWÓRZ -->
+            <Button
+                android:id="@+id/createButton"
+                style="@style/Button.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:text="@string/add_expense_button"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

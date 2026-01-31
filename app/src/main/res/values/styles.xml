@@ -1,28 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ========================================= -->
-    <!-- TEXT STYLES - Style tekstów -->
+    <!-- BASE TEXT STYLES - Podstawowy styl tekstu -->
     <!-- ========================================= -->
 
-    <!-- Base Text Style -->
     <style name="Text">
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:includeFontPadding">false</item>
     </style>
 
-    <!-- Display - Bardzo duże nagłówki (32sp) -->
+    <!-- ========================================= -->
+    <!-- DISPLAY TEXT - Bardzo duże nagłówki (32sp) -->
+    <!-- Użycie: Tytuły głównych ekranów (Login, Register, Create Trip) -->
+    <!-- ========================================= -->
+
     <style name="Text.Display">
         <item name="android:textSize">@dimen/text_size_display</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
     </style>
 
-    <!-- Heading - Duże nagłówki (28sp) -->
+    <!-- ========================================= -->
+    <!-- HEADING TEXT - Nagłówki ekranów (28sp) -->
+    <!-- Użycie: Nagłówki sekcji, tytuły widoków pod obrazkiem -->
+    <!-- ========================================= -->
+
     <style name="Text.Heading">
         <item name="android:textSize">@dimen/text_size_heading</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
     </style>
 
-    <!-- Title - Tytuły (18-22sp) -->
+    <!-- Wariant nagłówka dla widoków z obrazkiem na górze -->
+    <!-- ZAWSZE wyśrodkowany -->
+    <style name="Text.Heading.Screen">
+        <item name="android:paddingStart">@dimen/padding_default</item>
+        <item name="android:paddingEnd">@dimen/padding_default</item>
+        <item name="android:layout_marginTop">@dimen/spacing_medium</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAlignment">center</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- TITLE TEXT - Tytuły (18-22sp) -->
+    <!-- Użycie: Tytuły kart, nagłówki sekcji -->
+    <!-- ========================================= -->
+
     <style name="Text.Title">
         <item name="android:textSize">@dimen/text_size_title</item>
         <item name="android:textStyle">bold</item>
@@ -36,7 +60,11 @@
         <item name="android:textSize">@dimen/text_size_title_medium</item>
     </style>
 
-    <!-- Body - Tekst podstawowy (14-16sp) -->
+    <!-- ========================================= -->
+    <!-- BODY TEXT - Tekst podstawowy (14-16sp) -->
+    <!-- Użycie: Treść, opisy, standardowy tekst -->
+    <!-- ========================================= -->
+
     <style name="Text.Body">
         <item name="android:textSize">@dimen/text_size_body</item>
     </style>
@@ -46,35 +74,60 @@
     </style>
 
     <style name="Text.Body.Bold">
+        <item name="android:textSize">@dimen/text_size_body</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="Text.Body.Secondary">
+        <item name="android:textSize">@dimen/text_size_body</item>
         <item name="android:textColor">@color/text_secondary</item>
     </style>
 
-    <!-- Caption - Małe teksty (11-12sp) -->
+    <!-- ========================================= -->
+    <!-- CAPTION TEXT - Małe teksty (11-12sp) -->
+    <!-- Użycie: Podpisy, etykiety, drobny tekst -->
+    <!-- ========================================= -->
+
     <style name="Text.Caption">
         <item name="android:textSize">@dimen/text_size_small</item>
         <item name="android:textColor">@color/text_secondary</item>
     </style>
 
     <style name="Text.Caption.Uppercase">
-        <item name="android:textAllCaps">true</item>
         <item name="android:textSize">@dimen/text_size_caption</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/text_secondary</item>
     </style>
 
-    <!-- Label - Etykiety pól (12sp) -->
+    <!-- ========================================= -->
+    <!-- LABEL TEXT - Etykiety pól (12sp) -->
+    <!-- Użycie: Etykiety nad polami formularzy -->
+    <!-- ========================================= -->
+
     <style name="Text.Label">
         <item name="android:textSize">@dimen/text_size_small</item>
         <item name="android:textColor">@color/text_secondary</item>
         <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.05</item>
     </style>
 
-    <!-- Counter - Licznik znaków (w ramce) -->
+    <!-- ========================================= -->
+    <!-- COUNTER TEXT - Licznik znaków -->
+    <!-- Użycie: Liczniki w polach tekstowych -->
+    <!-- ========================================= -->
+
     <style name="Text.Counter">
         <item name="android:textSize">@dimen/text_size_caption</item>
-        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textColor">@color/text_hint</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- ERROR TEXT - Komunikaty błędów -->
+    <!-- ========================================= -->
+
+    <style name="Text.Error">
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textColor">@color/error</item>
     </style>
 
     <!-- ========================================= -->
@@ -88,31 +141,55 @@
         <item name="boxCornerRadiusBottomEnd">@dimen/input_corner_radius</item>
         <item name="hintTextColor">@color/text_hint</item>
         <item name="android:textColorHint">@color/text_hint</item>
+        <item name="boxStrokeColor">@color/input_stroke_selector</item>
     </style>
 
     <style name="InputEditText">
         <item name="android:textSize">@dimen/text_size_body</item>
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:minHeight">@dimen/input_height</item>
+    </style>
+
+    <style name="InputEditText.Dropdown">
+        <item name="android:paddingStart">@dimen/padding_medium</item>
+        <item name="android:paddingEnd">@dimen/padding_medium</item>
+        <item name="android:paddingTop">@dimen/padding_medium</item>
+        <item name="android:paddingBottom">@dimen/padding_medium</item>
     </style>
 
     <!-- ========================================= -->
     <!-- BUTTON STYLES - Style przycisków -->
     <!-- ========================================= -->
 
-    <!-- Base Button Style -->
     <style name="Button">
         <item name="android:fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:textAllCaps">false</item>
     </style>
 
+    <!-- Primary Button - główne akcje -->
     <style name="Button.Primary" parent="Widget.Material3.Button">
         <item name="android:textColor">@android:color/white</item>
         <item name="backgroundTint">@color/primary</item>
         <item name="android:textSize">@dimen/text_size_body_large</item>
         <item name="cornerRadius">@dimen/button_corner_radius</item>
         <item name="android:minHeight">@dimen/button_height_default</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:textAllCaps">false</item>
     </style>
 
+    <!-- Secondary Button - akcje drugorzędne -->
+    <style name="Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textColor">@color/primary</item>
+        <item name="strokeColor">@color/primary</item>
+        <item name="android:textSize">@dimen/text_size_body</item>
+        <item name="cornerRadius">@dimen/button_corner_radius</item>
+        <item name="android:minHeight">@dimen/button_height_default</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <!-- Filter Button - przyciski filtrów -->
     <style name="Button.Filter" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="android:minHeight">@dimen/button_height_small</item>
         <item name="android:paddingStart">@dimen/padding_medium</item>
@@ -123,6 +200,8 @@
         <item name="android:textAllCaps">false</item>
         <item name="cornerRadius">@dimen/corner_radius_large</item>
         <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/divider</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans</item>
     </style>
 
     <!-- Legacy alias -->
@@ -153,21 +232,36 @@
         <item name="cardElevation">@dimen/elevation_modal</item>
     </style>
 
-    <!-- ========================================= -->
-    <!-- INFO CARD - Karta informacyjna (TripDetails) -->
-    <!-- ========================================= -->
-
+    <!-- Info Card - karty informacyjne w TripDetails -->
     <style name="Card.Info">
         <item name="cardCornerRadius">@dimen/card_corner_radius</item>
         <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="cardBackgroundColor">@color/surface</item>
         <item name="android:layout_marginBottom">@dimen/spacing_small</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- HEADER IMAGE STYLES - Obrazek nagłówka -->
+    <!-- Spójna struktura dla wszystkich widoków (35% wysokości) -->
+    <!-- ========================================= -->
+
+    <style name="HeaderImage">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:scaleType">centerCrop</item>
+        <item name="android:contentDescription">@string/cd_header_image</item>
+    </style>
+
+    <!-- Kontener na obrazek nagłówka (ConstraintLayout percent) -->
+    <style name="HeaderImageContainer">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
     </style>
 
     <!-- ========================================= -->
     <!-- CONTAINER STYLES - Style kontenerów -->
     <!-- ========================================= -->
 
-    <!-- Base Container Style -->
     <style name="Container">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -180,16 +274,100 @@
 
     <style name="Container.Form">
         <item name="android:layout_width">0dp</item>
+        <item name="android:paddingStart">@dimen/padding_default</item>
+        <item name="android:paddingEnd">@dimen/padding_default</item>
     </style>
 
     <!-- ========================================= -->
-    <!-- HEADER IMAGE - Obrazek nagłówka -->
+    <!-- SCREEN CONTENT - Spójna struktura ekranów -->
     <!-- ========================================= -->
 
-    <style name="HeaderImage">
+    <!-- Kontener treści pod nagłówkiem -->
+    <style name="ScreenContent">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">@dimen/padding_default</item>
+        <item name="android:paddingEnd">@dimen/padding_default</item>
+        <item name="android:paddingTop">@dimen/spacing_medium</item>
+        <item name="android:paddingBottom">@dimen/bottom_nav_padding</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- INFO ROW STYLES - Wiersze informacyjne -->
+    <!-- ========================================= -->
+
+    <style name="InfoRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/info_row_height</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:padding">@dimen/padding_medium</item>
+    </style>
+
+    <style name="InfoRow.Icon">
+        <item name="android:layout_width">@dimen/icon_size_large</item>
+        <item name="android:layout_height">@dimen/icon_size_large</item>
+    </style>
+
+    <style name="InfoRow.Content">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">0dp</item>
-        <item name="android:scaleType">centerCrop</item>
-        <item name="android:contentDescription">@string/cd_header_image</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:layout_marginStart">@dimen/spacing_small</item>
     </style>
+
+    <!-- ========================================= -->
+    <!-- DIVIDER STYLE -->
+    <!-- ========================================= -->
+
+    <style name="Divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/divider</item>
+    </style>
+
+    <style name="Divider.Vertical">
+        <item name="android:layout_width">1dp</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- BACK BUTTON STYLE - Przycisk powrotu -->
+    <!-- ========================================= -->
+
+    <style name="BackButton">
+        <item name="android:layout_width">@dimen/icon_size_xxlarge</item>
+        <item name="android:layout_height">@dimen/icon_size_xxlarge</item>
+        <item name="android:layout_marginStart">@dimen/margin_medium</item>
+        <item name="android:layout_marginTop">@dimen/margin_medium</item>
+        <item name="android:padding">@dimen/padding_small</item>
+        <item name="android:src">@drawable/ic_back_arrow</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:contentDescription">@string/cd_back_button</item>
+        <item name="android:elevation">8dp</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- EMPTY STATE STYLE -->
+    <!-- ========================================= -->
+
+    <style name="EmptyState">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">@dimen/padding_large</item>
+    </style>
+
+    <!-- ========================================= -->
+    <!-- FAB STYLE - Floating Action Button -->
+    <!-- ========================================= -->
+
+    <style name="FabPrimary" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/primary</item>
+        <item name="tint">@android:color/white</item>
+    </style>
+
 </resources>
