@@ -4,6 +4,42 @@ import com.example.tripapp2.data.model.*
 
 object MockData {
 
+    fun createTripMock(title:String, dateStart: Long, dateEnd: Long, description: String, currency: String):CreateTripDto{
+        return CreateTripDto(
+            trip = TripDto(
+            id=(1..100).random().toString(),
+            title = title,
+            dateStart =   dateStart,
+            dateEnd = dateEnd,
+            description = description,
+            currency = currency,
+            totalExpenses = 0f,
+            accessCode = "1234",
+            ownerId = "10",
+            imOwner = true,
+            myCost = null,
+            categories = emptyList(),
+            expenses = emptyList(),
+            participants =listOf(
+                ParticipantDto(
+                    id = "10",
+                    nickname = "Adam",
+                    totalExpenses = null,
+                    isOwner = true,
+                    isPlaceholder = false,
+                    accessCode = "1234",
+                    isActive = true
+                )
+            ),
+            settlement = null
+        ),
+            success = SuccessDto(
+                success = true,
+                message = "Trip created successfully"
+            )
+        )
+    }
+
     fun getUsrInfo(): UserInfoDto {
         return UserInfoDto(
             id = "10",

@@ -81,9 +81,9 @@ fun TripDto.toDetailsUiModel(): TripDetailsUiModel {
 private fun TripDto.calculateUserExpenses(): List<CurrencyExpenseUiModel> {
     val expensesByCurrency = mutableMapOf<String, Float>()
 
-    expensesByCurrency[currency] = myCost.valueMainCurrency
+    expensesByCurrency[currency] = myCost?.valueMainCurrency ?: 0f
 
-    myCost.valueOtherCurrencies.forEach { expense ->
+    myCost?.valueOtherCurrencies?.forEach { expense ->
         expensesByCurrency[expense.currency] = expense.value
     }
 

@@ -7,6 +7,7 @@ import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
+import com.example.tripapp2.ui.common.base.NavigationCommand
 import kotlinx.coroutines.launch
 
 /**
@@ -33,7 +34,6 @@ class CreateTripViewModel(
     private val _description = MutableLiveData<String>()
     val description: LiveData<String> = _description
 
-    // ✅ ZMIANA: Typ zmieniony na Int? (resource ID)
     private val _nameError = MutableLiveData<Int?>()
     val nameError: LiveData<Int?> = _nameError
 
@@ -47,7 +47,6 @@ class CreateTripViewModel(
     private val _showDatePickerEvent = MutableLiveData<Event<Unit>>()
     val showDatePickerEvent: LiveData<Event<Unit>> = _showDatePickerEvent
 
-    // ✅ Event sukcesu - pozostaje String (message do wyświetlenia)
     private val _tripCreatedEvent = MutableLiveData<Event<String>>()
     val tripCreatedEvent: LiveData<Event<String>> = _tripCreatedEvent
 
@@ -94,29 +93,21 @@ class CreateTripViewModel(
         val desc = _description.value ?: ""
 
         viewModelScope.launch {
-            // ✅ Mock - symulacja sukcesu
-            // Przekazujemy marker, który będzie parsowany w Fragment
-            _tripCreatedEvent.value = Event("RES_ID:${R.string.create_trip_success}")
-            navigate(com.example.tripapp2.ui.common.base.NavigationCommand.ToDashboard)
+            setLoading(true)
 
-//            setLoading(true)
-//
-//            val result = tripRepository.createTrip(
-//                title = name,
-//                description = desc,
-//                dateStart = dates.first,
-//                dateEnd = dates.second,
-//                currency = curr
-//            )
-//
-//            setLoading(false)
-//
-//            result.onSuccess { trip ->
-//                _tripCreatedEvent.value = Event("RES_ID:${R.string.create_trip_success}")
-//                navigate(NavigationCommand.ToDashboard)
-//            }.onFailure { error ->
-//                showError(error.message ?: "Nie udało się utworzyć wycieczki")
-//            }
+            val result = tripRepository.createTrip(name, desc, dates.first, dates.second, curr)
+
+            result.onSuccess { createTripDto ->
+                _tripCreatedEvent.value = Event(createTripDto.success.message ?: "")
+                createTripDto.trip?.let { trip ->
+                    navigate(NavigationCommand.ToTripDetails(trip.id))
+                }
+            }
+
+            result.onFailure { error ->
+                _tripCreatedEvent.value = Event(error.message ?: "")
+            }
+            setLoading(false)
         }
     }
 

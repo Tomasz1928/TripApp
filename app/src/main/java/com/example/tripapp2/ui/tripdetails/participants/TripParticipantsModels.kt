@@ -80,8 +80,8 @@ fun ParticipantDto.toUiModel(
         isPlaceholder = isPlaceholder,
         accessCode = accessCode,
         isOwner = id == ownerId,
-        totalExpenses = totalExpenses.valueMainCurrency,
-        formattedExpenses = "%.2f %s".format(totalExpenses.valueMainCurrency, currency)
+        totalExpenses = totalExpenses?.valueMainCurrency?:0f,
+        formattedExpenses = "%.2f %s".format(totalExpenses?.valueMainCurrency?:0f, currency)
     )
 }
 

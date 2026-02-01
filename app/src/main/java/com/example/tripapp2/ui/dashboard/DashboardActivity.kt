@@ -2,9 +2,7 @@ package com.example.tripapp2.ui.dashboard
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.addexpense.AddExpenseFragment
@@ -16,7 +14,6 @@ import com.example.tripapp2.ui.tripdetails.TripDetailsFragment
 import com.example.tripapp2.ui.tripdetails.participants.TripParticipantsFragment
 import com.example.tripapp2.ui.tripdetails.settlements.TripSettlementsFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.launch
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -30,68 +27,25 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 
-        // ----------------------
-        // Bottom navigations
-        // ----------------------
         dashboardBottomNav = findViewById(R.id.dashboardBottomNav)
         tripBottomNav = findViewById(R.id.tripBottomNav)
 
         dashboardBottomNav.setupIconsInOriginalColor()
         tripBottomNav.setupIconsInOriginalColor()
 
-        // ----------------------
-        // Załaduj dane po zalogowaniu
-        // ----------------------
-        loadInitialData()
-
-        // ----------------------
-        // Startowy fragment (Dashboard)
-        // ----------------------
         showDashboardFragment(R.id.menu_dashboard)
         dashboardBottomNav.selectedItemId = R.id.menu_dashboard
 
-        // ----------------------
-        // Dashboard navigation
-        // ----------------------
         dashboardBottomNav.setOnItemSelectedListener { item ->
             showDashboardFragment(item.itemId)
             true
         }
 
-        // ----------------------
-        // Trip navigation
-        // ----------------------
         tripBottomNav.setOnItemSelectedListener { item ->
             currentTripId?.let { tripId ->
                 showTripFragment(item.itemId, tripId)
             }
             true
-        }
-    }
-
-    // =====================================================
-    // LOAD INITIAL DATA
-    // =====================================================
-    private fun loadInitialData() {
-        lifecycleScope.launch {
-            val result = tripRepository.loadInitialData()
-
-            result.onSuccess { tripListDto ->
-                // Dane załadowane pomyślnie
-                // Możesz tutaj np. zaktualizować UI lub pokazać toast
-                Toast.makeText(
-                    this@DashboardActivity,
-                    "Załadowano ${tripListDto.trips?.size ?: 0} wycieczek",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }.onFailure { exception ->
-                // Obsługa błędu
-                Toast.makeText(
-                    this@DashboardActivity,
-                    "Błąd ładowania danych: ${exception.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
         }
     }
 
