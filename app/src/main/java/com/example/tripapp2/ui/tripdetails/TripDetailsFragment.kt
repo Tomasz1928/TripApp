@@ -138,7 +138,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
      */
     private fun copyToClipboard(text: String) {
         val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        // ✅ ZMIANA: Używamy getString() dla labela zamiast hardcoded string
         val clip = ClipData.newPlainText(getString(R.string.trip_details_access_code), text)
         clipboard.setPrimaryClip(clip)
     }
@@ -159,11 +158,11 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
      * Pobiera ID wycieczki (z argumentów lub mock)
      */
     private fun getTripId(): String {
-        return arguments?.getString(ARG_TRIP_ID) ?: "trip_1" // Mock fallback
+        return arguments?.getString(ARG_TRIP_ID)?: ""
     }
 
     companion object {
-        private const val ARG_TRIP_ID = "trip_id"
+        private const val ARG_TRIP_ID = ""
 
         fun newInstance(tripId: String) = TripDetailsFragment().apply {
             arguments = Bundle().apply {
