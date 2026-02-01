@@ -17,10 +17,10 @@ data class TripDto(
     val accessCode: String,
     val ownerId: String,
     val imOwner: Boolean,
-    val myCost: MoneyValueDto,
+    val myCost: MoneyValueDto?,
     val expenses: List<ExpenseDto>,
     val participants: List<ParticipantDto>,
-    val settlement: SettlementDto
+    val settlement: SettlementDto?
 )
 
 data class MoneyValueDto(
@@ -61,7 +61,7 @@ data class ShareDto(
 data class ParticipantDto(
     val id: String,
     val nickname: String,
-    val totalExpenses: MoneyValueDto,
+    val totalExpenses: MoneyValueDto?,
     val isOwner: Boolean,
     val isPlaceholder: Boolean,
     val accessCode: String?,
@@ -91,4 +91,15 @@ enum class BalanceStatus {
 data class UserInfoDto (
     val id: String,
     val nickname: String
+)
+
+data class SuccessDto(
+    val success: Boolean,
+    val message: String?=null
+)
+
+
+data class CreateTripDto(
+    val success: SuccessDto,
+    val trip: TripDto?=null
 )

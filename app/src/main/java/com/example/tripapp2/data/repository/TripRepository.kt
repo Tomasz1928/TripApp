@@ -1,11 +1,13 @@
 package com.example.tripapp2.data.repository
 
 import com.example.tripapp2.data.model.*
+import com.example.tripapp2.data.repository.MockData.createTripMock
 import kotlinx.coroutines.delay
 
 class TripRepository private constructor() {
 
     private val tripsCache = mutableMapOf<String, TripDto>()
+    private var isInitialDataLoaded = false
     private val initialDataCache = mutableListOf<TripListDto>()
 
     companion object {
@@ -45,12 +47,20 @@ class TripRepository private constructor() {
         }
     }
 
+    private fun saveCreateNewTripToCache(createTripData:TripDto){
+        tripsCache[createTripData.id] = createTripData
+    }
+
     suspend fun getTripDetails(tripId: String):TripDto?{
         return tripsCache[tripId]
     }
 
     suspend fun getFullInitDetails():List<TripListDto>{
     return initialDataCache
+    }
+
+    fun getAllTripsFromCache(): List<TripDto> {
+        return tripsCache.values.toList()
     }
 
     suspend fun getCurrentUserInfo():UserInfoDto{
@@ -62,35 +72,27 @@ class TripRepository private constructor() {
     /**
      * Tworzy nową wycieczkę
      */
-//    suspend fun createTrip(
-//        title: String,
-//        description: String,
-//        dateStart: Long,
-//        dateEnd: Long,
-//        currency: String
-//    ): Result<TripDto> {
-//        return try {
-//            delay(500)
-//
-//            val newTrip = TripDto(
-//                id = "trip_${System.currentTimeMillis()}",
-//                title = title,
-//                description = description,
-//                dateStart = dateStart,
-//                dateEnd = dateEnd,
-//                currency = currency,
-//                accessCode = generateAccessCode(),
-//                totalExpenses = 0f,
-//                categories = emptyList(),
-//                expenses = emptyList(),
-//                participants = emptyList()
-//            )
-//
-//            Result.success(newTrip)
-//        } catch (e: Exception) {
-//            Result.failure(e)
-//        }
-//    }
+    fun createTrip(
+        title: String,
+        description: String,
+        dateStart: Long,
+        dateEnd: Long,
+        currency: String
+    ): Result<CreateTripDto> {
+        return try {
+            val newTrip = createTripMock(title, dateStart, dateEnd, description, currency)
+
+            if (newTrip.success.success){
+                newTrip.trip?.let { saveCreateNewTripToCache(it) }
+                Result.success(newTrip)
+            }else{
+                Result.failure(Exception(newTrip.success.message))
+            }
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     /**
      * Dołącza do wycieczki po kodzie dostępu

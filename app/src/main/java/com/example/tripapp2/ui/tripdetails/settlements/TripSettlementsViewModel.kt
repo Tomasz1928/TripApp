@@ -47,13 +47,12 @@ class TripSettlementsViewModel(
 
                 val settlement = trip.settlement
 
-                // Sprawdź czy są jakieś nierozliczone relacje
-                val hasUnpaidRelations = settlement.relations?.any { !it.isSettled } ?: false
+                val hasUnpaidRelations = settlement?.relations?.any { !it.isSettled } ?: false
 
                 if (!hasUnpaidRelations) {
                     _settlementsState.value = TripSettlementsState.AllSettled
                 } else {
-                    _settlementsState.value = settlement.toSuccessState(
+                    _settlementsState.value = settlement?.toSuccessState(
                         currentUserId = currentUserId,
                         tripTitle = trip.title,
                         tripCurrency = trip.currency
@@ -82,7 +81,7 @@ class TripSettlementsViewModel(
                 }
 
                 // Znajdź odpowiednią relację w danych z backendu
-                val settlementRelation = trip.settlement.relations?.find {
+                val settlementRelation = trip.settlement?.relations?.find {
                     it.fromUserId == relation.fromUserId && it.toUserId == relation.toUserId
                 }
 

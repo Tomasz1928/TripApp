@@ -144,6 +144,9 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
 
     override fun handleNavigation(command: NavigationCommand) {
         when (command) {
+            is NavigationCommand.ToTripDetails -> {
+                (activity as? DashboardActivity)?.openTripDetails(command.tripId)
+            }
             is NavigationCommand.ToDashboard -> {
                 (activity as? DashboardActivity)?.apply {
                     showDashboardFragment(R.id.menu_dashboard)

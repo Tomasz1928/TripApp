@@ -3,7 +3,6 @@ package com.example.tripapp2.ui.dashboard
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.NavigationCommand
@@ -32,31 +31,34 @@ class DashboardViewModel(
     /**
      * Ładuje listę wycieczek
      */
-    private fun loadTrips() {
+    fun loadTrips() {
         viewModelScope.launch {
             _dashboardState.value = DashboardState.Loading
+            val result = tripRepository.loadInitialData()
 
-            try {
-                val tripListDtos = tripRepository.getFullInitDetails()
-                val allTrips = tripListDtos.flatMap { it.trips ?: emptyList() }
-
-                if (allTrips.isEmpty()) {
+            result.onSuccess { tripListDto ->
+                val trips = tripListDto.trips ?: emptyList()
+                if (trips.isEmpty()) {
                     _dashboardState.value = DashboardState.Empty
                 } else {
-                    // Zwróć TripDto, nie TripUiModel
-                    _dashboardState.value = DashboardState.Success(allTrips)
+                    _dashboardState.value = DashboardState.Success(trips)
                 }
-
-            } catch (e: Exception) {
-                // ✅ ZMIANA: Użyj showError() zamiast przekazywać message do State
-                // Error state nie powinien zawierać message - to jest obsługiwane przez BaseViewModel
-                showError(e.message ?: "Wystąpił błąd podczas ładowania wycieczek")
-
-                // Opcjonalnie: możesz też ustawić Empty state, żeby pokazać placeholder
-                _dashboardState.value = DashboardState.Empty
+            }.onFailure { error ->
+                _dashboardState.value = DashboardState.Error(error.message ?: "Błąd")
             }
+
         }
     }
+
+    fun refreshFromCache() {
+        val trips = tripRepository.getAllTripsFromCache()
+        if (trips.isEmpty()) {
+            _dashboardState.value = DashboardState.Empty
+        } else {
+            _dashboardState.value = DashboardState.Success(trips)
+        }
+    }
+
 
     /**
      * Obsługa kliknięcia w kartę wycieczki

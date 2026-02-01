@@ -32,6 +32,11 @@ class DashboardFragment : BaseFragment<DashboardViewModel>(R.layout.fragment_das
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshFromCache()
+    }
+
     private fun setupRecyclerView() {
         tripsRecycler = requireView().findViewById(R.id.tripsRecycler)
 
