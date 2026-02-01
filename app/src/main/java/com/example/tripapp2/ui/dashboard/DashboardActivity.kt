@@ -140,8 +140,15 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     fun closeTripDetails() {
-        // Wyczyść aktualny tripId
         currentTripId = null
+
+        listOf("tripDetails", "addExpense", "tripCosts", "tripParticipants", "tripSettlements").forEach { tag ->
+            supportFragmentManager.findFragmentByTag(tag)?.let { fragment ->
+                supportFragmentManager.beginTransaction()
+                    .remove(fragment)
+                    .commitNow()
+            }
+        }
 
         findViewById<View>(R.id.tripContainer).visibility = View.GONE
         tripBottomNav.visibility = View.GONE
