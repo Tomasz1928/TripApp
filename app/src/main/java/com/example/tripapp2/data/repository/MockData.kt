@@ -40,6 +40,609 @@ object MockData {
         )
     }
 
+
+    fun joinTripMock(accessCode:String):JoinTripDto{
+        return JoinTripDto(
+            success = SuccessDto(
+                success = true,
+                message = "Trip created successfully"
+            ),
+            trip = TripDto(
+                id = "22",
+                title = "City Break Barcelona",
+                dateStart = 1719532800000, // 28.06.2024
+                dateEnd = 1719964800000,   // 03.07.2024
+                description = "Zwiedzanie Barcelony i plaża",
+                currency = "EUR",
+                totalExpenses = 1850f,
+                accessCode = "BCN2024",
+                ownerId = "20",
+                imOwner = true,
+                myCost = MoneyValueDto(
+                    valueMainCurrency = 462.50f,
+                    valueOtherCurrencies = listOf(
+                        MoneyValueDetailsDto("PLN", 1990f),
+                        MoneyValueDetailsDto("USD", 502f)
+                    )
+                ),
+                categories = listOf(
+                    CategoryDto("1", 720f),  // Noclegi
+                    CategoryDto("2", 580f),  // Jedzenie
+                    CategoryDto("3", 320f),  // Transport
+                    CategoryDto("4", 230f)   // Atrakcje
+                ),
+                expenses = listOf(
+                    ExpenseDto(
+                        id = "21",
+                        name = "Apartament Airbnb",
+                        description = "4 noce w Barcelonecie",
+                        totalExpense = MoneyValueDto(
+                            valueMainCurrency = 720f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 3096f),
+                                MoneyValueDetailsDto("USD", 782f)
+                            )
+                        ),
+                        amount = 720f,
+                        currency = "EUR",
+                        date = 1719532800000,
+                        categoryId = "1",
+                        payerId = "20",
+                        payerNickname = "Kasia",
+                        sharedWith = listOf(
+                            ShareDto(
+                                participantId = "20",
+                                participantNickname = "Kasia",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 180f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 180f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "21",
+                                participantNickname = "Michał",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 180f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 180f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "22",
+                                participantNickname = "Ola",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 180f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 180f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "23",
+                                participantNickname = "Tomek",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 180f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 180f)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    ExpenseDto(
+                        id = "22",
+                        name = "Kolacja z owocami morza",
+                        description = "Restauracja La Mar Salada",
+                        totalExpense = MoneyValueDto(
+                            valueMainCurrency = 280f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 1204f),
+                                MoneyValueDetailsDto("USD", 304f)
+                            )
+                        ),
+                        amount = 280f,
+                        currency = "EUR",
+                        date = 1719619200000,
+                        categoryId = "2",
+                        payerId = "21",
+                        payerNickname = "Michał",
+                        sharedWith = listOf(
+                            ShareDto(
+                                participantId = "20",
+                                participantNickname = "Kasia",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 70f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 70f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "21",
+                                participantNickname = "Michał",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 70f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 70f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "22",
+                                participantNickname = "Ola",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 70f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 70f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "23",
+                                participantNickname = "Tomek",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 70f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 70f)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    ExpenseDto(
+                        id = "23",
+                        name = "Tapas i wino",
+                        description = "Bar El Xampanyet",
+                        totalExpense = MoneyValueDto(
+                            valueMainCurrency = 150f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 645f),
+                                MoneyValueDetailsDto("USD", 163f)
+                            )
+                        ),
+                        amount = 150f,
+                        currency = "EUR",
+                        date = 1719705600000,
+                        categoryId = "2",
+                        payerId = "22",
+                        payerNickname = "Ola",
+                        sharedWith = listOf(
+                            ShareDto(
+                                participantId = "20",
+                                participantNickname = "Kasia",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 37.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 37.50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "21",
+                                participantNickname = "Michał",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 37.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 37.50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "22",
+                                participantNickname = "Ola",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 37.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 37.50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "23",
+                                participantNickname = "Tomek",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 37.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 37.50f)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    ExpenseDto(
+                        id = "24",
+                        name = "Śniadanie La Boqueria",
+                        description = "Świeże owoce i soki",
+                        totalExpense = MoneyValueDto(
+                            valueMainCurrency = 150f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 645f),
+                                MoneyValueDetailsDto("USD", 163f)
+                            )
+                        ),
+                        amount = 150f,
+                        currency = "EUR",
+                        date = 1719792000000,
+                        categoryId = "2",
+                        payerId = "20",
+                        payerNickname = "Kasia",
+                        sharedWith = listOf(
+                            ShareDto(
+                                participantId = "20",
+                                participantNickname = "Kasia",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 37.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 37.50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "21",
+                                participantNickname = "Michał",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 37.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 37.50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "22",
+                                participantNickname = "Ola",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 37.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 37.50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "23",
+                                participantNickname = "Tomek",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 37.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 37.50f)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    ExpenseDto(
+                        id = "25",
+                        name = "Wynajem skuterów",
+                        description = "2 skutery na cały dzień",
+                        totalExpense = MoneyValueDto(
+                            valueMainCurrency = 120f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 516f),
+                                MoneyValueDetailsDto("USD", 130f)
+                            )
+                        ),
+                        amount = 120f,
+                        currency = "EUR",
+                        date = 1719705600000,
+                        categoryId = "3",
+                        payerId = "23",
+                        payerNickname = "Tomek",
+                        sharedWith = listOf(
+                            ShareDto(
+                                participantId = "20",
+                                participantNickname = "Kasia",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 30f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 30f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "21",
+                                participantNickname = "Michał",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 30f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 30f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "22",
+                                participantNickname = "Ola",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 30f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 30f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "23",
+                                participantNickname = "Tomek",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 30f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 30f)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    ExpenseDto(
+                        id = "26",
+                        name = "Metro - bilety grupowe",
+                        description = "T-Casual x4",
+                        totalExpense = MoneyValueDto(
+                            valueMainCurrency = 200f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 860f),
+                                MoneyValueDetailsDto("USD", 217f)
+                            )
+                        ),
+                        amount = 200f,
+                        currency = "EUR",
+                        date = 1719532800000,
+                        categoryId = "3",
+                        payerId = "21",
+                        payerNickname = "Michał",
+                        sharedWith = listOf(
+                            ShareDto(
+                                participantId = "20",
+                                participantNickname = "Kasia",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "21",
+                                participantNickname = "Michał",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "22",
+                                participantNickname = "Ola",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "23",
+                                participantNickname = "Tomek",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 50f)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    ExpenseDto(
+                        id = "27",
+                        name = "Sagrada Familia",
+                        description = "Bilety wstępu z przewodnikiem",
+                        totalExpense = MoneyValueDto(
+                            valueMainCurrency = 140f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 602f),
+                                MoneyValueDetailsDto("USD", 152f)
+                            )
+                        ),
+                        amount = 140f,
+                        currency = "EUR",
+                        date = 1719619200000,
+                        categoryId = "4",
+                        payerId = "22",
+                        payerNickname = "Ola",
+                        sharedWith = listOf(
+                            ShareDto(
+                                participantId = "20",
+                                participantNickname = "Kasia",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 35f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 35f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "21",
+                                participantNickname = "Michał",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 35f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 35f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "22",
+                                participantNickname = "Ola",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 35f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 35f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "23",
+                                participantNickname = "Tomek",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 35f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 35f)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    ExpenseDto(
+                        id = "28",
+                        name = "Park Güell",
+                        description = "Bilety online",
+                        totalExpense = MoneyValueDto(
+                            valueMainCurrency = 90f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 387f),
+                                MoneyValueDetailsDto("USD", 98f)
+                            )
+                        ),
+                        amount = 90f,
+                        currency = "EUR",
+                        date = 1719792000000,
+                        categoryId = "4",
+                        payerId = "23",
+                        payerNickname = "Tomek",
+                        sharedWith = listOf(
+                            ShareDto(
+                                participantId = "20",
+                                participantNickname = "Kasia",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 22.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 22.50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "21",
+                                participantNickname = "Michał",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 22.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 22.50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "22",
+                                participantNickname = "Ola",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 22.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 22.50f)
+                                    )
+                                )
+                            ),
+                            ShareDto(
+                                participantId = "23",
+                                participantNickname = "Tomek",
+                                splitValue = MoneyValueDto(
+                                    valueMainCurrency = 22.50f,
+                                    valueOtherCurrencies = listOf(
+                                        MoneyValueDetailsDto("EUR", 22.50f)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                participants = listOf(
+                    ParticipantDto(
+                        id = "20",
+                        nickname = "Kasia",
+                        totalExpenses = MoneyValueDto(
+                            valueMainCurrency = 462.50f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 1990f)
+                            )
+                        ),
+                        isOwner = true,
+                        isPlaceholder = false,
+                        accessCode = "BCN2024",
+                        isActive = true
+                    ),
+                    ParticipantDto(
+                        id = "21",
+                        nickname = "Michał",
+                        totalExpenses = MoneyValueDto(
+                            valueMainCurrency = 462.50f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 1990f)
+                            )
+                        ),
+                        isOwner = false,
+                        isPlaceholder = false,
+                        accessCode = null,
+                        isActive = true
+                    ),
+                    ParticipantDto(
+                        id = "22",
+                        nickname = "Ola",
+                        totalExpenses = MoneyValueDto(
+                            valueMainCurrency = 462.50f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 1990f)
+                            )
+                        ),
+                        isOwner = false,
+                        isPlaceholder = true,
+                        accessCode = "BCN2024",
+                        isActive = false
+                    ),
+                    ParticipantDto(
+                        id = "23",
+                        nickname = "Tomek",
+                        totalExpenses = MoneyValueDto(
+                            valueMainCurrency = 462.50f,
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("PLN", 1990f)
+                            )
+                        ),
+                        isOwner = false,
+                        isPlaceholder = true,
+                        accessCode = "BCN2024",
+                        isActive = false
+                    )
+                ),
+                settlement = SettlementDto(
+                    balance = 0f,
+                    balanceStatus = BalanceStatus.PLUS,
+                    relations = listOf(
+                        SettlementRelationDto(
+                            fromUserId = "23",
+                            fromUserName = "Tomek",
+                            toUserId = "20",
+                            toUserName = "Kasia",
+                            amount = MoneyValueDto(
+                                valueMainCurrency = 17.50f,
+                            ),
+                            isSettled = true
+                        ),
+                        SettlementRelationDto(
+                            fromUserId = "22",
+                            fromUserName = "Ola",
+                            toUserId = "21",
+                            toUserName = "Michał",
+                            amount = MoneyValueDto(
+                                valueMainCurrency = 17.50f,
+                            ),
+                            isSettled = true
+                        )
+                    )
+                )
+            )
+
+        )
+    }
+
+
     fun getUsrInfo(): UserInfoDto {
         return UserInfoDto(
             id = "10",

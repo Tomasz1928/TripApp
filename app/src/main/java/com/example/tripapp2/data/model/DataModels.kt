@@ -103,3 +103,8 @@ data class CreateTripDto(
     val success: SuccessDto,
     val trip: TripDto?=null
 )
+
+data class JoinTripDto(
+    val success: SuccessDto,
+    val trip: TripDto?=null
+)
