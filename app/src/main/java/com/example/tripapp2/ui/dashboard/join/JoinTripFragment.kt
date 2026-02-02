@@ -78,7 +78,6 @@ class JoinTripFragment : KeyboardAwareFragment<JoinTripViewModel>(R.layout.fragm
 
     override fun onLoadingStateChanged(isLoading: Boolean) {
         joinButton.isEnabled = !isLoading
-        // ✅ ZMIANA: Użyj getString() zamiast .toString()
         joinButton.text = if (isLoading) {
             getString(R.string.join_trip_button_loading)
         } else {

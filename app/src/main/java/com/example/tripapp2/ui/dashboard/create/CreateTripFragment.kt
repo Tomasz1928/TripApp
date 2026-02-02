@@ -19,7 +19,6 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
 
     override val viewModel: CreateTripViewModel by viewModels()
 
-//    private lateinit var tripNameLayout: TextInputLayout
     private lateinit var tripNameInput: TextInputEditText
     private lateinit var tripCurrencyLayout: TextInputLayout
     private lateinit var tripCurrencyInput: AutoCompleteTextView
@@ -159,7 +158,6 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
 
     override fun onLoadingStateChanged(isLoading: Boolean) {
         createButton.isEnabled = !isLoading
-        // ✅ ZMIANA: Użyj getString() zamiast .toString()
         createButton.text = if (isLoading) {
             getString(R.string.create_trip_button_loading)
         } else {
