@@ -7,6 +7,7 @@ import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
+import com.example.tripapp2.ui.common.base.NavigationCommand
 import kotlinx.coroutines.launch
 
 /**
@@ -44,8 +45,6 @@ class JoinTripViewModel(
      */
     fun onJoinTripClicked() {
         val code = _accessCode.value
-
-        // ✅ ZMIANA: Bez .toString(), przekazujemy resource ID
         if (code.isNullOrBlank()) {
             _accessCodeError.value = R.string.error_code_required
             return
@@ -57,22 +56,22 @@ class JoinTripViewModel(
         }
 
         viewModelScope.launch {
-            // ✅ Mock - symulacja sukcesu
-            _tripJoinedEvent.value = Event("Dołączono do wycieczki pomyślnie")
-            navigate(com.example.tripapp2.ui.common.base.NavigationCommand.ToDashboard)
+            setLoading(true)
 
-//            setLoading(true)
-//
-//            val result = tripRepository.joinTrip(code)
-//
-//            setLoading(false)
-//
-//            result.onSuccess { trip ->
-//                _tripJoinedEvent.value = Event("Dołączono do wycieczki: ${trip.title}")
-//                navigate(NavigationCommand.ToDashboard)
-//            }.onFailure { error ->
-//                showError(error.message ?: "Nie udało się dołączyć do wycieczki")
-//            }
+            val result = tripRepository.joinTrip(code)
+
+            result.onSuccess { joinTripDto ->
+                _tripJoinedEvent.value = Event(joinTripDto.success.message ?: "")
+                joinTripDto.trip?.let { trip ->
+                    navigate(NavigationCommand.ToTripDetails(trip.id))
+                }
+
+                result.onFailure { error ->
+                    _tripJoinedEvent.value = Event(error.message ?: "")
+                }
+                setLoading(false)
+
+            }
         }
     }
 

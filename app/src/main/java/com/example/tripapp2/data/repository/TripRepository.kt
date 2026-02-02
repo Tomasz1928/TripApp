@@ -2,6 +2,7 @@ package com.example.tripapp2.data.repository
 
 import com.example.tripapp2.data.model.*
 import com.example.tripapp2.data.repository.MockData.createTripMock
+import com.example.tripapp2.data.repository.MockData.joinTripMock
 import kotlinx.coroutines.delay
 
 class TripRepository private constructor() {
@@ -97,20 +98,21 @@ class TripRepository private constructor() {
     /**
      * Dołącza do wycieczki po kodzie dostępu
      */
-//    suspend fun joinTrip(accessCode: String): Result<TripDto> {
-//        return try {
-//            delay(500)
-//
-//            val trip = getMockTrips().find { it.accessCode == accessCode }
-//            if (trip != null) {
-//                Result.success(trip)
-//            } else {
-//                Result.failure(Exception("Nieprawidłowy kod dostępu"))
-//            }
-//        } catch (e: Exception) {
-//            Result.failure(e)
-//        }
-//    }
+    fun joinTrip(accessCode: String): Result<JoinTripDto> {
+        return try {
+            val joinTrip = joinTripMock(accessCode)
+
+            if (joinTrip.success.success){
+                joinTrip.trip?.let { saveCreateNewTripToCache(it) }
+                Result.success(joinTrip)
+            }else{
+                Result.failure(Exception(joinTrip.success.message))
+            }
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     /**
      * Pobiera wydatki dla wycieczki
