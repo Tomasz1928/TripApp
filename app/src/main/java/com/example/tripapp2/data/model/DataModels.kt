@@ -108,23 +108,3 @@ data class JoinTripDto(
     val success: SuccessDto,
     val trip: TripDto?=null
 )
-
-data class AddExpenseResponseDto(
-    val success: SuccessDto,
-    val updatedTrip: TripDto
-)
-
-data class DeleteExpenseResponseDto(
-    val success: SuccessDto,
-    val updatedTrip: TripDto
-)
-
-data class UpdateExpenseResponseDto(
-    val success: SuccessDto,
-    val updatedTrip: TripDto
-)
-
-data class AddParticipantResponseDto(
-    val success: SuccessDto,
-    val updatedTrip: TripDto
-)
