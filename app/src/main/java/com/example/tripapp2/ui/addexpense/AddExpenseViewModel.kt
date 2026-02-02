@@ -4,6 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.tripapp2.R
+import com.example.tripapp2.data.model.AddExpenseRequest
+import com.example.tripapp2.data.model.MoneyValueDto
+import com.example.tripapp2.data.model.ShareDto
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -178,12 +181,53 @@ class AddExpenseViewModel(
 
         viewModelScope.launch {
             setLoading(true)
-            kotlinx.coroutines.delay(1000) // Mock
+
+            val request = buildAddExpenseRequest()
+            val result = tripRepository.addExpense(request)
+
             setLoading(false)
-            // ✅ ZMIANA: Przekazujemy resource ID, ale będzie konwertowany w Fragment
-            _expenseAddedEvent.value = Event("EXPENSE_ADDED_SUCCESS_RES_ID:${R.string.expense_added_success}")
+
+            result.onSuccess { addExpenseDto ->
+                _expenseAddedEvent.value = Event(addExpenseDto.success.message ?: "")
+            }.onFailure { error ->
+                _expenseAddedEvent.value = Event(error.message ?: "Błąd dodawania wydatku")
+            }
         }
     }
+
+    private fun buildAddExpenseRequest(): AddExpenseRequest {
+        val amount = _amount.value?.toFloatOrNull() ?: 0f
+        val currency = _currency.value ?: "PLN"
+        val payerId = _selectedPayer.value ?: ""
+        val split = _expenseSplit.value
+
+        return AddExpenseRequest(
+            tripId = tripId,
+            name = _title.value ?: "",
+            description = _description.value,
+            amount = amount,
+            currency = currency,
+            categoryId = _selectedCategory.value?.id ?: "",
+            date = _dateTime.value?.first ?: System.currentTimeMillis(),
+            payerId = payerId,
+            payerNickname = _participants.value?.find { it.id == payerId }?.name ?: "",
+            sharedWith = split?.let { buildSharedWithList(it) } ?: emptyList()
+        )
+    }
+
+    private fun buildSharedWithList(split: ExpenseSplit): List<ShareDto> {
+        return split.getSelectedParticipants().map { participant ->
+            ShareDto(
+                participantId = participant.id,
+                participantNickname = participant.name,
+                splitValue = MoneyValueDto(
+                    valueMainCurrency = participant.amount,
+                    valueOtherCurrencies = emptyList()
+                )
+            )
+        }
+    }
+
 
     private fun validateForm(): Boolean {
         var isValid = true

@@ -3,6 +3,7 @@ package com.example.tripapp2.data.repository
 import com.example.tripapp2.data.model.*
 import com.example.tripapp2.data.repository.MockData.createTripMock
 import com.example.tripapp2.data.repository.MockData.joinTripMock
+import com.example.tripapp2.data.repository.MockData.addExpenseMock
 import kotlinx.coroutines.delay
 
 class TripRepository private constructor() {
@@ -68,6 +69,10 @@ class TripRepository private constructor() {
         return MockData.getUsrInfo()
     }
 
+    private fun updateTripInCache(tripData: TripDto) {
+        tripsCache[tripData.id] = tripData
+    }
+
 
 
     /**
@@ -109,6 +114,22 @@ class TripRepository private constructor() {
                 Result.failure(Exception(joinTrip.success.message))
             }
 
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
+    fun addExpense(request: AddExpenseRequest): Result<AddExpenseDto> {
+        return try {
+            val result = addExpenseMock(request)
+
+            if (result.success.success) {
+                result.trip?.let { updateTripInCache(it) }
+                Result.success(result)
+            } else {
+                Result.failure(Exception(result.success.message))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }

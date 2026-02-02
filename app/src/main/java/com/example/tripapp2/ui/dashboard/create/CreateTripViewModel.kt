@@ -94,8 +94,8 @@ class CreateTripViewModel(
 
         viewModelScope.launch {
             setLoading(true)
-
             val result = tripRepository.createTrip(name, desc, dates.first, dates.second, curr)
+            setLoading(false)
 
             result.onSuccess { createTripDto ->
                 _tripCreatedEvent.value = Event(createTripDto.success.message ?: "")
@@ -103,11 +103,9 @@ class CreateTripViewModel(
                     navigate(NavigationCommand.ToTripDetails(trip.id))
                 }
             }
-
             result.onFailure { error ->
                 _tripCreatedEvent.value = Event(error.message ?: "")
             }
-            setLoading(false)
         }
     }
 
