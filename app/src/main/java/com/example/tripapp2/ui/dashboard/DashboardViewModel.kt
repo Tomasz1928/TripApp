@@ -33,8 +33,10 @@ class DashboardViewModel(
      */
     fun loadTrips() {
         viewModelScope.launch {
+            setLoading(true)
             _dashboardState.value = DashboardState.Loading
             val result = tripRepository.loadInitialData()
+            setLoading(false)
 
             result.onSuccess { tripListDto ->
                 val trips = tripListDto.trips ?: emptyList()

@@ -57,8 +57,8 @@ class JoinTripViewModel(
 
         viewModelScope.launch {
             setLoading(true)
-
             val result = tripRepository.joinTrip(code)
+            setLoading(false)
 
             result.onSuccess { joinTripDto ->
                 _tripJoinedEvent.value = Event(joinTripDto.success.message ?: "")
@@ -69,8 +69,6 @@ class JoinTripViewModel(
                 result.onFailure { error ->
                     _tripJoinedEvent.value = Event(error.message ?: "")
                 }
-                setLoading(false)
-
             }
         }
     }
