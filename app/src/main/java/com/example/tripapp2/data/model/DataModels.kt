@@ -108,3 +108,22 @@ data class JoinTripDto(
     val success: SuccessDto,
     val trip: TripDto?=null
 )
+
+data class AddExpenseDto(
+    val success: SuccessDto,
+    val trip: TripDto? = null
+)
+
+
+data class AddExpenseRequest(
+    val tripId: String,
+    val name: String,
+    val description: String? = null,
+    val amount: Float,
+    val currency: String,
+    val categoryId: String,
+    val date: Long,
+    val payerId: String,
+    val payerNickname: String,
+    val sharedWith: List<ShareDto>
+)
