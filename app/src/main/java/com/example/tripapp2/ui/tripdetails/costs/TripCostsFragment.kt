@@ -16,8 +16,9 @@ import com.google.android.material.button.MaterialButton
 /**
  * Fragment kosztów wycieczki
  *
- * PRZED: 200+ linii, mockowe dane, ręczne tworzenie view'ów
- * PO: 100 linii, reaktywne dane, adapter do wyświetlania
+ * Zmiany:
+ * - Dodany przycisk "Dodaj koszt" w filtrach (zamiast bottom nav)
+ * - Przyciski edytuj/usuń dla wydatków w filtrze PAID_BY_ME
  */
 class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_trip_costs) {
 
@@ -31,10 +32,10 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
 
     // Przyciski filtrów
     private lateinit var filterAll: MaterialButton
+    private lateinit var addExpenseButton: MaterialButton
     private lateinit var filterMine: MaterialButton
     private lateinit var filterPaidByMe: MaterialButton
     private lateinit var filterPaidByOthers: MaterialButton
-    private lateinit var searchButton: MaterialButton
 
     override fun setupUI() {
         initializeViews()
@@ -57,9 +58,10 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
             }
         }
 
-        // Aktualny filtr (do podświetlania przycisków)
+        // Aktualny filtr (do podświetlania przycisków i aktualizacji adaptera)
         viewModel.currentFilter.observe(viewLifecycleOwner) { filter ->
             updateFilterButtons(filter)
+            recreateAdapter(filter)
         }
     }
 
@@ -70,24 +72,56 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
 
         // Filtry
         filterAll = view.findViewById(R.id.filterAll)
+        addExpenseButton = view.findViewById(R.id.addExpenseButton)
         filterMine = view.findViewById(R.id.filterMine)
         filterPaidByMe = view.findViewById(R.id.filterPaidByMe)
         filterPaidByOthers = view.findViewById(R.id.filterPaidByOthers)
-        searchButton = view.findViewById(R.id.searchButton)
+    }
+    private fun recreateAdapter(currentFilter: ExpenseFilter) {
+        adapter = ExpenseAdapter(
+            onExpenseClick = { expense ->
+                viewModel.onExpenseClicked(expense.id)
+            },
+            onEditExpense = { expense ->
+                viewModel.onEditExpenseClicked(expense.id)
+            },
+            onDeleteExpense = { expense ->
+                viewModel.onDeleteExpenseClicked(expense.id)
+            },
+            currentFilter = currentFilter
+        )
+
+        // Odśwież wyświetlanie
+        val currentState = viewModel.costsState.value
+        if (currentState is TripCostsState.Success) {
+            displayExpenses(currentState.expenses)
+        }
     }
 
     private fun setupAdapter() {
-        adapter = ExpenseAdapter { expense ->
-            viewModel.onExpenseClicked(expense.id)
-        }
+        adapter = ExpenseAdapter(
+            onExpenseClick = { expense ->
+                viewModel.onExpenseClicked(expense.id)
+            },
+            onEditExpense = { expense ->
+                viewModel.onEditExpenseClicked(expense.id)
+            },
+            onDeleteExpense = { expense ->
+                viewModel.onDeleteExpenseClicked(expense.id)
+            },
+            currentFilter = viewModel.currentFilter.value ?: ExpenseFilter.ALL
+        )
     }
 
     private fun setupFilters() {
         filterAll.setOnClickListener { viewModel.onFilterAllClicked() }
+        addExpenseButton.setOnClickListener { navigateToAddExpense() } // NOWY
         filterMine.setOnClickListener { viewModel.onFilterMineClicked() }
         filterPaidByMe.setOnClickListener { viewModel.onFilterPaidByMeClicked() }
         filterPaidByOthers.setOnClickListener { viewModel.onFilterPaidByOthersClicked() }
-        searchButton.setOnClickListener { viewModel.onSearchClicked() }
+    }
+    private fun navigateToAddExpense() {
+        (activity as? DashboardActivity)?.showAddExpenseFromCosts(getTripId())
     }
 
     private fun setupBottomPadding() {

@@ -112,6 +112,8 @@
     <dimen name="bottom_nav_height">56dp</dimen>
     <dimen name="bottom_nav_icon_size">36dp</dimen>
     <dimen name="bottom_nav_padding">80dp</dimen>
+    <dimen name="bottom_no_nav_padding">120dp</dimen>
+
 
     <!-- ========================================= -->
     <!-- TRIP CARD - Karta podróży -->

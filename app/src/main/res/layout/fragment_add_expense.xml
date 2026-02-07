@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Add Expense Fragment Layout
-    Struktura: Obrazek (35%) → Nagłówek (wyśrodkowany) → Treść formularza
+    Struktura: Obrazek (35%) → Nagłówek (wyśrodkowany) + STRZAŁKA WSTECZ → Treść formularza
 -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -25,6 +25,10 @@
             android:id="@+id/headerImage"
             style="@style/HeaderImage"
             android:src="@drawable/header_l_add_cost"/>
+
+        <ImageView
+            android:id="@+id/backButton"
+            style="@style/BackButton" />
     </FrameLayout>
 
     <!-- ================================== -->
@@ -52,6 +56,7 @@
         android:fillViewport="true"
         android:clipToPadding="false"
         android:scrollbars="none"
+        android:paddingBottom="@dimen/bottom_nav_height"
         app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -61,8 +66,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/padding_default"
-            android:paddingBottom="@dimen/bottom_nav_padding">
+            android:padding="@dimen/padding_default">
 
             <!-- Tytuł -->
             <FrameLayout

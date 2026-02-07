@@ -37,14 +37,13 @@
                     android:id="@+id/headerImage"
                     style="@style/HeaderImage"
                     android:src="@drawable/header_l_trip_details"/>
+
+                <ImageView
+                    android:id="@+id/backButton"
+                    style="@style/BackButton" />
             </FrameLayout>
 
             <!-- Back Button (na obrazku) -->
-            <ImageView
-                android:id="@+id/backButton"
-                style="@style/BackButton"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/headerImageContainer"/>
 
             <!-- ================================== -->
             <!-- NAGŁÓWEK - Tytuł i opis wycieczki (WYŚRODKOWANE) -->

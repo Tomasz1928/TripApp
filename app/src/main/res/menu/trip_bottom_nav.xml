@@ -11,7 +11,7 @@
         android:title="@string/nav_costs" />
 
     <item
-        android:id="@+id/menu_add_expense"
+        android:id="@+id/menu_add_expense_unused"
         android:icon="@drawable/ic_my_cost"
         android:title="@string/nav_costs" />
 

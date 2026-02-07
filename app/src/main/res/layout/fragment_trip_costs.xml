@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Trip Costs Fragment Layout
-    Struktura: Obrazek (35%) → Nagłówek (Filtry) → Treść (Lista wydatków)
+    Struktura: Obrazek (35%) → Nagłówek (Filtry + Dodaj koszt) → Treść (Lista wydatków)
 -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -72,6 +72,15 @@
                 android:layout_height="wrap_content"
                 android:text="@string/trip_costs_filter_all"/>
 
+            <!-- NOWY PRZYCISK: Dodaj koszt -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/addExpenseButton"
+                style="@style/Button.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trip_costs_add_expense"
+                android:layout_marginStart="@dimen/spacing_tiny"/>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/filterMine"
                 style="@style/Button.Filter"
@@ -95,17 +104,6 @@
                 android:layout_height="wrap_content"
                 android:text="@string/trip_costs_filter_paid_by_others"
                 android:layout_marginStart="@dimen/spacing_tiny"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/searchButton"
-                style="@style/Button.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/trip_costs_search"
-                android:icon="@drawable/ic_calendar"
-                app:iconSize="@dimen/icon_size_small"
-                app:iconPadding="@dimen/spacing_tiny"
-                android:layout_marginStart="@dimen/spacing_small"/>
         </LinearLayout>
     </HorizontalScrollView>
 

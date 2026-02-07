@@ -20,7 +20,6 @@ class DashboardActivity : AppCompatActivity() {
     lateinit var dashboardBottomNav: BottomNavigationView
     lateinit var tripBottomNav: BottomNavigationView
 
-    private val tripRepository = TripRepository.getInstance()
     private var currentTripId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -121,7 +120,6 @@ class DashboardActivity : AppCompatActivity() {
     private fun showTripFragment(itemId: Int, tripId: String) {
         val fragmentTag = when (itemId) {
             R.id.menu_overview -> "tripDetails"
-            R.id.menu_add_expense -> "addExpense"
             R.id.menu_costs -> "tripCosts"
             R.id.menu_participants -> "tripParticipants"
             else -> "tripDetails"
@@ -130,7 +128,6 @@ class DashboardActivity : AppCompatActivity() {
         val fragment = supportFragmentManager.findFragmentByTag(fragmentTag)
             ?: when (itemId) {
                 R.id.menu_overview -> TripDetailsFragment.newInstance(tripId)
-                R.id.menu_add_expense -> AddExpenseFragment.newInstance(tripId)
                 R.id.menu_costs -> TripCostsFragment.newInstance(tripId)
                 R.id.menu_participants -> TripParticipantsFragment.newInstance(tripId)
                 else -> TripDetailsFragment.newInstance(tripId)
@@ -139,6 +136,25 @@ class DashboardActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.tripContainer, fragment, fragmentTag)
             .commit()
+    }
+
+    // =====================================================
+    // ADD EXPENSE FLOW (bez bottom nav)
+    // =====================================================
+
+    fun showAddExpenseFromCosts(tripId: String) {
+        tripBottomNav.visibility = View.GONE
+
+        val fragment = AddExpenseFragment.newInstance(tripId)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.tripContainer, fragment, "addExpense")
+            .commit()
+    }
+
+    fun closeAddExpenseAndShowCosts(tripId: String) {
+        tripBottomNav.visibility = View.VISIBLE
+        showTripFragment(R.id.menu_costs, tripId)
+        tripBottomNav.selectedItemId = R.id.menu_costs
     }
 
     // =====================================================

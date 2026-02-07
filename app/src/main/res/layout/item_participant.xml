@@ -177,34 +177,20 @@
             <!-- Detach Button (for active users) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/detachButton"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+                style="@style/Button.Action.Warning"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Odłącz"
-                android:textColor="@color/warning"
-                android:textSize="12sp"
-                android:minHeight="32dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:visibility="gone"
-                app:iconSize="14dp"
-                app:iconPadding="4dp"/>
+                android:visibility="gone"/>
 
             <!-- Delete Button (for placeholders) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/deleteButton"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+                style="@style/Button.Action.Error"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Usuń"
-                android:textColor="@color/error"
-                android:textSize="12sp"
-                android:minHeight="32dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:visibility="gone"
-                app:iconSize="14dp"
-                app:iconPadding="4dp"/>
+                android:visibility="gone"/>
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
