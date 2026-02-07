@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Trip Participants Fragment Layout
-    Struktura: Obrazek (35%) → Nagłówek → Treść (Lista uczestników)
+    Struktura: Obrazek (25%) → Nagłówek → Filtry (dla właściciela) → Treść (Lista uczestników)
 -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -15,7 +15,7 @@
         android:layout_height="match_parent">
 
         <!-- ================================== -->
-        <!-- HEADER IMAGE - 35% wysokości ekranu -->
+        <!-- HEADER IMAGE - 25% wysokości ekranu -->
         <!-- ================================== -->
         <FrameLayout
             android:id="@+id/headerImageContainer"
@@ -47,6 +47,63 @@
             app:layout_constraintEnd_toEndOf="parent"/>
 
         <!-- ================================== -->
+        <!-- FILTRY/AKCJE - Przewijalne poziomo (TYLKO DLA WŁAŚCICIELA) -->
+        <!-- ================================== -->
+        <HorizontalScrollView
+            android:id="@+id/actionsScroll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:paddingTop="@dimen/spacing_small"
+            android:paddingBottom="@dimen/spacing_small"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/participantsTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:id="@+id/actionsContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/padding_default"
+                android:paddingEnd="@dimen/padding_default">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/actionAll"
+                    style="@style/Button.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/participants_action_all"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/actionAdd"
+                    style="@style/Button.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/participants_action_add"
+                    android:layout_marginStart="@dimen/spacing_tiny"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/actionDetach"
+                    style="@style/Button.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/participants_action_detach"
+                    android:layout_marginStart="@dimen/spacing_tiny"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/actionDelete"
+                    style="@style/Button.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/participants_action_delete"
+                    android:layout_marginStart="@dimen/spacing_tiny"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- ================================== -->
         <!-- TREŚĆ - Lista uczestników -->
         <!-- ================================== -->
         <ScrollView
@@ -55,7 +112,7 @@
             android:layout_height="0dp"
             android:fillViewport="true"
             android:clipToPadding="false"
-            app:layout_constraintTop_toBottomOf="@id/participantsTitle"
+            app:layout_constraintTop_toBottomOf="@id/actionsScroll"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
@@ -82,33 +139,22 @@
             app:layout_constraintEnd_toEndOf="parent">
 
             <TextView
+                android:id="@+id/emptyStateTitle"
                 style="@style/Text.Body.Bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Brak uczestników"
+                android:text="@string/participants_empty_state_title"
                 android:textColor="@color/text_secondary"/>
 
             <TextView
+                android:id="@+id/emptyStateMessage"
                 style="@style/Text.Caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_small"
-                android:text="Dodaj pierwszego uczestnika przyciskiem poniżej"
+                android:text="@string/participants_empty_state_message"
                 android:textAlignment="center"/>
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- FAB - Dodaj uczestnika -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/addParticipantFab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/margin_medium"
-        android:layout_marginBottom="@dimen/bottom_nav_padding"
-        android:src="@drawable/ic_add_trip"
-        android:contentDescription="Dodaj uczestnika"
-        app:tint="@android:color/white"
-        app:backgroundTint="@color/primary"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

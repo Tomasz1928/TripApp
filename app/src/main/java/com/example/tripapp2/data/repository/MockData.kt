@@ -458,8 +458,8 @@ object MockData {
                     valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 800f))
                 ),
                 isOwner = false,
-                isPlaceholder = false,
-                accessCode = null,
+                isPlaceholder = true,
+                accessCode = "1234-ABCD",
                 isActive = true
             )
         )
@@ -479,7 +479,7 @@ object MockData {
             currency = "EUR",
             totalExpenses = 4500f,
             accessCode = "EURO-2024",
-            ownerId = "10",
+            ownerId = "11",
             imOwner = true,
             myCost = MoneyValueDto(
                 valueMainCurrency = 2325f,
@@ -697,7 +697,7 @@ object MockData {
                         MoneyValueDetailsDto("USD", 2555f)
                     )
                 ),
-                isOwner = true,
+                isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
                 isActive = true
@@ -712,7 +712,7 @@ object MockData {
                         MoneyValueDetailsDto("USD", 2335f)
                     )
                 ),
-                isOwner = false,
+                isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
                 isActive = true

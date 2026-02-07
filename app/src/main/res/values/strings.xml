@@ -187,7 +187,6 @@
 
     <!-- Dialogi -->
     <string name="participants_dialog_add_title">Dodaj uczestnika</string>
-    <string name="participants_dialog_added_title">Uczestnik dodany</string>
     <string name="participants_dialog_detach_title">Odłącz użytkownika</string>
     <string name="participants_dialog_detach_message">Czy na pewno chcesz odłączyć %s?\n\nUżytkownik stanie się placeholderem z nowym kodem dostępu. Będzie mógł ponownie dołączyć używając nowego kodu.</string>
     <string name="participants_dialog_delete_title">Usuń placeholdera</string>
@@ -197,9 +196,6 @@
     <string name="dialog_add_placeholder_description">Podaj nazwę dla nowego uczestnika. Zostanie wygenerowany dla niego kod dostępu do wycieczki.</string>
     <string name="dialog_add_placeholder_hint">Nazwa uczestnika</string>
     <string name="dialog_add_placeholder_length_info">2–30 znaków</string>
-    <string name="dialog_placeholder_added_participant_label">UCZESTNIK</string>
-    <string name="dialog_placeholder_added_code_label">KOD DOSTĘPU</string>
-    <string name="dialog_placeholder_added_info">Wyślij ten kod uczestnikowi, aby mógł dołączyć do wycieczki. Kod będzie również widoczny na liście uczestników.</string>
     <string name="dialog_placeholder_added_copy_button">Kopiuj kod</string>
 
     <!-- Walidacja -->
@@ -308,5 +304,27 @@
     <string name="loading">Ładowanie…</string>
     <string name="copied_to_clipboard">Skopiowano do schowka</string>
     <string name="access_code_copied">Skopiowano kod dostępu</string>
+
+
+
+    <!-- ========================================= -->
+    <!-- PARTICIPANTS ACTION BAR -->
+    <!-- ========================================= -->
+
+    <string name="participants_action_all">Wszyscy uczestnicy</string>
+    <string name="participants_action_add">Dodaj uczestnika</string>
+    <string name="participants_action_detach">Odłącz konto</string>
+    <string name="participants_action_delete">Usuń placeholdera</string>
+
+    <!-- ========================================= -->
+    <!-- PARTICIPANTS EMPTY STATES -->
+    <!-- ========================================= -->
+
+    <string name="participants_empty_state_title">Brak uczestników</string>
+    <string name="participants_empty_state_message">Dodaj pierwszego uczestnika używając paska akcji powyżej</string>
+    <string name="participants_empty_detach_title">Brak użytkowników do odłączenia</string>
+    <string name="participants_empty_detach_message">Wszyscy uczestnicy są właścicielem lub placeholderami</string>
+    <string name="participants_empty_delete_title">Brak placeholderów</string>
+    <string name="participants_empty_delete_message">Nie ma placeholderów do usunięcia</string>
 
 </resources>

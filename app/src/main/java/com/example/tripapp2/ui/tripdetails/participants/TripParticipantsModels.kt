@@ -29,6 +29,16 @@ enum class ParticipantType {
 }
 
 /**
+ * Tryb widoku uczestników (dla właściciela)
+ */
+enum class ParticipantViewMode {
+    ALL,            // Wszyscy uczestnicy
+    ADD,            // Dodawanie uczestnika (pokazuje modal)
+    DETACH,         // Odłączanie kont (pokazuje aktywnych bez właściciela)
+    DELETE          // Usuwanie placeholderów (pokazuje tylko placeholdery)
+}
+
+/**
  * Stan ekranu Participants
  */
 sealed class TripParticipantsState {
@@ -36,7 +46,8 @@ sealed class TripParticipantsState {
     data class Success(
         val participants: List<ParticipantUiModel>,
         val isCurrentUserOwner: Boolean,    // Czy aktualny użytkownik jest właścicielem
-        val tripCurrency: String
+        val tripCurrency: String,
+        val currentMode: ParticipantViewMode // Aktualny tryb widoku
     ) : TripParticipantsState()
     object Empty : TripParticipantsState()
     data class Error(val message: String) : TripParticipantsState()
@@ -49,15 +60,6 @@ data class CopyAccessCodeEvent(
     val code: String,
     val participantName: String,
     val message: String = "Skopiowano kod dostępu dla $participantName"
-)
-
-/**
- * Event dodania placeholdera
- */
-data class PlaceholderAddedEvent(
-    val nickname: String,
-    val accessCode: String,
-    val message: String = "Dodano uczestnika: $nickname"
 )
 
 // ==========================================
@@ -80,8 +82,8 @@ fun ParticipantDto.toUiModel(
         isPlaceholder = isPlaceholder,
         accessCode = accessCode,
         isOwner = id == ownerId,
-        totalExpenses = totalExpenses?.valueMainCurrency?:0f,
-        formattedExpenses = "%.2f %s".format(totalExpenses?.valueMainCurrency?:0f, currency)
+        totalExpenses = totalExpenses?.valueMainCurrency ?: 0f,
+        formattedExpenses = "%.2f %s".format(totalExpenses?.valueMainCurrency ?: 0f, currency)
     )
 }
 
@@ -99,4 +101,23 @@ fun List<ParticipantUiModel>.sortByType(): List<ParticipantUiModel> {
         },
         { it.nickname }  // Alfabetycznie w ramach grupy
     ))
+}
+
+/**
+ * Filtruje uczestników według trybu
+ */
+fun List<ParticipantUiModel>.filterByMode(
+    mode: ParticipantViewMode,
+    currentUserId: String
+): List<ParticipantUiModel> {
+    return when (mode) {
+        ParticipantViewMode.ALL -> this
+        ParticipantViewMode.ADD -> emptyList() // Modal pokazuje się zamiast listy
+        ParticipantViewMode.DETACH -> this.filter {
+            !it.isPlaceholder && !it.isOwner
+        }
+        ParticipantViewMode.DELETE -> this.filter {
+            it.isPlaceholder
+        }
+    }
 }
