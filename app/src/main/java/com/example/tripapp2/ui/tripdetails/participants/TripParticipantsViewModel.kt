@@ -27,6 +27,9 @@ class TripParticipantsViewModel(
     private val _participantsState = MutableLiveData<TripParticipantsState>()
     val participantsState: LiveData<TripParticipantsState> = _participantsState
 
+    private val _participantsEvent = MutableLiveData<Event<String>>()
+    val participantsEvent: LiveData<Event<String>> = _participantsEvent
+
     // Aktualny tryb widoku
     private val _currentViewMode = MutableLiveData<ParticipantViewMode>(ParticipantViewMode.ALL)
     val currentViewMode: LiveData<ParticipantViewMode> = _currentViewMode
@@ -162,14 +165,6 @@ class TripParticipantsViewModel(
             )
         }
     }
-
-    /**
-     * Pokazuje dialog dodawania placeholdera
-     */
-    fun onAddPlaceholderClicked() {
-        _showAddPlaceholderDialogEvent.value = Event(Unit)
-    }
-
     /**
      * Dodaje nowego placeholdera
      */
@@ -191,22 +186,15 @@ class TripParticipantsViewModel(
 
         viewModelScope.launch {
             setLoading(true)
-
-            // TODO: Zastąpić prawdziwym API call
-            // val result = tripRepository.addPlaceholder(tripId, nickname)
-
-            // Mock API call - dodanie placeholdera
+            val result = tripRepository.addPlaceholder(tripId, nickname)
             kotlinx.coroutines.delay(500)
-
-            // MOCK - Backend zwróci placeholder z wygenerowanym kodem
-            val mockAccessCode = "MOCK-${System.currentTimeMillis().toString().takeLast(4)}"
-
             setLoading(false)
 
-            // Pokaż prosty komunikat sukcesu
-//            showMessage("Dodano uczestnika: $nickname (kod: $mockAccessCode)")
-
-            // Odśwież listę - pozostanie w aktualnym trybie
+            result.onSuccess { addPlaceholderDto ->
+                _participantsEvent.value = Event(addPlaceholderDto.success.message ?: "")
+            }.onFailure {
+                _participantsEvent.value = Event(it.message ?: "")
+            }
             loadParticipants()
         }
     }
@@ -214,20 +202,18 @@ class TripParticipantsViewModel(
     /**
      * Usuwa placeholdera
      */
-    fun removePlaceholder(participantId: String, participantName: String) {
+    fun removePlaceholder(participantId: String) {
         viewModelScope.launch {
             setLoading(true)
-
-            // TODO: Zastąpić prawdziwym API call
-            // val result = tripRepository.removePlaceholder(tripId, participantId)
-
-            // Mock API call - usunięcie placeholdera
+            val result = tripRepository.removePlaceholder(tripId, participantId)
             kotlinx.coroutines.delay(500)
-
             setLoading(false)
-//            showMessage("Usunięto uczestnika: $participantName")
 
-            // Odśwież listę
+            result.onSuccess { addPlaceholderDto ->
+                _participantsEvent.value = Event(addPlaceholderDto.success.message ?: "")
+            }.onFailure {
+                _participantsEvent.value = Event(it.message ?: "")
+            }
             loadParticipants()
         }
     }
@@ -236,40 +222,21 @@ class TripParticipantsViewModel(
      * Odłącza aktywnego użytkownika od wycieczki
      * Użytkownik staje się placeholderem z nowym kodem dostępu
      */
-    fun detachUser(participantId: String, participantName: String) {
+    fun detachUser(participantId: String) {
         viewModelScope.launch {
             setLoading(true)
-
-            // TODO: Zastąpić prawdziwym API call
-            // val result = tripRepository.detachParticipant(tripId, participantId)
-
-            // Mock API call - odłączenie użytkownika
+            val result = tripRepository.detachUser(tripId, participantId)
             kotlinx.coroutines.delay(500)
-
-            // MOCK - Backend zwróci nowy kod dostępu dla placeholdera
-            val mockAccessCode = "DTCH-${System.currentTimeMillis().toString().takeLast(4)}"
-
             setLoading(false)
 
-            // Pokaż prosty komunikat sukcesu
-//            showMessage("Odłączono użytkownika: $participantName (nowy kod: $mockAccessCode)")
-
-            // Odśwież listę - pozostanie w aktualnym trybie
+            result.onSuccess { addPlaceholderDto ->
+                _participantsEvent.value = Event(addPlaceholderDto.success.message ?: "")
+            }.onFailure {
+                _participantsEvent.value = Event(it.message ?: "")
+            }
             loadParticipants()
         }
     }
-
-    /**
-     * Obsługa kliknięcia w uczestnika
-     */
-    fun onParticipantClicked(participant: ParticipantUiModel) {
-        // Możliwość rozszerzenia - np. pokazanie szczegółów uczestnika
-    }
-
-    // ==========================================
-    // HELPERS
-    // ==========================================
-    // Brak lokalnych helperów - wszystkie dane z backendu
 }
 
 /**

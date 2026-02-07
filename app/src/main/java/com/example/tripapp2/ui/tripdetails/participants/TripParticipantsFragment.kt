@@ -278,12 +278,6 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
                 }
             }
         }
-
-        // Click na całą kartę
-        view.setOnClickListener {
-            viewModel.onParticipantClicked(participant)
-        }
-
         return view
     }
 
@@ -315,7 +309,7 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
                 getString(R.string.participants_dialog_detach_message, participant.nickname)
             )
             .setPositiveButton(R.string.dialog_button_detach) { _, _ ->
-                viewModel.detachUser(participant.id, participant.nickname)
+                viewModel.detachUser(participant.id)
             }
             .setNegativeButton(R.string.dialog_button_cancel, null)
             .show()
@@ -331,7 +325,7 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
                 getString(R.string.participants_dialog_delete_message, participant.nickname)
             )
             .setPositiveButton(R.string.dialog_button_delete) { _, _ ->
-                viewModel.removePlaceholder(participant.id, participant.nickname)
+                viewModel.removePlaceholder(participant.id)
             }
             .setNegativeButton(R.string.dialog_button_cancel, null)
             .show()

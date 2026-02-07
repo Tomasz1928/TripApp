@@ -135,19 +135,51 @@ class TripRepository private constructor() {
         }
     }
 
-    /**
-     * Pobiera wydatki dla wycieczki
-     */
-//    suspend fun getExpensesForTrip(tripId: String): Result<List<ExpenseDto>> {
-//        return try {
-//            delay(300)
-//
-//            val trip = getMockTrips().find { it.id == tripId }
-//            Result.success(trip?.expenses ?: emptyList())
-//        } catch (e: Exception) {
-//            Result.failure(e)
-//        }
-//    }
+
+    fun  addPlaceholder(tripId:String, nickname:String):Result<ParticipantsDto>{
+        return try {
+            val result = MockData.addPlaceholder(tripId,nickname)
+            if (result.success.success){
+                result.trip?.let { updateTripInCache(it) }
+                Result.success(result)
+            }
+            else{
+                Result.failure(Exception(result.success.message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun  detachUser(tripId:String,participantId:String):Result<ParticipantsDto>{
+        return try {
+            val result = MockData.detachUser(tripId,participantId)
+            if (result.success.success){
+                result.trip?.let { updateTripInCache(it) }
+                Result.success(result)
+            }
+            else{
+                Result.failure(Exception(result.success.message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun  removePlaceholder(tripId:String,participantId:String):Result<ParticipantsDto>{
+        return try {
+            val result = MockData.removePlaceholder(tripId, participantId)
+            if (result.success.success){
+                result.trip?.let { updateTripInCache(it) }
+                Result.success(result)
+            }
+            else{
+                Result.failure(Exception(result.success.message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     /**
      * Oznacza rozliczenie jako spłacone
