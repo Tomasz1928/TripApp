@@ -12,9 +12,11 @@ import kotlinx.coroutines.launch
  * ViewModel dla Trip Participants
  * Odpowiedzialny za:
  * - Ładowanie listy uczestników
+ * - Sprawdzanie kto jest zalogowany (UserInfo)
  * - Dodawanie placeholderów
  * - Usuwanie placeholderów
  * - Kopiowanie kodów dostępu
+ * - Obsługa różnych trybów widoku (ALL, ADD, DETACH, DELETE)
  */
 class TripParticipantsViewModel(
     private val tripId: String,
@@ -25,6 +27,13 @@ class TripParticipantsViewModel(
     private val _participantsState = MutableLiveData<TripParticipantsState>()
     val participantsState: LiveData<TripParticipantsState> = _participantsState
 
+    private val _participantsEvent = MutableLiveData<Event<String>>()
+    val participantsEvent: LiveData<Event<String>> = _participantsEvent
+
+    // Aktualny tryb widoku
+    private val _currentViewMode = MutableLiveData<ParticipantViewMode>(ParticipantViewMode.ALL)
+    val currentViewMode: LiveData<ParticipantViewMode> = _currentViewMode
+
     // Event kopiowania kodu
     private val _copyCodeEvent = MutableLiveData<Event<CopyAccessCodeEvent>>()
     val copyCodeEvent: LiveData<Event<CopyAccessCodeEvent>> = _copyCodeEvent
@@ -33,17 +42,31 @@ class TripParticipantsViewModel(
     private val _showAddPlaceholderDialogEvent = MutableLiveData<Event<Unit>>()
     val showAddPlaceholderDialogEvent: LiveData<Event<Unit>> = _showAddPlaceholderDialogEvent
 
-    // Event dodania placeholdera
-    private val _placeholderAddedEvent = MutableLiveData<Event<PlaceholderAddedEvent>>()
-    val placeholderAddedEvent: LiveData<Event<PlaceholderAddedEvent>> = _placeholderAddedEvent
-
     // Cache
-    private var currentUserId: String = "user_1" // Mock - w prawdziwej app z SessionManager
-    private var tripOwnerId: String = "user_1"   // Mock
-    private var tripCurrency: String = "PLN"     // Mock
+    private var currentUserId: String = ""
+    private var tripOwnerId: String = ""
+    private var tripCurrency: String = "PLN"
+    private var allParticipants: List<ParticipantUiModel> = emptyList()
 
     init {
-        loadParticipants()
+        loadUserInfo()
+    }
+
+    /**
+     * Ładuje informacje o zalogowanym użytkowniku
+     */
+    private fun loadUserInfo() {
+        viewModelScope.launch {
+            try {
+                val userInfo = tripRepository.getCurrentUserInfo()
+                currentUserId = userInfo.id
+
+                // Po załadowaniu user info, załaduj uczestników
+                loadParticipants()
+            } catch (e: Exception) {
+                showError("Nie udało się załadować informacji o użytkowniku")
+            }
+        }
     }
 
     /**
@@ -72,7 +95,7 @@ class TripParticipantsViewModel(
                     _participantsState.value = TripParticipantsState.Empty
                 } else {
                     // Konwertuj na UI modele
-                    val participants = trip.participants.map { participant ->
+                    allParticipants = trip.participants.map { participant ->
                         participant.toUiModel(
                             ownerId = tripOwnerId,
                             currentUserId = currentUserId,
@@ -82,11 +105,8 @@ class TripParticipantsViewModel(
                         )
                     }.sortByType()
 
-                    _participantsState.value = TripParticipantsState.Success(
-                        participants = participants,
-                        isCurrentUserOwner = currentUserId == tripOwnerId,
-                        tripCurrency = trip.currency
-                    )
+                    // Zastosuj aktualny filtr
+                    applyViewMode(_currentViewMode.value ?: ParticipantViewMode.ALL)
                 }
 
             } catch (e: Exception) {
@@ -94,6 +114,41 @@ class TripParticipantsViewModel(
                     e.message ?: "Nie udało się załadować uczestników"
                 )
             }
+        }
+    }
+
+    /**
+     * Zmienia tryb widoku
+     */
+    fun changeViewMode(mode: ParticipantViewMode) {
+        // Jeśli tryb ADD, pokaż modal bez zmiany aktualnego trybu
+        if (mode == ParticipantViewMode.ADD) {
+            _showAddPlaceholderDialogEvent.value = Event(Unit)
+            return // Nie zmieniaj trybu, pozostań w aktualnym
+        }
+
+        _currentViewMode.value = mode
+        applyViewMode(mode)
+    }
+
+    /**
+     * Aplikuje filtr według trybu
+     */
+    private fun applyViewMode(mode: ParticipantViewMode) {
+        val filteredParticipants = allParticipants.filterByMode(mode, currentUserId)
+
+        val isOwner = currentUserId == tripOwnerId
+
+        if (filteredParticipants.isEmpty() && mode != ParticipantViewMode.ALL) {
+            // Dla trybów DETACH i DELETE pokaż komunikat jeśli lista jest pusta
+            _participantsState.value = TripParticipantsState.Empty
+        } else {
+            _participantsState.value = TripParticipantsState.Success(
+                participants = filteredParticipants,
+                isCurrentUserOwner = isOwner,
+                tripCurrency = tripCurrency,
+                currentMode = mode
+            )
         }
     }
 
@@ -110,14 +165,6 @@ class TripParticipantsViewModel(
             )
         }
     }
-
-    /**
-     * Pokazuje dialog dodawania placeholdera
-     */
-    fun onAddPlaceholderClicked() {
-        _showAddPlaceholderDialogEvent.value = Event(Unit)
-    }
-
     /**
      * Dodaje nowego placeholdera
      */
@@ -139,26 +186,15 @@ class TripParticipantsViewModel(
 
         viewModelScope.launch {
             setLoading(true)
-
-            // TODO: Zastąpić prawdziwym API call
-            // val result = tripRepository.addPlaceholder(tripId, nickname)
-
-            // Mock API call - dodanie placeholdera
+            val result = tripRepository.addPlaceholder(tripId, nickname)
             kotlinx.coroutines.delay(500)
-
-            // MOCK - Backend zwróci placeholder z wygenerowanym kodem
-            val mockAccessCode = "MOCK-${System.currentTimeMillis().toString().takeLast(4)}"
-
             setLoading(false)
 
-            _placeholderAddedEvent.value = Event(
-                PlaceholderAddedEvent(
-                    nickname = nickname,
-                    accessCode = mockAccessCode // Kod z backendu
-                )
-            )
-
-            // Odśwież listę
+            result.onSuccess { addPlaceholderDto ->
+                _participantsEvent.value = Event(addPlaceholderDto.success.message ?: "")
+            }.onFailure {
+                _participantsEvent.value = Event(it.message ?: "")
+            }
             loadParticipants()
         }
     }
@@ -166,21 +202,18 @@ class TripParticipantsViewModel(
     /**
      * Usuwa placeholdera
      */
-    fun removePlaceholder(participantId: String, participantName: String) {
+    fun removePlaceholder(participantId: String) {
         viewModelScope.launch {
             setLoading(true)
-
-            // TODO: Zastąpić prawdziwym API call
-            // val result = tripRepository.removePlaceholder(tripId, participantId)
-
-            // Mock API call - usunięcie placeholdera
+            val result = tripRepository.removePlaceholder(tripId, participantId)
             kotlinx.coroutines.delay(500)
-
             setLoading(false)
-            // Użyj showError (która istnieje w BaseViewModel) lub można dodać success event
-            // showError to zła nazwa ale działa - lepiej zrobić osobny event
 
-            // Odśwież listę
+            result.onSuccess { addPlaceholderDto ->
+                _participantsEvent.value = Event(addPlaceholderDto.success.message ?: "")
+            }.onFailure {
+                _participantsEvent.value = Event(it.message ?: "")
+            }
             loadParticipants()
         }
     }
@@ -189,46 +222,21 @@ class TripParticipantsViewModel(
      * Odłącza aktywnego użytkownika od wycieczki
      * Użytkownik staje się placeholderem z nowym kodem dostępu
      */
-    fun detachUser(participantId: String, participantName: String) {
+    fun detachUser(participantId: String) {
         viewModelScope.launch {
             setLoading(true)
-
-            // TODO: Zastąpić prawdziwym API call
-            // val result = tripRepository.detachParticipant(tripId, participantId)
-
-            // Mock API call - odłączenie użytkownika
+            val result = tripRepository.detachUser(tripId, participantId)
             kotlinx.coroutines.delay(500)
-
-            // MOCK - Backend zwróci nowy kod dostępu dla placeholdera
-            val mockAccessCode = "DTCH-${System.currentTimeMillis().toString().takeLast(4)}"
-
             setLoading(false)
 
-            // Pokaż dialog z nowym kodem dostępu
-            _placeholderAddedEvent.value = Event(
-                PlaceholderAddedEvent(
-                    nickname = participantName,
-                    accessCode = mockAccessCode,
-                    message = "Użytkownik $participantName został odłączony. Nowy kod dostępu:"
-                )
-            )
-
-            // Odśwież listę
+            result.onSuccess { addPlaceholderDto ->
+                _participantsEvent.value = Event(addPlaceholderDto.success.message ?: "")
+            }.onFailure {
+                _participantsEvent.value = Event(it.message ?: "")
+            }
             loadParticipants()
         }
     }
-
-    /**
-     * Obsługa kliknięcia w uczestnika
-     */
-    fun onParticipantClicked(participant: ParticipantUiModel) {
-        // Możliwość rozszerzenia - np. pokazanie szczegółów uczestnika
-    }
-
-    // ==========================================
-    // HELPERS
-    // ==========================================
-    // Brak lokalnych helperów - wszystkie dane z backendu
 }
 
 /**

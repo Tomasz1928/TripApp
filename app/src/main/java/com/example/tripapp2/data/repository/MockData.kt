@@ -44,6 +44,195 @@ object MockData {
     // PUBLIC API
     // ==========================================
 
+
+    /**
+     * Dodaje placeholder uczestnika do tripu
+     */
+    fun addPlaceholder(tripId: String, nickname: String): ParticipantsDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return ParticipantsDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Trip not found"
+                ),
+                trip = null
+            )
+
+        // Sprawdź czy uczestnik o takiej nazwie już istnieje
+        val existingParticipant = trip.participants.find {
+            it.nickname.equals(nickname, ignoreCase = true)
+        }
+
+        if (existingParticipant != null) {
+            return ParticipantsDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Participant with this nickname already exists"
+                ),
+                trip = null
+            )
+        }
+
+        // Wygeneruj nowe ID i kod dostępu
+        val newParticipantId = "${tripId}${(100..999).random()}"
+        val accessCode = generateAccessCode()
+
+        val newParticipant = ParticipantDto(
+            id = newParticipantId,
+            nickname = nickname,
+            totalExpenses = MoneyValueDto(
+                valueMainCurrency = 0f,
+                valueOtherCurrencies = emptyList()
+            ),
+            isOwner = false,
+            isPlaceholder = true,
+            accessCode = accessCode,
+            isActive = false
+        )
+
+        // Zaktualizuj trip
+        val updatedParticipants = trip.participants + newParticipant
+        val updatedTrip = trip.copy(participants = updatedParticipants)
+
+        // Zapisz zaktualizowany trip
+        tripsStorage[tripId] = updatedTrip
+
+        return ParticipantsDto(
+            success = SuccessDto(
+                success = true,
+                message = "Placeholder added successfully"
+            ),
+            trip = updatedTrip
+        )
+    }
+
+    /**
+     * Odłącza użytkownika i zamienia go na placeholder
+     */
+    fun detachUser(tripId: String, participantId: String): ParticipantsDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return ParticipantsDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Trip not found"
+                ),
+                trip = null
+            )
+
+        // Znajdź uczestnika
+        val participant = trip.participants.find { it.id == participantId }
+            ?: return ParticipantsDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Participant not found"
+                ),
+                trip = null
+            )
+
+        // Nie można odłączyć właściciela
+        if (participant.isOwner) {
+            return ParticipantsDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Cannot detach trip owner"
+                ),
+                trip = null
+            )
+        }
+
+        // Nie można odłączyć już odłączonego placeholder
+        if (participant.isPlaceholder) {
+            return ParticipantsDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Participant is already a placeholder"
+                ),
+                trip = null
+            )
+        }
+
+        // Zamień uczestnika na placeholder
+        val updatedParticipant = participant.copy(
+            isPlaceholder = true,
+            accessCode = generateAccessCode(),
+            isActive = false
+        )
+
+        val updatedParticipants = trip.participants.map { p ->
+            if (p.id == participantId) updatedParticipant else p
+        }
+
+        val updatedTrip = trip.copy(participants = updatedParticipants)
+
+        // Zapisz zaktualizowany trip
+        tripsStorage[tripId] = updatedTrip
+
+        return ParticipantsDto(
+            success = SuccessDto(
+                success = true,
+                message = "User detached successfully"
+            ),
+            trip = updatedTrip
+        )
+    }
+
+    /**
+     * Usuwa placeholder uczestnika z tripu
+     */
+    fun removePlaceholder(tripId: String, participantId: String): ParticipantsDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return ParticipantsDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Trip not found"
+                ),
+                trip = null
+            )
+
+        // Znajdź uczestnika
+        val participant = trip.participants.find { it.id == participantId }
+            ?: return ParticipantsDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Participant not found"
+                ),
+                trip = null
+            )
+
+        // Można usunąć tylko placeholder
+        if (!participant.isPlaceholder) {
+            return ParticipantsDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Can only remove placeholder participants"
+                ),
+                trip = null
+            )
+        }
+
+        // Usuń placeholder z listy uczestników
+        val updatedParticipants = trip.participants.filter { it.id != participantId }
+
+        val updatedTrip = trip.copy(participants = updatedParticipants)
+
+        // Zapisz zaktualizowany trip
+        tripsStorage[tripId] = updatedTrip
+
+        return ParticipantsDto(
+            success = SuccessDto(
+                success = true,
+                message = "Placeholder removed successfully"
+            ),
+            trip = updatedTrip
+        )
+    }
+
     /**
      * Zwraca listę wszystkich tripów (aktualny stan)
      */
@@ -458,8 +647,8 @@ object MockData {
                     valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 800f))
                 ),
                 isOwner = false,
-                isPlaceholder = false,
-                accessCode = null,
+                isPlaceholder = true,
+                accessCode = "1234-ABCD",
                 isActive = true
             )
         )
@@ -479,7 +668,7 @@ object MockData {
             currency = "EUR",
             totalExpenses = 4500f,
             accessCode = "EURO-2024",
-            ownerId = "10",
+            ownerId = "11",
             imOwner = true,
             myCost = MoneyValueDto(
                 valueMainCurrency = 2325f,
@@ -697,7 +886,7 @@ object MockData {
                         MoneyValueDetailsDto("USD", 2555f)
                     )
                 ),
-                isOwner = true,
+                isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
                 isActive = true
@@ -712,7 +901,7 @@ object MockData {
                         MoneyValueDetailsDto("USD", 2335f)
                     )
                 ),
-                isOwner = false,
+                isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
                 isActive = true

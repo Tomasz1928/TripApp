@@ -127,3 +127,9 @@ data class AddExpenseRequest(
     val payerNickname: String,
     val sharedWith: List<ShareDto>
 )
+
+data class ParticipantsDto(
+    val success: SuccessDto,
+    val trip: TripDto? = null
+
+)
