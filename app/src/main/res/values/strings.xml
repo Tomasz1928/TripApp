@@ -96,6 +96,7 @@
     <string name="trip_costs_filter_paid_by_others">Płacili inni</string>
     <string name="trip_costs_search">Szukaj</string>
     <string name="trip_costs_no_expenses">Brak wydatków</string>
+    <string name="trip_costs_add_expense">Dodaj koszt</string>
 
     <!-- ========================================= -->
     <!-- EXPENSE DETAIL -->
@@ -126,6 +127,8 @@
     <string name="add_expense_button">Dodaj wydatek</string>
     <string name="add_expense_button_loading">Dodawanie…</string>
     <string name="add_expense_payer_dialog_title">Kto płacił?</string>
+    <string name="expense_action_edit">Edytuj</string>
+    <string name="expense_action_delete">Usuń</string>
 
     <!-- Kategorie -->
     <string name="category_accommodation">Nocleg</string>

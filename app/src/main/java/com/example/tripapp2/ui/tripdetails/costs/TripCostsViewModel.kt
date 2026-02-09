@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
  * - Filtrowanie wydatków
  * - Wyszukiwanie wydatków
  * - Wyświetlanie szczegółów wydatku
+ * - Edycję i usuwanie wydatków (PAID_BY_ME)
  */
 class TripCostsViewModel(
     private val tripId: String,
@@ -70,7 +71,6 @@ class TripCostsViewModel(
                     applyFilter(_currentFilter.value ?: ExpenseFilter.ALL)
                 }
             }.onFailure { error ->
-                // ✅ ZMIANA: Użyj showError() zamiast Error state
                 showError(error.message ?: "Nie udało się załadować wydatków")
                 _costsState.value = TripCostsState.Empty
             }
@@ -87,10 +87,10 @@ class TripCostsViewModel(
             ExpenseFilter.ALL -> allExpenses
             ExpenseFilter.MINE -> allExpenses.filter { it.isMine }
             ExpenseFilter.PAID_BY_ME -> allExpenses.filter {
-                it.payerId == currentUserId // ✅ Używamy currentUserId zamiast hardcoded "Adam"
+                it.payerId == currentUserId
             }
             ExpenseFilter.PAID_BY_OTHERS -> allExpenses.filter {
-                it.payerId != currentUserId // ✅ Używamy currentUserId
+                it.payerId != currentUserId
             }
         }
 
@@ -112,7 +112,7 @@ class TripCostsViewModel(
 
         val searchResults = allExpenses.filter { expense ->
             expense.name.contains(query, ignoreCase = true) ||
-                    expense.payerName.contains(query, ignoreCase = true) // ✅ Używamy payerName zamiast payerId
+                    expense.payerName.contains(query, ignoreCase = true)
         }
 
         if (searchResults.isEmpty()) {
@@ -135,7 +135,6 @@ class TripCostsViewModel(
             }
             result.onSuccess { trip ->
                 if (trip == null) {
-                    // ✅ ZMIANA: Użyj showError()
                     showError("Nie znaleziono wycieczki")
                     return@launch
                 }
@@ -149,6 +148,16 @@ class TripCostsViewModel(
         }
     }
 
+    fun onEditExpenseClicked(expenseId: String) {
+        // TODO: Implement - może modal z formularzem edycji?
+        showMessage("Edycja wydatku: $expenseId - funkcja w przygotowaniu")
+    }
+
+    fun onDeleteExpenseClicked(expenseId: String) {
+        // TODO: Implement - potwierdzenie + usunięcie z repozytorium
+        showMessage("Usuwanie wydatku: $expenseId - funkcja w przygotowaniu")
+    }
+
     /**
      * Obsługa kliknięcia w filtr
      */
@@ -158,9 +167,9 @@ class TripCostsViewModel(
     fun onFilterPaidByOthersClicked() = applyFilter(ExpenseFilter.PAID_BY_OTHERS)
 
     /**
-     * Obsługa wyszukiwania
+     * Helper do pokazywania wiadomości
      */
-    fun onSearchClicked() {
-        // Placeholder - funkcjonalność do zaimplementowania
+    private fun showMessage(message: String) {
+        showError(message) // Używamy showError z BaseViewModel
     }
 }

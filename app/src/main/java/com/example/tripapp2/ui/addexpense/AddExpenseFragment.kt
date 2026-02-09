@@ -25,6 +25,8 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         AddExpenseViewModelFactory(getTripId())
     }
 
+    private lateinit var backButton: ImageView
+
     private lateinit var titleLayout: TextInputLayout
     private lateinit var titleInput: TextInputEditText
     private lateinit var descriptionInput: TextInputEditText
@@ -50,7 +52,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
 
     override fun initKeyboardViews(view: View) {
         keyboardScrollView = view.findViewById(R.id.scrollViewAddExpense)
-        keyboardBottomNav = (activity as? DashboardActivity)?.tripBottomNav
+        keyboardBottomNav = null
     }
 
     override fun setupUI() {
@@ -58,6 +60,17 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         setupCurrencyDropdown()
         setupInputListeners()
         setDefaultCurrency()
+        setupBackButton()
+    }
+
+    private fun setupBackButton() {
+        backButton.setOnClickListener {
+            navigateBackToCosts()
+        }
+    }
+
+    private fun navigateBackToCosts() {
+        (activity as? DashboardActivity)?.closeAddExpenseAndShowCosts(getTripId())
     }
 
     override fun setupCustomObservers() {
@@ -181,10 +194,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
                 }
 
                 showMessage(displayMessage)
-                // Nawigacja powrotna po dodaniu wydatku
-                (activity as? DashboardActivity)?.apply {
-                    tripBottomNav.selectedItemId = R.id.menu_costs
-                }
+                navigateBackToCosts()
             }
         }
     }
@@ -192,28 +202,35 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
     private fun initializeViews() {
         val view = requireView()
 
+        backButton = view.findViewById(R.id.backButton)
+
         titleLayout = view.findViewById(R.id.titleLayout)
         titleInput = view.findViewById(R.id.titleInput)
+        titleCounter = view.findViewById(R.id.titleCounter)
         descriptionInput = view.findViewById(R.id.descriptionInput)
+        descriptionCounter = view.findViewById(R.id.descriptionCounter)
+
         categoryCard = view.findViewById(R.id.categoryCard)
         categoryInput = view.findViewById(R.id.categoryInput)
         categoryError = view.findViewById(R.id.categoryError)
         categoryIcon = view.findViewById(R.id.categoryIcon)
-        amountLayout = view.findViewById(R.id.amountLayout)
+
         amountInput = view.findViewById(R.id.amountInput)
-        currencyLayout = view.findViewById(R.id.currencyLayout)
+        amountLayout = view.findViewById(R.id.amountLayout)
         currencyInput = view.findViewById(R.id.currencyInput)
-        dateLayout = view.findViewById(R.id.dateLayout)
+        currencyLayout = view.findViewById(R.id.currencyLayout)
         dateInput = view.findViewById(R.id.dateInput)
-        timeLayout = view.findViewById(R.id.timeLayout)
+        dateLayout = view.findViewById(R.id.dateLayout)
         timeInput = view.findViewById(R.id.timeInput)
+        timeLayout = view.findViewById(R.id.timeLayout)
+
         payerButton = view.findViewById(R.id.payerButton)
         payerError = view.findViewById(R.id.payerError)
+
         splitButton = view.findViewById(R.id.splitButton)
         splitError = view.findViewById(R.id.splitError)
+
         createButton = view.findViewById(R.id.createButton)
-        titleCounter = view.findViewById(R.id.titleCounter)
-        descriptionCounter = view.findViewById(R.id.descriptionCounter)
     }
 
     private fun setupCurrencyDropdown() {
@@ -274,7 +291,6 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         }
 
         createButton.setOnClickListener {
-            // Schowaj klawiaturę
             val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(requireView().windowToken, 0)
 
@@ -292,34 +308,33 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
     private fun showDatePicker() {
         val picker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(getString(R.string.add_expense_date_hint))
-            .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
             .build()
-
-        picker.show(parentFragmentManager, "DATE_PICKER")
 
         picker.addOnPositiveButtonClickListener { selection ->
             viewModel.onDateSelected(selection)
         }
+
+        picker.show(parentFragmentManager, "DATE_PICKER")
     }
 
     private fun showTimePicker() {
-        val calendar = Calendar.getInstance()
+        val now = Calendar.getInstance()
         val picker = MaterialTimePicker.Builder()
             .setTimeFormat(TimeFormat.CLOCK_24H)
-            .setHour(calendar.get(Calendar.HOUR_OF_DAY))
-            .setMinute(calendar.get(Calendar.MINUTE))
+            .setHour(now.get(Calendar.HOUR_OF_DAY))
+            .setMinute(now.get(Calendar.MINUTE))
             .setTitleText(getString(R.string.add_expense_time_hint))
             .build()
-
-        picker.show(parentFragmentManager, "TIME_PICKER")
 
         picker.addOnPositiveButtonClickListener {
             viewModel.onTimeSelected(picker.hour, picker.minute)
         }
+
+        picker.show(parentFragmentManager, "TIME_PICKER")
     }
 
     private fun showSplitModal(split: ExpenseSplit) {
-        val amount = viewModel.amount.value?.toFloatOrNull() ?: 0f
+        val amount = amountInput.text.toString().toFloatOrNull() ?: 0f
 
         if (amount <= 0) {
             showMessage(getString(R.string.error_amount_required_before_split))
