@@ -151,6 +151,21 @@ class TripRepository private constructor() {
         }
     }
 
+    fun deleteExpense(tripId: String, expenseId: String): Result<DeleteExpenseDto> {
+        return try {
+            val result = MockData.deleteExpense(tripId, expenseId)
+
+            if (result.success.success) {
+                result.trip?.let { updateTripInCache(it) }
+                Result.success(result)
+            } else {
+                Result.failure(Exception(result.success.message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 
     fun  addPlaceholder(tripId:String, nickname:String):Result<ParticipantsDto>{
         return try {

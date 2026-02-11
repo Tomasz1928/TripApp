@@ -51,6 +51,20 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
             handleCostsState(state)
         }
 
+        // Event potwierdzenia usunięcia
+        viewModel.showDeleteConfirmationEvent.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { expense ->
+                showDeleteConfirmationDialog(expense)
+            }
+        }
+
+        // Event sukcesu usunięcia
+        viewModel.expenseDeletedEvent.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { message ->
+                showMessage(message)
+            }
+        }
+
         // Event pokazania szczegółów wydatku
         viewModel.showExpenseDetailEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { detail ->
@@ -209,6 +223,20 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
 
     private fun navigateToEditExpense(tripId: String, expenseId: String) {
         (activity as? DashboardActivity)?.showEditExpenseFromCosts(tripId, expenseId)
+    }
+
+    /**
+     * Pokazuje dialog potwierdzenia usunięcia wydatku
+     */
+    private fun showDeleteConfirmationDialog(expense: ExpenseDetailUiModel) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Usuń wydatek")
+            .setMessage("Czy na pewno chcesz usunąć wydatek \"${expense.name}\"?\n\nKwota: ${expense.formattedAmountCostCurrency}")
+            .setPositiveButton("Usuń") { _, _ ->
+                viewModel.confirmDeleteExpense(expense.id)
+            }
+            .setNegativeButton("Anuluj", null)
+            .show()
     }
 
     /**
