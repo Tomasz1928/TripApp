@@ -63,6 +63,12 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
             updateFilterButtons(filter)
             recreateAdapter(filter)
         }
+
+        viewModel.navigateToEditExpenseEvent.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { (tripId, expenseId) ->
+                navigateToEditExpense(tripId, expenseId)
+            }
+        }
     }
 
     private fun initializeViews() {
@@ -199,6 +205,10 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
     private fun showExpenseDetailModal(detail: ExpenseDetailUiModel) {
         val modal = ExpenseDetailModalFragment.newInstance(detail)
         modal.show(parentFragmentManager, "expense_detail_modal")
+    }
+
+    private fun navigateToEditExpense(tripId: String, expenseId: String) {
+        (activity as? DashboardActivity)?.showEditExpenseFromCosts(tripId, expenseId)
     }
 
     /**

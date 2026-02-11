@@ -44,6 +44,103 @@ object MockData {
     // PUBLIC API
     // ==========================================
 
+    /**
+     * Aktualizuje wydatek w wycieczce (Mock)
+     */
+    fun updateExpenseMock(request: UpdateExpenseRequest): UpdateExpenseDto {
+        val trip = tripsStorage[request.tripId]
+            ?: return UpdateExpenseDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Trip not found"
+                ),
+                trip = null
+            )
+
+        val expenseIndex = trip.expenses.indexOfFirst { it.id == request.expenseId }
+
+        if (expenseIndex == -1) {
+            return UpdateExpenseDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Expense not found"
+                ),
+                trip = null
+            )
+        }
+
+        val oldExpense = trip.expenses[expenseIndex]
+
+        // Utwórz zaktualizowany wydatek
+        val updatedExpense = ExpenseDto(
+            id = request.expenseId,
+            name = request.name,
+            description = request.description,
+            totalExpense = MoneyValueDto(
+                valueMainCurrency = request.amount,
+                valueOtherCurrencies = emptyList()
+            ),
+            amount = request.amount,
+            currency = request.currency,
+            date = request.date,
+            categoryId = request.categoryId,
+            payerId = request.payerId,
+            payerNickname = request.payerNickname,
+            sharedWith = request.sharedWith
+        )
+
+        // Zaktualizuj listę wydatków
+        val updatedExpenses = trip.expenses.toMutableList().apply {
+            set(expenseIndex, updatedExpense)
+        }
+
+        // Przelicz total expenses
+        val updatedTotalExpenses = trip.totalExpenses - oldExpense.amount + request.amount
+
+        // Zaktualizuj kategorie (usuń starą kwotę, dodaj nową)
+        var updatedCategories = updateCategoriesRemove(trip.categories, oldExpense.categoryId, oldExpense.amount)
+        updatedCategories = updateCategories(updatedCategories, request.categoryId, request.amount)
+
+        val updatedTrip = trip.copy(
+            expenses = updatedExpenses,
+            totalExpenses = updatedTotalExpenses,
+            categories = updatedCategories
+        )
+
+        // Zapisz zaktualizowany trip
+        tripsStorage[request.tripId] = updatedTrip
+
+        return UpdateExpenseDto(
+            success = SuccessDto(
+                success = true,
+                message = "Expense updated successfully"
+            ),
+            trip = updatedTrip
+        )
+    }
+
+    /**
+     * Helper - usuwa kwotę z kategorii
+     */
+    private fun updateCategoriesRemove(
+        existingCategories: List<CategoryDto>,
+        categoryId: String,
+        amount: Float
+    ): List<CategoryDto> {
+        return existingCategories.mapNotNull { category ->
+            if (category.categoryId == categoryId) {
+                val newAmount = category.totalAmount - amount
+                if (newAmount > 0) {
+                    category.copy(totalAmount = newAmount)
+                } else {
+                    null // Usuń kategorię jeśli kwota = 0
+                }
+            } else {
+                category
+            }
+        }
+    }
+
 
     /**
      * Dodaje placeholder uczestnika do tripu

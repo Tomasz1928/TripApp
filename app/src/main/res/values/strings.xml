@@ -177,6 +177,22 @@
     <!-- Sukces -->
     <string name="expense_added_success">Wydatek dodany pomyślnie!</string>
 
+
+    <!-- ========================================= -->
+    <!-- EDIT EXPENSE - Edycja wydatku -->
+    <!-- ========================================= -->
+
+    <!-- Tytuły -->
+    <string name="edit_expense_title">Edytuj wydatek</string>
+
+    <!-- Przyciski -->
+    <string name="edit_expense_button">Zaktualizuj</string>
+    <string name="edit_expense_button_loading">Aktualizowanie…</string>
+
+    <!-- Komunikaty -->
+    <string name="edit_expense_success">Wydatek został zaktualizowany</string>
+    <string name="edit_expense_error">Nie udało się zaktualizować wydatku</string>
+
     <!-- ========================================= -->
     <!-- TRIP PARTICIPANTS -->
     <!-- ========================================= -->
