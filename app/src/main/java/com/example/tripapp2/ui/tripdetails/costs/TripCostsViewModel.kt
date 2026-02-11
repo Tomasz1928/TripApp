@@ -1,3 +1,5 @@
+// Zamień całą klasę TripCostsViewModel na:
+
 package com.example.tripapp2.ui.tripdetails.costs
 
 import androidx.lifecycle.LiveData
@@ -36,10 +38,19 @@ class TripCostsViewModel(
 
     // Cache'owane dane
     private var allExpenses: List<ExpenseDetailUiModel> = emptyList()
-    private var currentUserId : String = ""
+    private var currentUserId: String = ""
 
-    private val _navigateToEditExpenseEvent = MutableLiveData<Event<Pair<String, String>>>() // (tripId, expenseId)
+    // Nawigacja do edycji
+    private val _navigateToEditExpenseEvent = MutableLiveData<Event<Pair<String, String>>>()
     val navigateToEditExpenseEvent: LiveData<Event<Pair<String, String>>> = _navigateToEditExpenseEvent
+
+    // Event potwierdzenia usunięcia (pokazuje dialog)
+    private val _showDeleteConfirmationEvent = MutableLiveData<Event<ExpenseDetailUiModel>>()
+    val showDeleteConfirmationEvent: LiveData<Event<ExpenseDetailUiModel>> = _showDeleteConfirmationEvent
+
+    // Event sukcesu usunięcia
+    private val _expenseDeletedEvent = MutableLiveData<Event<String>>()
+    val expenseDeletedEvent: LiveData<Event<String>> = _expenseDeletedEvent
 
     init {
         loadExpenses()
@@ -150,13 +161,42 @@ class TripCostsViewModel(
         }
     }
 
+    /**
+     * Kliknięcie edytuj wydatek
+     */
     fun onEditExpenseClicked(expenseId: String) {
         _navigateToEditExpenseEvent.value = Event(tripId to expenseId)
     }
 
+    /**
+     * Kliknięcie usuń wydatek - pokazuje dialog potwierdzenia
+     */
     fun onDeleteExpenseClicked(expenseId: String) {
-        // TODO: Implement - potwierdzenie + usunięcie z repozytorium
-        showMessage("Usuwanie wydatku: $expenseId - funkcja w przygotowaniu")
+        val expense = allExpenses.find { it.id == expenseId }
+        expense?.let {
+            _showDeleteConfirmationEvent.value = Event(it)
+        }
+    }
+
+    /**
+     * Potwierdzenie usunięcia wydatku
+     */
+    fun confirmDeleteExpense(expenseId: String) {
+        viewModelScope.launch {
+            setLoading(true)
+
+            val result = tripRepository.deleteExpense(tripId, expenseId)
+
+            result.onSuccess {
+                _expenseDeletedEvent.value = Event("Wydatek został usunięty")
+                // Przeładuj listę wydatków
+                loadExpenses()
+            }.onFailure { error ->
+                showError(error.message ?: "Nie udało się usunąć wydatku")
+            }
+
+            setLoading(false)
+        }
     }
 
     /**

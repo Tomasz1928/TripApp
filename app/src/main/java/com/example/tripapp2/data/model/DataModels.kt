@@ -152,3 +152,8 @@ data class UpdateExpenseDto(
     val success: SuccessDto,
     val trip: TripDto? = null
 )
+
+data class DeleteExpenseDto(
+    val success: SuccessDto,
+    val trip: TripDto? = null
+)

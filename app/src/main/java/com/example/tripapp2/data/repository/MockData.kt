@@ -45,6 +45,63 @@ object MockData {
     // ==========================================
 
     /**
+     * Usuwa wydatek z wycieczki
+     */
+    fun deleteExpense(tripId: String, expenseId: String): DeleteExpenseDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return DeleteExpenseDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Trip not found"
+                ),
+                trip = null
+            )
+
+        // Znajdź wydatek
+        val expense = trip.expenses.find { it.id == expenseId }
+            ?: return DeleteExpenseDto(
+                success = SuccessDto(
+                    success = false,
+                    message = "Expense not found"
+                ),
+                trip = null
+            )
+
+        // Usuń wydatek z listy
+        val updatedExpenses = trip.expenses.filter { it.id != expenseId }
+
+        // Przelicz total expenses
+        val updatedTotalExpenses = trip.totalExpenses - expense.amount
+
+        // Zaktualizuj kategorie (usuń kwotę z kategorii)
+        val updatedCategories = updateCategoriesRemove(
+            trip.categories,
+            expense.categoryId,
+            expense.amount
+        )
+
+        // Zaktualizuj trip
+        val updatedTrip = trip.copy(
+            expenses = updatedExpenses,
+            totalExpenses = updatedTotalExpenses,
+            categories = updatedCategories
+        )
+
+        // Zapisz zaktualizowany trip
+        tripsStorage[tripId] = updatedTrip
+
+        return DeleteExpenseDto(
+            success = SuccessDto(
+                success = true,
+                message = "Expense deleted successfully"
+            ),
+            trip = updatedTrip
+        )
+    }
+
+    /**
      * Aktualizuje wydatek w wycieczce (Mock)
      */
     fun updateExpenseMock(request: UpdateExpenseRequest): UpdateExpenseDto {
