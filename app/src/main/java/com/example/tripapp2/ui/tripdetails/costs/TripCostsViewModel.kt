@@ -3,7 +3,6 @@ package com.example.tripapp2.ui.tripdetails.costs
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -38,6 +37,9 @@ class TripCostsViewModel(
     // Cache'owane dane
     private var allExpenses: List<ExpenseDetailUiModel> = emptyList()
     private var currentUserId : String = ""
+
+    private val _navigateToEditExpenseEvent = MutableLiveData<Event<Pair<String, String>>>() // (tripId, expenseId)
+    val navigateToEditExpenseEvent: LiveData<Event<Pair<String, String>>> = _navigateToEditExpenseEvent
 
     init {
         loadExpenses()
@@ -149,8 +151,7 @@ class TripCostsViewModel(
     }
 
     fun onEditExpenseClicked(expenseId: String) {
-        // TODO: Implement - może modal z formularzem edycji?
-        showMessage("Edycja wydatku: $expenseId - funkcja w przygotowaniu")
+        _navigateToEditExpenseEvent.value = Event(tripId to expenseId)
     }
 
     fun onDeleteExpenseClicked(expenseId: String) {

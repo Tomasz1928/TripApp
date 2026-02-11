@@ -1,4 +1,4 @@
-package com.example.tripapp2.ui.addexpense
+package com.example.tripapp2.ui.tripdetails.costs.addexpense
 
 /**
  * Model uczestnika w podziale kosztów

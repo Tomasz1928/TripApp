@@ -1,4 +1,4 @@
-package com.example.tripapp2.ui.addexpense
+package com.example.tripapp2.ui.tripdetails.costs.addexpense
 
 import androidx.annotation.DrawableRes
 import com.example.tripapp2.R

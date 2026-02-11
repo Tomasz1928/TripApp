@@ -5,10 +5,11 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
-import com.example.tripapp2.ui.addexpense.AddExpenseFragment
+import com.example.tripapp2.ui.tripdetails.costs.addexpense.AddExpenseFragment
 import com.example.tripapp2.ui.common.setupIconsInOriginalColor
 import com.example.tripapp2.ui.dashboard.create.CreateTripFragment
 import com.example.tripapp2.ui.dashboard.join.JoinTripFragment
+import com.example.tripapp2.ui.tripdetails.costs.editexpense.EditExpenseFragment
 import com.example.tripapp2.ui.tripdetails.costs.TripCostsFragment
 import com.example.tripapp2.ui.tripdetails.TripDetailsFragment
 import com.example.tripapp2.ui.tripdetails.participants.TripParticipantsFragment
@@ -152,6 +153,25 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     fun closeAddExpenseAndShowCosts(tripId: String) {
+        tripBottomNav.visibility = View.VISIBLE
+        showTripFragment(R.id.menu_costs, tripId)
+        tripBottomNav.selectedItemId = R.id.menu_costs
+    }
+
+    // =====================================================
+// EDIT EXPENSE FLOW (bez bottom nav)
+// =====================================================
+
+    fun showEditExpenseFromCosts(tripId: String, expenseId: String) {
+        tripBottomNav.visibility = View.GONE
+
+        val fragment = EditExpenseFragment.newInstance(tripId, expenseId)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.tripContainer, fragment, "editExpense")
+            .commit()
+    }
+
+    fun closeEditExpenseAndShowCosts(tripId: String) {
         tripBottomNav.visibility = View.VISIBLE
         showTripFragment(R.id.menu_costs, tripId)
         tripBottomNav.selectedItemId = R.id.menu_costs

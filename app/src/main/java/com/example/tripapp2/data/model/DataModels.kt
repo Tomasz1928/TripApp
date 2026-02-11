@@ -133,3 +133,22 @@ data class ParticipantsDto(
     val trip: TripDto? = null
 
 )
+
+data class UpdateExpenseRequest(
+    val tripId: String,
+    val expenseId: String,
+    val name: String,
+    val description: String? = null,
+    val amount: Float,
+    val currency: String,
+    val categoryId: String,
+    val date: Long,
+    val payerId: String,
+    val payerNickname: String,
+    val sharedWith: List<ShareDto>
+)
+
+data class UpdateExpenseDto(
+    val success: SuccessDto,
+    val trip: TripDto? = null
+)
