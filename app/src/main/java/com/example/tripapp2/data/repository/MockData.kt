@@ -9,7 +9,7 @@ import com.example.tripapp2.data.model.*
  * - Mutable storage dla tripów (pozwala na modyfikacje)
  * - Osobne funkcje dla każdego tripu
  * - getTripList() zwraca aktualny stan wszystkich tripów
- * - addExpenseMock() dodaje wydatek do istniejącego tripu
+ * - Metody dla settlements: addPrepayment(), markSettlementAsPaid()
  */
 object MockData {
 
@@ -28,6 +28,7 @@ object MockData {
             tripsStorage["1"] = createTripZakopane()
             tripsStorage["2"] = createTripEurotrip()
             tripsStorage["3"] = createTripWakacjeNadMorzem()
+            tripsStorage["4"] = createTripBarcelona()
             isInitialized = true
         }
     }
@@ -41,351 +42,19 @@ object MockData {
     }
 
     // ==========================================
-    // PUBLIC API
+    // PUBLIC API - USER INFO
     // ==========================================
 
-    /**
-     * Usuwa wydatek z wycieczki
-     */
-    fun deleteExpense(tripId: String, expenseId: String): DeleteExpenseDto {
-        initializeIfNeeded()
-
-        val trip = tripsStorage[tripId]
-            ?: return DeleteExpenseDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Trip not found"
-                ),
-                trip = null
-            )
-
-        // Znajdź wydatek
-        val expense = trip.expenses.find { it.id == expenseId }
-            ?: return DeleteExpenseDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Expense not found"
-                ),
-                trip = null
-            )
-
-        // Usuń wydatek z listy
-        val updatedExpenses = trip.expenses.filter { it.id != expenseId }
-
-        // Przelicz total expenses
-        val updatedTotalExpenses = trip.totalExpenses - expense.amount
-
-        // Zaktualizuj kategorie (usuń kwotę z kategorii)
-        val updatedCategories = updateCategoriesRemove(
-            trip.categories,
-            expense.categoryId,
-            expense.amount
-        )
-
-        // Zaktualizuj trip
-        val updatedTrip = trip.copy(
-            expenses = updatedExpenses,
-            totalExpenses = updatedTotalExpenses,
-            categories = updatedCategories
-        )
-
-        // Zapisz zaktualizowany trip
-        tripsStorage[tripId] = updatedTrip
-
-        return DeleteExpenseDto(
-            success = SuccessDto(
-                success = true,
-                message = "Expense deleted successfully"
-            ),
-            trip = updatedTrip
+    fun getUsrInfo(): UserInfoDto {
+        return UserInfoDto(
+            id = "10",
+            nickname = "Adam"
         )
     }
 
-    /**
-     * Aktualizuje wydatek w wycieczce (Mock)
-     */
-    fun updateExpenseMock(request: UpdateExpenseRequest): UpdateExpenseDto {
-        val trip = tripsStorage[request.tripId]
-            ?: return UpdateExpenseDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Trip not found"
-                ),
-                trip = null
-            )
-
-        val expenseIndex = trip.expenses.indexOfFirst { it.id == request.expenseId }
-
-        if (expenseIndex == -1) {
-            return UpdateExpenseDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Expense not found"
-                ),
-                trip = null
-            )
-        }
-
-        val oldExpense = trip.expenses[expenseIndex]
-
-        // Utwórz zaktualizowany wydatek
-        val updatedExpense = ExpenseDto(
-            id = request.expenseId,
-            name = request.name,
-            description = request.description,
-            totalExpense = MoneyValueDto(
-                valueMainCurrency = request.amount,
-                valueOtherCurrencies = emptyList()
-            ),
-            amount = request.amount,
-            currency = request.currency,
-            date = request.date,
-            categoryId = request.categoryId,
-            payerId = request.payerId,
-            payerNickname = request.payerNickname,
-            sharedWith = request.sharedWith
-        )
-
-        // Zaktualizuj listę wydatków
-        val updatedExpenses = trip.expenses.toMutableList().apply {
-            set(expenseIndex, updatedExpense)
-        }
-
-        // Przelicz total expenses
-        val updatedTotalExpenses = trip.totalExpenses - oldExpense.amount + request.amount
-
-        // Zaktualizuj kategorie (usuń starą kwotę, dodaj nową)
-        var updatedCategories = updateCategoriesRemove(trip.categories, oldExpense.categoryId, oldExpense.amount)
-        updatedCategories = updateCategories(updatedCategories, request.categoryId, request.amount)
-
-        val updatedTrip = trip.copy(
-            expenses = updatedExpenses,
-            totalExpenses = updatedTotalExpenses,
-            categories = updatedCategories
-        )
-
-        // Zapisz zaktualizowany trip
-        tripsStorage[request.tripId] = updatedTrip
-
-        return UpdateExpenseDto(
-            success = SuccessDto(
-                success = true,
-                message = "Expense updated successfully"
-            ),
-            trip = updatedTrip
-        )
-    }
-
-    /**
-     * Helper - usuwa kwotę z kategorii
-     */
-    private fun updateCategoriesRemove(
-        existingCategories: List<CategoryDto>,
-        categoryId: String,
-        amount: Float
-    ): List<CategoryDto> {
-        return existingCategories.mapNotNull { category ->
-            if (category.categoryId == categoryId) {
-                val newAmount = category.totalAmount - amount
-                if (newAmount > 0) {
-                    category.copy(totalAmount = newAmount)
-                } else {
-                    null // Usuń kategorię jeśli kwota = 0
-                }
-            } else {
-                category
-            }
-        }
-    }
-
-
-    /**
-     * Dodaje placeholder uczestnika do tripu
-     */
-    fun addPlaceholder(tripId: String, nickname: String): ParticipantsDto {
-        initializeIfNeeded()
-
-        val trip = tripsStorage[tripId]
-            ?: return ParticipantsDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Trip not found"
-                ),
-                trip = null
-            )
-
-        // Sprawdź czy uczestnik o takiej nazwie już istnieje
-        val existingParticipant = trip.participants.find {
-            it.nickname.equals(nickname, ignoreCase = true)
-        }
-
-        if (existingParticipant != null) {
-            return ParticipantsDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Participant with this nickname already exists"
-                ),
-                trip = null
-            )
-        }
-
-        // Wygeneruj nowe ID i kod dostępu
-        val newParticipantId = "${tripId}${(100..999).random()}"
-        val accessCode = generateAccessCode()
-
-        val newParticipant = ParticipantDto(
-            id = newParticipantId,
-            nickname = nickname,
-            totalExpenses = MoneyValueDto(
-                valueMainCurrency = 0f,
-                valueOtherCurrencies = emptyList()
-            ),
-            isOwner = false,
-            isPlaceholder = true,
-            accessCode = accessCode,
-            isActive = false
-        )
-
-        // Zaktualizuj trip
-        val updatedParticipants = trip.participants + newParticipant
-        val updatedTrip = trip.copy(participants = updatedParticipants)
-
-        // Zapisz zaktualizowany trip
-        tripsStorage[tripId] = updatedTrip
-
-        return ParticipantsDto(
-            success = SuccessDto(
-                success = true,
-                message = "Placeholder added successfully"
-            ),
-            trip = updatedTrip
-        )
-    }
-
-    /**
-     * Odłącza użytkownika i zamienia go na placeholder
-     */
-    fun detachUser(tripId: String, participantId: String): ParticipantsDto {
-        initializeIfNeeded()
-
-        val trip = tripsStorage[tripId]
-            ?: return ParticipantsDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Trip not found"
-                ),
-                trip = null
-            )
-
-        // Znajdź uczestnika
-        val participant = trip.participants.find { it.id == participantId }
-            ?: return ParticipantsDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Participant not found"
-                ),
-                trip = null
-            )
-
-        // Nie można odłączyć właściciela
-        if (participant.isOwner) {
-            return ParticipantsDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Cannot detach trip owner"
-                ),
-                trip = null
-            )
-        }
-
-        // Nie można odłączyć już odłączonego placeholder
-        if (participant.isPlaceholder) {
-            return ParticipantsDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Participant is already a placeholder"
-                ),
-                trip = null
-            )
-        }
-
-        // Zamień uczestnika na placeholder
-        val updatedParticipant = participant.copy(
-            isPlaceholder = true,
-            accessCode = generateAccessCode(),
-            isActive = false
-        )
-
-        val updatedParticipants = trip.participants.map { p ->
-            if (p.id == participantId) updatedParticipant else p
-        }
-
-        val updatedTrip = trip.copy(participants = updatedParticipants)
-
-        // Zapisz zaktualizowany trip
-        tripsStorage[tripId] = updatedTrip
-
-        return ParticipantsDto(
-            success = SuccessDto(
-                success = true,
-                message = "User detached successfully"
-            ),
-            trip = updatedTrip
-        )
-    }
-
-    /**
-     * Usuwa placeholder uczestnika z tripu
-     */
-    fun removePlaceholder(tripId: String, participantId: String): ParticipantsDto {
-        initializeIfNeeded()
-
-        val trip = tripsStorage[tripId]
-            ?: return ParticipantsDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Trip not found"
-                ),
-                trip = null
-            )
-
-        // Znajdź uczestnika
-        val participant = trip.participants.find { it.id == participantId }
-            ?: return ParticipantsDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Participant not found"
-                ),
-                trip = null
-            )
-
-        // Można usunąć tylko placeholder
-        if (!participant.isPlaceholder) {
-            return ParticipantsDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Can only remove placeholder participants"
-                ),
-                trip = null
-            )
-        }
-
-        // Usuń placeholder z listy uczestników
-        val updatedParticipants = trip.participants.filter { it.id != participantId }
-
-        val updatedTrip = trip.copy(participants = updatedParticipants)
-
-        // Zapisz zaktualizowany trip
-        tripsStorage[tripId] = updatedTrip
-
-        return ParticipantsDto(
-            success = SuccessDto(
-                success = true,
-                message = "Placeholder removed successfully"
-            ),
-            trip = updatedTrip
-        )
-    }
+    // ==========================================
+    // PUBLIC API - TRIPS
+    // ==========================================
 
     /**
      * Zwraca listę wszystkich tripów (aktualny stan)
@@ -446,14 +115,10 @@ object MockData {
             settlement = null
         )
 
-        // Zapisz do storage
         tripsStorage[newId] = newTrip
 
         return CreateTripDto(
-            success = SuccessDto(
-                success = true,
-                message = "Trip created successfully"
-            ),
+            success = SuccessDto(success = true, message = "Trip created successfully"),
             trip = newTrip
         )
     }
@@ -464,42 +129,34 @@ object MockData {
     fun joinTripMock(accessCode: String): JoinTripDto {
         initializeIfNeeded()
 
-        // Szukaj tripu po kodzie dostępu
         val existingTrip = tripsStorage.values.find { it.accessCode == accessCode }
 
         if (existingTrip != null) {
             return JoinTripDto(
-                success = SuccessDto(
-                    success = true,
-                    message = "Successfully joined trip"
-                ),
+                success = SuccessDto(success = true, message = "Successfully joined trip"),
                 trip = existingTrip
             )
         }
 
-        // Jeśli nie znaleziono - zwróć mock trip (dla kompatybilności)
         return JoinTripDto(
-            success = SuccessDto(
-                success = true,
-                message = "Successfully joined trip"
-            ),
-            trip = createJoinTripBarcelona()
+            success = SuccessDto(success = false, message = "Trip not found"),
+            trip = null
         )
     }
 
+    // ==========================================
+    // PUBLIC API - EXPENSES
+    // ==========================================
+
     /**
      * Dodaje wydatek do istniejącego tripu
-     * Zwraca AddExpenseDto z success i zaktualizowanym tripem
      */
     fun addExpenseMock(request: AddExpenseRequest): AddExpenseDto {
         initializeIfNeeded()
 
         val trip = tripsStorage[request.tripId]
             ?: return AddExpenseDto(
-                success = SuccessDto(
-                    success = false,
-                    message = "Trip not found"
-                ),
+                success = SuccessDto(success = false, message = "Trip not found"),
                 trip = null
             )
 
@@ -522,7 +179,6 @@ object MockData {
             sharedWith = request.sharedWith
         )
 
-        // Zaktualizuj trip
         val updatedExpenses = trip.expenses + newExpense
         val updatedTotalExpenses = trip.totalExpenses + request.amount
         val updatedCategories = updateCategories(trip.categories, request.categoryId, request.amount)
@@ -533,22 +189,512 @@ object MockData {
             categories = updatedCategories
         )
 
-        // Zapisz zaktualizowany trip
         tripsStorage[request.tripId] = updatedTrip
 
         return AddExpenseDto(
-            success = SuccessDto(
-                success = true,
-                message = "Expense added successfully"
-            ),
+            success = SuccessDto(success = true, message = "Expense added successfully"),
             trip = updatedTrip
         )
     }
 
-    fun getUsrInfo(): UserInfoDto {
-        return UserInfoDto(
-            id = "10",
-            nickname = "Adam"
+    /**
+     * Aktualizuje wydatek w wycieczce
+     */
+    fun updateExpenseMock(request: UpdateExpenseRequest): UpdateExpenseDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[request.tripId]
+            ?: return UpdateExpenseDto(
+                success = SuccessDto(success = false, message = "Trip not found"),
+                trip = null
+            )
+
+        val expenseIndex = trip.expenses.indexOfFirst { it.id == request.expenseId }
+
+        if (expenseIndex == -1) {
+            return UpdateExpenseDto(
+                success = SuccessDto(success = false, message = "Expense not found"),
+                trip = null
+            )
+        }
+
+        val oldExpense = trip.expenses[expenseIndex]
+
+        val updatedExpense = ExpenseDto(
+            id = request.expenseId,
+            name = request.name,
+            description = request.description,
+            totalExpense = MoneyValueDto(
+                valueMainCurrency = request.amount,
+                valueOtherCurrencies = emptyList()
+            ),
+            amount = request.amount,
+            currency = request.currency,
+            date = request.date,
+            categoryId = request.categoryId,
+            payerId = request.payerId,
+            payerNickname = request.payerNickname,
+            sharedWith = request.sharedWith
+        )
+
+        val updatedExpenses = trip.expenses.toMutableList().apply {
+            set(expenseIndex, updatedExpense)
+        }
+
+        val updatedTotalExpenses = trip.totalExpenses - oldExpense.amount + request.amount
+        var updatedCategories = updateCategoriesRemove(trip.categories, oldExpense.categoryId, oldExpense.amount)
+        updatedCategories = updateCategories(updatedCategories, request.categoryId, request.amount)
+
+        val updatedTrip = trip.copy(
+            expenses = updatedExpenses,
+            totalExpenses = updatedTotalExpenses,
+            categories = updatedCategories
+        )
+
+        tripsStorage[request.tripId] = updatedTrip
+
+        return UpdateExpenseDto(
+            success = SuccessDto(success = true, message = "Expense updated successfully"),
+            trip = updatedTrip
+        )
+    }
+
+    /**
+     * Usuwa wydatek z wycieczki
+     */
+    fun deleteExpense(tripId: String, expenseId: String): DeleteExpenseDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return DeleteExpenseDto(
+                success = SuccessDto(success = false, message = "Trip not found"),
+                trip = null
+            )
+
+        val expense = trip.expenses.find { it.id == expenseId }
+            ?: return DeleteExpenseDto(
+                success = SuccessDto(success = false, message = "Expense not found"),
+                trip = null
+            )
+
+        val updatedExpenses = trip.expenses.filter { it.id != expenseId }
+        val updatedTotalExpenses = trip.totalExpenses - expense.amount
+        val updatedCategories = updateCategoriesRemove(trip.categories, expense.categoryId, expense.amount)
+
+        val updatedTrip = trip.copy(
+            expenses = updatedExpenses,
+            totalExpenses = updatedTotalExpenses,
+            categories = updatedCategories
+        )
+
+        tripsStorage[tripId] = updatedTrip
+
+        return DeleteExpenseDto(
+            success = SuccessDto(success = true, message = "Expense deleted successfully"),
+            trip = updatedTrip
+        )
+    }
+
+    // ==========================================
+    // PUBLIC API - PARTICIPANTS
+    // ==========================================
+
+    /**
+     * Dodaje placeholder uczestnika do tripu
+     */
+    fun addPlaceholder(tripId: String, nickname: String): ParticipantsDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return ParticipantsDto(
+                success = SuccessDto(success = false, message = "Trip not found"),
+                trip = null
+            )
+
+        val existingParticipant = trip.participants.find {
+            it.nickname.equals(nickname, ignoreCase = true)
+        }
+
+        if (existingParticipant != null) {
+            return ParticipantsDto(
+                success = SuccessDto(success = false, message = "Participant with this nickname already exists"),
+                trip = null
+            )
+        }
+
+        val newParticipantId = "${tripId}${(100..999).random()}"
+        val accessCode = generateAccessCode()
+
+        val newParticipant = ParticipantDto(
+            id = newParticipantId,
+            nickname = nickname,
+            totalExpenses = MoneyValueDto(valueMainCurrency = 0f, valueOtherCurrencies = emptyList()),
+            isOwner = false,
+            isPlaceholder = true,
+            accessCode = accessCode,
+            isActive = false
+        )
+
+        val updatedParticipants = trip.participants + newParticipant
+        val updatedTrip = trip.copy(participants = updatedParticipants)
+
+        tripsStorage[tripId] = updatedTrip
+
+        return ParticipantsDto(
+            success = SuccessDto(success = true, message = "Placeholder added successfully"),
+            trip = updatedTrip
+        )
+    }
+
+    /**
+     * Odłącza użytkownika i zamienia go na placeholder
+     */
+    fun detachUser(tripId: String, participantId: String): ParticipantsDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return ParticipantsDto(
+                success = SuccessDto(success = false, message = "Trip not found"),
+                trip = null
+            )
+
+        val participant = trip.participants.find { it.id == participantId }
+            ?: return ParticipantsDto(
+                success = SuccessDto(success = false, message = "Participant not found"),
+                trip = null
+            )
+
+        if (participant.isOwner) {
+            return ParticipantsDto(
+                success = SuccessDto(success = false, message = "Cannot detach trip owner"),
+                trip = null
+            )
+        }
+
+        if (participant.isPlaceholder) {
+            return ParticipantsDto(
+                success = SuccessDto(success = false, message = "Participant is already a placeholder"),
+                trip = null
+            )
+        }
+
+        val updatedParticipant = participant.copy(
+            isPlaceholder = true,
+            accessCode = generateAccessCode(),
+            isActive = false
+        )
+
+        val updatedParticipants = trip.participants.map { p ->
+            if (p.id == participantId) updatedParticipant else p
+        }
+
+        val updatedTrip = trip.copy(participants = updatedParticipants)
+        tripsStorage[tripId] = updatedTrip
+
+        return ParticipantsDto(
+            success = SuccessDto(success = true, message = "User detached successfully"),
+            trip = updatedTrip
+        )
+    }
+
+    /**
+     * Usuwa placeholder uczestnika z tripu
+     */
+    fun removePlaceholder(tripId: String, participantId: String): ParticipantsDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return ParticipantsDto(
+                success = SuccessDto(success = false, message = "Trip not found"),
+                trip = null
+            )
+
+        val participant = trip.participants.find { it.id == participantId }
+            ?: return ParticipantsDto(
+                success = SuccessDto(success = false, message = "Participant not found"),
+                trip = null
+            )
+
+        if (!participant.isPlaceholder) {
+            return ParticipantsDto(
+                success = SuccessDto(success = false, message = "Can only remove placeholder participants"),
+                trip = null
+            )
+        }
+
+        val updatedParticipants = trip.participants.filter { it.id != participantId }
+        val updatedTrip = trip.copy(participants = updatedParticipants)
+
+        tripsStorage[tripId] = updatedTrip
+
+        return ParticipantsDto(
+            success = SuccessDto(success = true, message = "Placeholder removed successfully"),
+            trip = updatedTrip
+        )
+    }
+
+    // ==========================================
+    // PUBLIC API - SETTLEMENTS
+    // ==========================================
+
+    /**
+     * Dodaje zaliczkę między użytkownikami
+     *
+     * Logika:
+     * 1. Znajdź relację między mną a uczestnikiem (lub utwórz nową)
+     * 2. Kierunek:
+     *    - TO_ME = uczestnik daje mi pieniądze → relacja: participant -> me
+     *    - FROM_ME = ja daję uczestnikowi → relacja: me -> participant
+     * 3. Waluta:
+     *    - Jeśli currency = trip.currency → dodaj do valueMainCurrency
+     *    - Jeśli currency ≠ trip.currency → dodaj do valueOtherCurrencies
+     * 4. Aktualizuj SettlementDto.balance
+     *
+     * @param tripId ID wycieczki
+     * @param participantId ID uczestnika (nie aktualny user)
+     * @param amount Kwota zaliczki
+     * @param currency Waluta zaliczki
+     * @param direction "TO_ME" (uczestnik daje mi) lub "FROM_ME" (ja daję uczestnikowi)
+     */
+    fun addPrepayment(
+        tripId: String,
+        participantId: String,
+        amount: Float,
+        currency: String,
+        direction: String
+    ): SettlementResultDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return SettlementResultDto(
+                success = SuccessDto(success = false, message = "Trip not found"),
+                trip = null
+            )
+
+        val currentUserId = getUsrInfo().id
+        val currentUserName = getUsrInfo().nickname
+        val participant = trip.participants.find { it.id == participantId }
+            ?: return SettlementResultDto(
+                success = SuccessDto(success = false, message = "Participant not found"),
+                trip = null
+            )
+
+        val tripCurrency = trip.currency
+        val isMainCurrency = (currency == tripCurrency)
+
+        // Określ kierunek relacji na podstawie direction
+        // TO_ME: uczestnik daje mi → fromUserId = participant (on jest "źródłem" pieniędzy)
+        // FROM_ME: ja daję uczestnikowi → fromUserId = me (ja jestem "źródłem" pieniędzy)
+        val (fromUserId, fromUserName, toUserId, toUserName) = if (direction == "TO_ME") {
+            listOf(participantId, participant.nickname, currentUserId, currentUserName)
+        } else {
+            listOf(currentUserId, currentUserName, participantId, participant.nickname)
+        }
+
+        val currentSettlement = trip.settlement
+        val currentRelations = currentSettlement?.relations?.toMutableList() ?: mutableListOf()
+
+        // Szukamy istniejącej relacji między mną a tym uczestnikiem (w dowolnym kierunku)
+        val existingRelationIndex = currentRelations.indexOfFirst { relation ->
+            (relation.fromUserId == participantId && relation.toUserId == currentUserId) ||
+                    (relation.fromUserId == currentUserId && relation.toUserId == participantId)
+        }
+
+        if (existingRelationIndex != -1) {
+            // === AKTUALIZUJ ISTNIEJĄCĄ RELACJĘ ===
+            val existingRelation = currentRelations[existingRelationIndex]
+            val updatedRelation = updateRelationAmount(
+                existingRelation = existingRelation,
+                amount = amount,
+                currency = currency,
+                isMainCurrency = isMainCurrency
+            )
+            currentRelations[existingRelationIndex] = updatedRelation
+        } else {
+            // === UTWÓRZ NOWĄ RELACJĘ ===
+            val newAmount = if (isMainCurrency) {
+                MoneyValueDto(
+                    valueMainCurrency = amount,
+                    valueOtherCurrencies = emptyList()
+                )
+            } else {
+                MoneyValueDto(
+                    valueMainCurrency = 0f,
+                    valueOtherCurrencies = listOf(MoneyValueDetailsDto(currency, amount))
+                )
+            }
+
+            currentRelations.add(
+                SettlementRelationDto(
+                    fromUserId = fromUserId,
+                    fromUserName = fromUserName,
+                    toUserId = toUserId,
+                    toUserName = toUserName,
+                    amount = newAmount,
+                    isSettled = false
+                )
+            )
+        }
+
+        // Oblicz nowy całkowity balans (tylko z valueMainCurrency)
+        val newBalance = calculateMyBalance(currentRelations, currentUserId)
+
+        val newSettlement = SettlementDto(
+            balance = newBalance,
+            balanceStatus = if (newBalance >= 0) BalanceStatus.PLUS else BalanceStatus.MINUS,
+            relations = currentRelations
+        )
+
+        val updatedTrip = trip.copy(settlement = newSettlement)
+        tripsStorage[tripId] = updatedTrip
+
+        return SettlementResultDto(
+            success = SuccessDto(success = true, message = "Prepayment added successfully"),
+            trip = updatedTrip
+        )
+    }
+
+    /**
+     * Aktualizuje kwotę w istniejącej relacji
+     * - Jeśli isMainCurrency = true → dodaj do valueMainCurrency
+     * - Jeśli isMainCurrency = false → dodaj do valueOtherCurrencies
+     */
+    private fun updateRelationAmount(
+        existingRelation: SettlementRelationDto,
+        amount: Float,
+        currency: String,
+        isMainCurrency: Boolean
+    ): SettlementRelationDto {
+        val currentMoneyValue = existingRelation.amount
+
+        val newMoneyValue = if (isMainCurrency) {
+            // Dodaj do głównej waluty
+            currentMoneyValue.copy(
+                valueMainCurrency = currentMoneyValue.valueMainCurrency + amount
+            )
+        } else {
+            // Dodaj do innych walut
+            val otherCurrencies = currentMoneyValue.valueOtherCurrencies.toMutableList()
+            val existingCurrencyIndex = otherCurrencies.indexOfFirst { it.currency == currency }
+
+            if (existingCurrencyIndex != -1) {
+                // Waluta już istnieje - zaktualizuj wartość
+                val existing = otherCurrencies[existingCurrencyIndex]
+                otherCurrencies[existingCurrencyIndex] = existing.copy(
+                    value = existing.value + amount
+                )
+            } else {
+                // Nowa waluta - dodaj
+                otherCurrencies.add(MoneyValueDetailsDto(currency, amount))
+            }
+
+            currentMoneyValue.copy(valueOtherCurrencies = otherCurrencies)
+        }
+
+        return existingRelation.copy(amount = newMoneyValue)
+    }
+
+    /**
+     * Oblicza mój całkowity balans na podstawie relacji
+     * Balans = suma gdzie jestem wierzycielem (toUserId = me) - suma gdzie jestem dłużnikiem (fromUserId = me)
+     * Używa tylko valueMainCurrency
+     */
+    private fun calculateMyBalance(
+        relations: List<SettlementRelationDto>,
+        myUserId: String
+    ): Float {
+        val asCreditor = relations
+            .filter { it.toUserId == myUserId && !it.isSettled }
+            .sumOf { it.amount.valueMainCurrency.toDouble() }
+
+        val asDebtor = relations
+            .filter { it.fromUserId == myUserId && !it.isSettled }
+            .sumOf { it.amount.valueMainCurrency.toDouble() }
+
+        return (asCreditor - asDebtor).toFloat()
+    }
+
+    /**
+     * Oznacza rozliczenie jako spłacone
+     *
+     * @param tripId ID wycieczki
+     * @param fromUserId ID dłużnika
+     * @param toUserId ID wierzyciela
+     * @param amount Kwota do rozliczenia
+     * @param currency Waluta
+     */
+    fun markSettlementAsPaid(
+        tripId: String,
+        fromUserId: String,
+        toUserId: String,
+        amount: Float,
+        currency: String
+    ): SettlementResultDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return SettlementResultDto(
+                success = SuccessDto(success = false, message = "Trip not found"),
+                trip = null
+            )
+
+        val currentSettlement = trip.settlement
+            ?: return SettlementResultDto(
+                success = SuccessDto(success = false, message = "No settlement data found"),
+                trip = null
+            )
+
+        val currentRelations = currentSettlement.relations?.toMutableList()
+            ?: return SettlementResultDto(
+                success = SuccessDto(success = false, message = "No settlement relations found"),
+                trip = null
+            )
+
+        // Znajdź relację do rozliczenia
+        val relationIndex = currentRelations.indexOfFirst { relation ->
+            (relation.fromUserId == fromUserId && relation.toUserId == toUserId) ||
+                    (relation.fromUserId == toUserId && relation.toUserId == fromUserId)
+        }
+
+        if (relationIndex == -1) {
+            return SettlementResultDto(
+                success = SuccessDto(success = false, message = "Settlement relation not found"),
+                trip = null
+            )
+        }
+
+        val relation = currentRelations[relationIndex]
+        val currentAmount = relation.amount.valueMainCurrency
+
+        if (amount >= currentAmount - 0.01f) {
+            // Pełne rozliczenie - oznacz jako settled, zachowaj valueOtherCurrencies
+            currentRelations[relationIndex] = relation.copy(
+                amount = relation.amount.copy(valueMainCurrency = 0f),
+                isSettled = true
+            )
+        } else {
+            // Częściowe rozliczenie - zmniejsz kwotę
+            currentRelations[relationIndex] = relation.copy(
+                amount = relation.amount.copy(valueMainCurrency = currentAmount - amount)
+            )
+        }
+
+        // Przelicz całkowity balans używając helper funkcji
+        val currentUserId = getUsrInfo().id
+        val newBalance = calculateMyBalance(currentRelations, currentUserId)
+
+        val newSettlement = SettlementDto(
+            balance = newBalance,
+            balanceStatus = if (newBalance >= 0) BalanceStatus.PLUS else BalanceStatus.MINUS,
+            relations = currentRelations
+        )
+
+        val updatedTrip = trip.copy(settlement = newSettlement)
+        tripsStorage[tripId] = updatedTrip
+
+        return SettlementResultDto(
+            success = SuccessDto(success = true, message = "Settlement marked as paid"),
+            trip = updatedTrip
         )
     }
 
@@ -583,8 +729,25 @@ object MockData {
         }
     }
 
+    private fun updateCategoriesRemove(
+        existingCategories: List<CategoryDto>,
+        categoryId: String,
+        amount: Float
+    ): List<CategoryDto> {
+        return existingCategories.mapNotNull { category ->
+            if (category.categoryId == categoryId) {
+                val newAmount = category.totalAmount - amount
+                if (newAmount > 0) category.copy(totalAmount = newAmount) else null
+            } else {
+                category
+            }
+        }
+    }
+
     // ==========================================
     // TRIP 1: Weekend w Zakopanem (PLN)
+    // Uczestnicy: Adam (10, owner), Beata (11)
+    // Settlement: Beata jest winna Adamowi 200 PLN
     // ==========================================
 
     private fun createTripZakopane(): TripDto {
@@ -607,9 +770,9 @@ object MockData {
                 )
             ),
             categories = listOf(
-                CategoryDto("1", 1200f),  // Noclegi
-                CategoryDto("2", 800f),   // Jedzenie
-                CategoryDto("3", 400f)    // Transport
+                CategoryDto("1", 1200f),
+                CategoryDto("2", 800f),
+                CategoryDto("3", 400f)
             ),
             expenses = createZakopaneExpenses(),
             participants = createZakopaneParticipants(),
@@ -617,6 +780,8 @@ object MockData {
                 balance = 200f,
                 balanceStatus = BalanceStatus.PLUS,
                 relations = listOf(
+                    // Beata (11) jest winna Adamowi (10) 200 PLN
+                    // fromUserId = dłużnik, toUserId = wierzyciel
                     SettlementRelationDto(
                         fromUserId = "11",
                         fromUserName = "Beata",
@@ -634,134 +799,66 @@ object MockData {
         return listOf(
             ExpenseDto(
                 id = "11",
-                name = "Hotel",
-                description = "2 noce w centrum",
-                totalExpense = MoneyValueDto(
-                    valueMainCurrency = 1200f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("EUR", 270f),
-                        MoneyValueDetailsDto("USD", 300f)
-                    )
-                ),
+                name = "Nocleg - Pensjonat Górski",
+                description = "2 noce dla 2 osób",
+                totalExpense = MoneyValueDto(valueMainCurrency = 1200f),
                 amount = 1200f,
                 currency = "PLN",
-                date = 1712016000000,
+                date = 1711929600000,
                 categoryId = "1",
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto(
-                        participantId = "10",
-                        participantNickname = "Adam",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 400f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 400f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "11",
-                        participantNickname = "Beata",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 400f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 400f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "12",
-                        participantNickname = "Cezary",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 400f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 400f))
-                        )
-                    )
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 600f)),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 600f))
                 )
             ),
             ExpenseDto(
                 id = "12",
-                name = "Restauracja Góralska",
-                description = "Obiad dla wszystkich",
-                totalExpense = MoneyValueDto(
-                    valueMainCurrency = 800f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("EUR", 180f),
-                        MoneyValueDetailsDto("USD", 200f)
-                    )
-                ),
-                amount = 800f,
+                name = "Kolacja w Karczmie",
+                description = "Tradycyjna kuchnia góralska",
+                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                amount = 400f,
                 currency = "PLN",
-                date = 1712102400000,
+                date = 1711969200000,
                 categoryId = "2",
-                payerId = "11",
-                payerNickname = "Beata",
+                payerId = "10",
+                payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto(
-                        participantId = "10",
-                        participantNickname = "Adam",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 266.67f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 266.67f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "11",
-                        participantNickname = "Beata",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 266.67f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 266.67f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "12",
-                        participantNickname = "Cezary",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 266.66f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 266.66f))
-                        )
-                    )
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f))
                 )
             ),
             ExpenseDto(
                 id = "13",
                 name = "Paliwo",
                 description = "Dojazd do Zakopanego",
-                totalExpense = MoneyValueDto(
-                    valueMainCurrency = 400f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("EUR", 90f),
-                        MoneyValueDetailsDto("USD", 100f)
-                    )
-                ),
+                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
                 amount = 400f,
                 currency = "PLN",
-                date = 1711929600000,
+                date = 1711922400000,
                 categoryId = "3",
-                payerId = "12",
-                payerNickname = "Cezary",
+                payerId = "11",
+                payerNickname = "Beata",
                 sharedWith = listOf(
-                    ShareDto(
-                        participantId = "10",
-                        participantNickname = "Adam",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 133.33f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 133.33f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "11",
-                        participantNickname = "Beata",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 133.33f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 133.33f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "12",
-                        participantNickname = "Cezary",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 133.34f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 133.34f))
-                        )
-                    )
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f))
+                )
+            ),
+            ExpenseDto(
+                id = "14",
+                name = "Śniadanie w górach",
+                description = "Schronisko",
+                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                amount = 400f,
+                currency = "PLN",
+                date = 1712012400000,
+                categoryId = "2",
+                payerId = "10",
+                payerNickname = "Adam",
+                sharedWith = listOf(
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f))
                 )
             )
         )
@@ -772,10 +869,7 @@ object MockData {
             ParticipantDto(
                 id = "10",
                 nickname = "Adam",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 800f,
-                    valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 800f))
-                ),
+                totalExpenses = MoneyValueDto(valueMainCurrency = 2000f),
                 isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
@@ -784,32 +878,19 @@ object MockData {
             ParticipantDto(
                 id = "11",
                 nickname = "Beata",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 800f,
-                    valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 800f))
-                ),
+                totalExpenses = MoneyValueDto(valueMainCurrency = 400f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
-                isActive = true
-            ),
-            ParticipantDto(
-                id = "12",
-                nickname = "Cezary",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 800f,
-                    valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 800f))
-                ),
-                isOwner = false,
-                isPlaceholder = true,
-                accessCode = "1234-ABCD",
                 isActive = true
             )
         )
     }
 
     // ==========================================
-    // TRIP 2: Eurotrip (EUR) - różne waluty wydatków
+    // TRIP 2: Eurotrip (EUR)
+    // Uczestnicy: Adam (10), Beata (11-owner), Cezary (12), Diana (13)
+    // Settlement: Beata i Diana są winni Adamowi po 75 EUR
     // ==========================================
 
     private fun createTripEurotrip(): TripDto {
@@ -823,7 +904,7 @@ object MockData {
             totalExpenses = 4500f,
             accessCode = "EURO-2024",
             ownerId = "11",
-            imOwner = true,
+            imOwner = false,
             myCost = MoneyValueDto(
                 valueMainCurrency = 2325f,
                 valueOtherCurrencies = listOf(
@@ -832,9 +913,9 @@ object MockData {
                 )
             ),
             categories = listOf(
-                CategoryDto("1", 1500f),  // Noclegi
-                CategoryDto("2", 1200f),  // Jedzenie
-                CategoryDto("3", 1800f)   // Transport
+                CategoryDto("1", 1500f),
+                CategoryDto("2", 1200f),
+                CategoryDto("3", 1800f)
             ),
             expenses = createEurotripExpenses(),
             participants = createEurotripParticipants(),
@@ -842,6 +923,7 @@ object MockData {
                 balance = 150f,
                 balanceStatus = BalanceStatus.PLUS,
                 relations = listOf(
+                    // Beata (11) jest winna Adamowi (10) 75 EUR
                     SettlementRelationDto(
                         fromUserId = "11",
                         fromUserName = "Beata",
@@ -850,6 +932,7 @@ object MockData {
                         amount = MoneyValueDto(valueMainCurrency = 75f),
                         isSettled = false
                     ),
+                    // Diana (13) jest winna Adamowi (10) 75 EUR
                     SettlementRelationDto(
                         fromUserId = "13",
                         fromUserName = "Diana",
@@ -857,7 +940,9 @@ object MockData {
                         toUserName = "Adam",
                         amount = MoneyValueDto(valueMainCurrency = 75f),
                         isSettled = false
-                    )
+                    ),
+                    // Cezary (12) - brak relacji z Adamem (balance = 0)
+                    // Nie dodajemy relacji - to będzie testowy przypadek
                 )
             )
         )
@@ -865,164 +950,58 @@ object MockData {
 
     private fun createEurotripExpenses(): List<ExpenseDto> {
         return listOf(
-            // Wydatek w EUR
             ExpenseDto(
-                id = "31",
-                name = "Hotel w Paryżu",
-                description = "3 noce blisko wieży Eiffla",
-                totalExpense = MoneyValueDto(
-                    valueMainCurrency = 1500f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("PLN", 6750f),
-                        MoneyValueDetailsDto("USD", 1650f)
-                    )
-                ),
-                amount = 1500f,
+                id = "21",
+                name = "Hotel Berlin",
+                description = "3 noce dla 4 osób",
+                totalExpense = MoneyValueDto(valueMainCurrency = 900f),
+                amount = 900f,
                 currency = "EUR",
-                date = 1720224000000,
+                date = 1720137600000,
                 categoryId = "1",
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto(
-                        participantId = "10",
-                        participantNickname = "Adam",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 375f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("EUR", 375f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "11",
-                        participantNickname = "Beata",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 375f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("EUR", 375f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "12",
-                        participantNickname = "Cezary",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 375f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("EUR", 375f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "13",
-                        participantNickname = "Diana",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 375f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("EUR", 375f))
-                        )
-                    )
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 225f)),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 225f)),
+                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 225f)),
+                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 225f))
                 )
             ),
-            // Wydatek w GBP (inna waluta!)
             ExpenseDto(
-                id = "32",
-                name = "Wynajem auta",
-                description = "14 dni z pełnym ubezpieczeniem",
-                totalExpense = MoneyValueDto(
-                    valueMainCurrency = 1800f, // EUR (trip currency)
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("PLN", 8000f),
-                        MoneyValueDetailsDto("USD", 1980f),
-                        MoneyValueDetailsDto("GBP", 1525f)
-                    )
-                ),
-                amount = 1400f, // Faktyczny koszt w GBP
-                currency = "GBP",
+                id = "22",
+                name = "Wynajem samochodu",
+                description = "VW Passat na 2 tygodnie",
+                totalExpense = MoneyValueDto(valueMainCurrency = 1800f),
+                amount = 1800f,
+                currency = "EUR",
                 date = 1720137600000,
                 categoryId = "3",
                 payerId = "11",
                 payerNickname = "Beata",
                 sharedWith = listOf(
-                    ShareDto(
-                        participantId = "10",
-                        participantNickname = "Adam",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 450f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("GBP", 350f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "11",
-                        participantNickname = "Beata",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 450f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("GBP", 350f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "12",
-                        participantNickname = "Cezary",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 450f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("GBP", 350f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "13",
-                        participantNickname = "Diana",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 450f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("GBP", 350f))
-                        )
-                    )
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 450f)),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 450f)),
+                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 450f)),
+                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 450f))
                 )
             ),
-            // Wydatek w EUR
             ExpenseDto(
-                id = "33",
-                name = "Kolacja w Rzymie",
-                description = "Restauracja przy Koloseum",
-                totalExpense = MoneyValueDto(
-                    valueMainCurrency = 1200f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("PLN", 5400f),
-                        MoneyValueDetailsDto("USD", 1320f)
-                    )
-                ),
-                amount = 1200f,
+                id = "23",
+                name = "Restauracja Amsterdam",
+                description = "Wspólna kolacja",
+                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                amount = 400f,
                 currency = "EUR",
-                date = 1720742400000,
+                date = 1720483200000,
                 categoryId = "2",
                 payerId = "12",
                 payerNickname = "Cezary",
                 sharedWith = listOf(
-                    ShareDto(
-                        participantId = "10",
-                        participantNickname = "Adam",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 300f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("EUR", 300f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "11",
-                        participantNickname = "Beata",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 300f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("EUR", 300f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "12",
-                        participantNickname = "Cezary",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 300f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("EUR", 300f))
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "13",
-                        participantNickname = "Diana",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 300f,
-                            valueOtherCurrencies = listOf(MoneyValueDetailsDto("EUR", 300f))
-                        )
-                    )
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 100f)),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 100f)),
+                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 100f)),
+                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 100f))
                 )
             )
         )
@@ -1033,13 +1012,7 @@ object MockData {
             ParticipantDto(
                 id = "10",
                 nickname = "Adam",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 2325f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("PLN", 10400f),
-                        MoneyValueDetailsDto("USD", 2555f)
-                    )
-                ),
+                totalExpenses = MoneyValueDto(valueMainCurrency = 900f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1048,13 +1021,7 @@ object MockData {
             ParticipantDto(
                 id = "11",
                 nickname = "Beata",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 2125f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("GBP", 1800f),
-                        MoneyValueDetailsDto("USD", 2335f)
-                    )
-                ),
+                totalExpenses = MoneyValueDto(valueMainCurrency = 1800f),
                 isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1063,13 +1030,7 @@ object MockData {
             ParticipantDto(
                 id = "12",
                 nickname = "Cezary",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 1125f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("PLN", 5000f),
-                        MoneyValueDetailsDto("USD", 1235f)
-                    )
-                ),
+                totalExpenses = MoneyValueDto(valueMainCurrency = 400f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1078,13 +1039,7 @@ object MockData {
             ParticipantDto(
                 id = "13",
                 nickname = "Diana",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 1125f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("PLN", 5000f),
-                        MoneyValueDetailsDto("USD", 1235f)
-                    )
-                ),
+                totalExpenses = MoneyValueDto(valueMainCurrency = 0f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1095,6 +1050,9 @@ object MockData {
 
     // ==========================================
     // TRIP 3: Wakacje nad morzem (PLN)
+    // Uczestnicy: Adam (10-owner), Ewa (14), Filip (15)
+    // Settlement: Ewa była winna Adamowi 166.67 PLN - JUŻ ROZLICZONE
+    // Filip - brak relacji z Adamem
     // ==========================================
 
     private fun createTripWakacjeNadMorzem(): TripDto {
@@ -1109,14 +1067,11 @@ object MockData {
             accessCode = "SOPOT-24",
             ownerId = "10",
             imOwner = true,
-            myCost = MoneyValueDto(
-                valueMainCurrency = 1733.33f,
-                valueOtherCurrencies = emptyList()
-            ),
+            myCost = MoneyValueDto(valueMainCurrency = 1733.33f),
             categories = listOf(
-                CategoryDto("1", 3500f),  // Noclegi
-                CategoryDto("2", 1200f),  // Jedzenie
-                CategoryDto("4", 500f)    // Atrakcje
+                CategoryDto("1", 3500f),
+                CategoryDto("2", 1200f),
+                CategoryDto("4", 500f)
             ),
             expenses = createWakacjeExpenses(),
             participants = createWakacjeParticipants(),
@@ -1124,6 +1079,7 @@ object MockData {
                 balance = 0f,
                 balanceStatus = BalanceStatus.PLUS,
                 relations = listOf(
+                    // Ewa (14) była winna Adamowi (10) - JUŻ ROZLICZONE
                     SettlementRelationDto(
                         fromUserId = "14",
                         fromUserName = "Ewa",
@@ -1132,6 +1088,7 @@ object MockData {
                         amount = MoneyValueDto(valueMainCurrency = 166.67f),
                         isSettled = true
                     )
+                    // Filip (15) - brak relacji z Adamem = balance 0
                 )
             )
         )
@@ -1140,13 +1097,10 @@ object MockData {
     private fun createWakacjeExpenses(): List<ExpenseDto> {
         return listOf(
             ExpenseDto(
-                id = "41",
+                id = "31",
                 name = "Apartament Sopot",
                 description = "7 nocy z widokiem na morze",
-                totalExpense = MoneyValueDto(
-                    valueMainCurrency = 3500f,
-                    valueOtherCurrencies = emptyList()
-                ),
+                totalExpense = MoneyValueDto(valueMainCurrency = 3500f),
                 amount = 3500f,
                 currency = "PLN",
                 date = 1723161600000,
@@ -1154,112 +1108,43 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto(
-                        participantId = "10",
-                        participantNickname = "Adam",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 1166.67f,
-                            valueOtherCurrencies = emptyList()
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "14",
-                        participantNickname = "Ewa",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 1166.67f,
-                            valueOtherCurrencies = emptyList()
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "15",
-                        participantNickname = "Filip",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 1166.66f,
-                            valueOtherCurrencies = emptyList()
-                        )
-                    )
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 1166.67f)),
+                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 1166.67f)),
+                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 1166.66f))
                 )
             ),
             ExpenseDto(
-                id = "42",
-                name = "Restauracja rybna",
-                description = "Kolacja przy molo",
-                totalExpense = MoneyValueDto(
-                    valueMainCurrency = 1200f,
-                    valueOtherCurrencies = emptyList()
-                ),
-                amount = 1200f,
+                id = "32",
+                name = "Restauracja nad morzem",
+                description = "Kolacja z owocami morza",
+                totalExpense = MoneyValueDto(valueMainCurrency = 600f),
+                amount = 600f,
                 currency = "PLN",
-                date = 1723420800000,
+                date = 1723248000000,
                 categoryId = "2",
                 payerId = "14",
                 payerNickname = "Ewa",
                 sharedWith = listOf(
-                    ShareDto(
-                        participantId = "10",
-                        participantNickname = "Adam",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 400f,
-                            valueOtherCurrencies = emptyList()
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "14",
-                        participantNickname = "Ewa",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 400f,
-                            valueOtherCurrencies = emptyList()
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "15",
-                        participantNickname = "Filip",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 400f,
-                            valueOtherCurrencies = emptyList()
-                        )
-                    )
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
+                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 200f)),
+                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 200f))
                 )
             ),
             ExpenseDto(
-                id = "43",
+                id = "33",
                 name = "Rejs statkiem",
-                description = "Wycieczka po zatoce",
-                totalExpense = MoneyValueDto(
-                    valueMainCurrency = 500f,
-                    valueOtherCurrencies = emptyList()
-                ),
+                description = "Wycieczka po Zatoce Gdańskiej",
+                totalExpense = MoneyValueDto(valueMainCurrency = 500f),
                 amount = 500f,
                 currency = "PLN",
-                date = 1723593600000,
+                date = 1723420800000,
                 categoryId = "4",
                 payerId = "15",
                 payerNickname = "Filip",
                 sharedWith = listOf(
-                    ShareDto(
-                        participantId = "10",
-                        participantNickname = "Adam",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 166.67f,
-                            valueOtherCurrencies = emptyList()
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "14",
-                        participantNickname = "Ewa",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 166.67f,
-                            valueOtherCurrencies = emptyList()
-                        )
-                    ),
-                    ShareDto(
-                        participantId = "15",
-                        participantNickname = "Filip",
-                        splitValue = MoneyValueDto(
-                            valueMainCurrency = 166.66f,
-                            valueOtherCurrencies = emptyList()
-                        )
-                    )
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 166.67f)),
+                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 166.67f)),
+                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 166.66f))
                 )
             )
         )
@@ -1270,10 +1155,7 @@ object MockData {
             ParticipantDto(
                 id = "10",
                 nickname = "Adam",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 1733.33f,
-                    valueOtherCurrencies = emptyList()
-                ),
+                totalExpenses = MoneyValueDto(valueMainCurrency = 3500f),
                 isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1282,10 +1164,7 @@ object MockData {
             ParticipantDto(
                 id = "14",
                 nickname = "Ewa",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 1733.33f,
-                    valueOtherCurrencies = emptyList()
-                ),
+                totalExpenses = MoneyValueDto(valueMainCurrency = 600f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1294,10 +1173,7 @@ object MockData {
             ParticipantDto(
                 id = "15",
                 nickname = "Filip",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 1733.34f,
-                    valueOtherCurrencies = emptyList()
-                ),
+                totalExpenses = MoneyValueDto(valueMainCurrency = 500f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1307,138 +1183,32 @@ object MockData {
     }
 
     // ==========================================
-    // JOIN TRIP - Barcelona (dla kompatybilności)
+    // TRIP 4: Barcelona (EUR)
+    // Uczestnicy: Kasia (20-owner), Michał (21), Ola (22-placeholder), Tomek (23-placeholder)
+    // Settlement: Wszystko rozliczone
+    // Test case: Adam NIE jest uczestnikiem - nie powinien widzieć rozliczeń
     // ==========================================
 
-    private fun createJoinTripBarcelona(): TripDto {
+    private fun createTripBarcelona(): TripDto {
         return TripDto(
-            id = "22",
-            title = "City Break Barcelona",
-            dateStart = 1719532800000,
-            dateEnd = 1719964800000,
-            description = "Zwiedzanie Barcelony i plaża",
+            id = "4",
+            title = "Barcelona Weekend",
+            dateStart = 1725148800000,
+            dateEnd = 1725494400000,
+            description = "Weekend w Barcelonie",
             currency = "EUR",
             totalExpenses = 1850f,
             accessCode = "BCN-2024",
             ownerId = "20",
             imOwner = false,
-            myCost = MoneyValueDto(
-                valueMainCurrency = 462.50f,
-                valueOtherCurrencies = listOf(
-                    MoneyValueDetailsDto("PLN", 1990f),
-                    MoneyValueDetailsDto("USD", 502f)
-                )
-            ),
+            myCost = MoneyValueDto(valueMainCurrency = 462.50f),
             categories = listOf(
-                CategoryDto("1", 720f),
-                CategoryDto("2", 580f),
-                CategoryDto("3", 320f),
-                CategoryDto("4", 230f)
+                CategoryDto("1", 800f),
+                CategoryDto("2", 650f),
+                CategoryDto("3", 400f)
             ),
-            expenses = listOf(
-                ExpenseDto(
-                    id = "21",
-                    name = "Apartament Airbnb",
-                    description = "4 noce w Barcelonecie",
-                    totalExpense = MoneyValueDto(
-                        valueMainCurrency = 720f,
-                        valueOtherCurrencies = listOf(
-                            MoneyValueDetailsDto("PLN", 3100f),
-                            MoneyValueDetailsDto("USD", 780f)
-                        )
-                    ),
-                    amount = 720f,
-                    currency = "EUR",
-                    date = 1719532800000,
-                    categoryId = "1",
-                    payerId = "20",
-                    payerNickname = "Kasia",
-                    sharedWith = listOf(
-                        ShareDto(
-                            participantId = "20",
-                            participantNickname = "Kasia",
-                            splitValue = MoneyValueDto(
-                                valueMainCurrency = 180f,
-                                valueOtherCurrencies = emptyList()
-                            )
-                        ),
-                        ShareDto(
-                            participantId = "21",
-                            participantNickname = "Michał",
-                            splitValue = MoneyValueDto(
-                                valueMainCurrency = 180f,
-                                valueOtherCurrencies = emptyList()
-                            )
-                        ),
-                        ShareDto(
-                            participantId = "22",
-                            participantNickname = "Ola",
-                            splitValue = MoneyValueDto(
-                                valueMainCurrency = 180f,
-                                valueOtherCurrencies = emptyList()
-                            )
-                        ),
-                        ShareDto(
-                            participantId = "23",
-                            participantNickname = "Tomek",
-                            splitValue = MoneyValueDto(
-                                valueMainCurrency = 180f,
-                                valueOtherCurrencies = emptyList()
-                            )
-                        )
-                    )
-                )
-            ),
-            participants = listOf(
-                ParticipantDto(
-                    id = "20",
-                    nickname = "Kasia",
-                    totalExpenses = MoneyValueDto(
-                        valueMainCurrency = 462.50f,
-                        valueOtherCurrencies = emptyList()
-                    ),
-                    isOwner = true,
-                    isPlaceholder = false,
-                    accessCode = null,
-                    isActive = true
-                ),
-                ParticipantDto(
-                    id = "21",
-                    nickname = "Michał",
-                    totalExpenses = MoneyValueDto(
-                        valueMainCurrency = 462.50f,
-                        valueOtherCurrencies = emptyList()
-                    ),
-                    isOwner = false,
-                    isPlaceholder = false,
-                    accessCode = null,
-                    isActive = true
-                ),
-                ParticipantDto(
-                    id = "22",
-                    nickname = "Ola",
-                    totalExpenses = MoneyValueDto(
-                        valueMainCurrency = 462.50f,
-                        valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 1990f))
-                    ),
-                    isOwner = false,
-                    isPlaceholder = true,
-                    accessCode = "BCN-2024",
-                    isActive = false
-                ),
-                ParticipantDto(
-                    id = "23",
-                    nickname = "Tomek",
-                    totalExpenses = MoneyValueDto(
-                        valueMainCurrency = 462.50f,
-                        valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 1990f))
-                    ),
-                    isOwner = false,
-                    isPlaceholder = true,
-                    accessCode = "BCN-2024",
-                    isActive = false
-                )
-            ),
+            expenses = createBarcelonaExpenses(),
+            participants = createBarcelonaParticipants(),
             settlement = SettlementDto(
                 balance = 0f,
                 balanceStatus = BalanceStatus.PLUS,
@@ -1460,6 +1230,106 @@ object MockData {
                         isSettled = true
                     )
                 )
+            )
+        )
+    }
+
+    private fun createBarcelonaExpenses(): List<ExpenseDto> {
+        return listOf(
+            ExpenseDto(
+                id = "41",
+                name = "Hostel Barcelona",
+                description = "2 noce w centrum",
+                totalExpense = MoneyValueDto(valueMainCurrency = 800f),
+                amount = 800f,
+                currency = "EUR",
+                date = 1725148800000,
+                categoryId = "1",
+                payerId = "20",
+                payerNickname = "Kasia",
+                sharedWith = listOf(
+                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 200f)),
+                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 200f)),
+                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 200f)),
+                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 200f))
+                )
+            ),
+            ExpenseDto(
+                id = "42",
+                name = "Tapas Bar",
+                description = "Wieczór z tapas",
+                totalExpense = MoneyValueDto(valueMainCurrency = 650f),
+                amount = 650f,
+                currency = "EUR",
+                date = 1725235200000,
+                categoryId = "2",
+                payerId = "21",
+                payerNickname = "Michał",
+                sharedWith = listOf(
+                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 162.50f)),
+                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 162.50f)),
+                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 162.50f)),
+                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 162.50f))
+                )
+            ),
+            ExpenseDto(
+                id = "43",
+                name = "Transfer z lotniska",
+                description = "Taxi dla grupy",
+                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                amount = 400f,
+                currency = "EUR",
+                date = 1725148800000,
+                categoryId = "3",
+                payerId = "22",
+                payerNickname = "Ola",
+                sharedWith = listOf(
+                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 100f)),
+                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 100f)),
+                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 100f)),
+                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 100f))
+                )
+            )
+        )
+    }
+
+    private fun createBarcelonaParticipants(): List<ParticipantDto> {
+        return listOf(
+            ParticipantDto(
+                id = "20",
+                nickname = "Kasia",
+                totalExpenses = MoneyValueDto(valueMainCurrency = 800f),
+                isOwner = true,
+                isPlaceholder = false,
+                accessCode = null,
+                isActive = true
+            ),
+            ParticipantDto(
+                id = "21",
+                nickname = "Michał",
+                totalExpenses = MoneyValueDto(valueMainCurrency = 650f),
+                isOwner = false,
+                isPlaceholder = false,
+                accessCode = null,
+                isActive = true
+            ),
+            ParticipantDto(
+                id = "22",
+                nickname = "Ola",
+                totalExpenses = MoneyValueDto(valueMainCurrency = 400f),
+                isOwner = false,
+                isPlaceholder = true,
+                accessCode = "BCN-2024",
+                isActive = false
+            ),
+            ParticipantDto(
+                id = "23",
+                nickname = "Tomek",
+                totalExpenses = MoneyValueDto(valueMainCurrency = 0f),
+                isOwner = false,
+                isPlaceholder = true,
+                accessCode = "BCN-2024",
+                isActive = false
             )
         )
     }

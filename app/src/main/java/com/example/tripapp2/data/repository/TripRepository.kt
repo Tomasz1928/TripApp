@@ -24,9 +24,11 @@ class TripRepository private constructor() {
         }
     }
 
+    // ==========================================
+    // INITIAL DATA
+    // ==========================================
 
-    suspend fun loadInitialData():Result<TripListDto>{
-
+    suspend fun loadInitialData(): Result<TripListDto> {
         return try {
             val response = fetchInitData()
             saveInitDataToCache(response)
@@ -36,45 +38,56 @@ class TripRepository private constructor() {
         }
     }
 
-
     private suspend fun fetchInitData(): TripListDto {
         return MockData.getTripList()
     }
 
-
-
-    private fun saveInitDataToCache(initialData:TripListDto) {
+    private fun saveInitDataToCache(initialData: TripListDto) {
         initialDataCache.add(initialData)
-        initialData.trips?.forEach{
-            trip -> tripsCache[trip.id] = trip
+        initialData.trips?.forEach { trip ->
+            tripsCache[trip.id] = trip
         }
     }
 
-    private fun saveCreateNewTripToCache(createTripData:TripDto){
+    private fun saveCreateNewTripToCache(createTripData: TripDto) {
         tripsCache[createTripData.id] = createTripData
     }
 
-    suspend fun getTripDetails(tripId: String):TripDto?{
+    // ==========================================
+    // TRIP DETAILS
+    // ==========================================
+
+    suspend fun getTripDetails(tripId: String): TripDto? {
         return tripsCache[tripId]
     }
 
-    suspend fun getFullInitDetails():List<TripListDto>{
-    return initialDataCache
+    suspend fun getFullInitDetails(): List<TripListDto> {
+        return initialDataCache
     }
 
     fun getAllTripsFromCache(): List<TripDto> {
         return tripsCache.values.toList()
     }
 
-    suspend fun getCurrentUserInfo():UserInfoDto{
+    // ==========================================
+    // USER INFO
+    // ==========================================
+
+    suspend fun getCurrentUserInfo(): UserInfoDto {
         return MockData.getUsrInfo()
     }
+
+    // ==========================================
+    // CACHE MANAGEMENT
+    // ==========================================
 
     private fun updateTripInCache(tripData: TripDto) {
         tripsCache[tripData.id] = tripData
     }
 
-
+    // ==========================================
+    // TRIP CRUD
+    // ==========================================
 
     /**
      * Tworzy nową wycieczkę
@@ -89,10 +102,10 @@ class TripRepository private constructor() {
         return try {
             val newTrip = createTripMock(title, dateStart, dateEnd, description, currency)
 
-            if (newTrip.success.success){
+            if (newTrip.success.success) {
                 newTrip.trip?.let { saveCreateNewTripToCache(it) }
                 Result.success(newTrip)
-            }else{
+            } else {
                 Result.failure(Exception(newTrip.success.message))
             }
 
@@ -108,10 +121,10 @@ class TripRepository private constructor() {
         return try {
             val joinTrip = joinTripMock(accessCode)
 
-            if (joinTrip.success.success){
+            if (joinTrip.success.success) {
                 joinTrip.trip?.let { saveCreateNewTripToCache(it) }
                 Result.success(joinTrip)
-            }else{
+            } else {
                 Result.failure(Exception(joinTrip.success.message))
             }
 
@@ -120,6 +133,9 @@ class TripRepository private constructor() {
         }
     }
 
+    // ==========================================
+    // EXPENSES
+    // ==========================================
 
     fun addExpense(request: AddExpenseRequest): Result<AddExpenseDto> {
         return try {
@@ -166,15 +182,17 @@ class TripRepository private constructor() {
         }
     }
 
+    // ==========================================
+    // PARTICIPANTS
+    // ==========================================
 
-    fun  addPlaceholder(tripId:String, nickname:String):Result<ParticipantsDto>{
+    fun addPlaceholder(tripId: String, nickname: String): Result<ParticipantsDto> {
         return try {
-            val result = MockData.addPlaceholder(tripId,nickname)
-            if (result.success.success){
+            val result = MockData.addPlaceholder(tripId, nickname)
+            if (result.success.success) {
                 result.trip?.let { updateTripInCache(it) }
                 Result.success(result)
-            }
-            else{
+            } else {
                 Result.failure(Exception(result.success.message))
             }
         } catch (e: Exception) {
@@ -182,14 +200,13 @@ class TripRepository private constructor() {
         }
     }
 
-    fun  detachUser(tripId:String,participantId:String):Result<ParticipantsDto>{
+    fun detachUser(tripId: String, participantId: String): Result<ParticipantsDto> {
         return try {
-            val result = MockData.detachUser(tripId,participantId)
-            if (result.success.success){
+            val result = MockData.detachUser(tripId, participantId)
+            if (result.success.success) {
                 result.trip?.let { updateTripInCache(it) }
                 Result.success(result)
-            }
-            else{
+            } else {
                 Result.failure(Exception(result.success.message))
             }
         } catch (e: Exception) {
@@ -197,14 +214,13 @@ class TripRepository private constructor() {
         }
     }
 
-    fun  removePlaceholder(tripId:String,participantId:String):Result<ParticipantsDto>{
+    fun removePlaceholder(tripId: String, participantId: String): Result<ParticipantsDto> {
         return try {
             val result = MockData.removePlaceholder(tripId, participantId)
-            if (result.success.success){
+            if (result.success.success) {
                 result.trip?.let { updateTripInCache(it) }
                 Result.success(result)
-            }
-            else{
+            } else {
                 Result.failure(Exception(result.success.message))
             }
         } catch (e: Exception) {
@@ -212,25 +228,75 @@ class TripRepository private constructor() {
         }
     }
 
-    /**
-     * Oznacza rozliczenie jako spłacone
-     * W przyszłości: POST /api/trips/{tripId}/settlements/{settlementId}/settle
-     */
-    suspend fun markSettlementAsPaid(
+    // ==========================================
+    // SETTLEMENTS
+    // ==========================================
+
+     fun addPrepayment(
+        tripId: String,
+        participantId: String,
+        amount: Float,
+        currency: String,
+        direction: String
+    ): Result<SettlementResultDto> {
+        return try {
+            val result = MockData.addPrepayment(
+                tripId = tripId,
+                participantId = participantId,
+                amount = amount,
+                currency = currency,
+                direction = direction
+            )
+
+            if (result.success.success) {
+                result.trip?.let { updateTripInCache(it) }
+                Result.success(result)
+            } else {
+                Result.failure(Exception(result.success.message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun markSettlementAsPaid(
         tripId: String,
         fromUserId: String,
         toUserId: String,
         amount: Float,
         currency: String
-    ): Result<Boolean> {
+    ): Result<SettlementResultDto> {
         return try {
-            delay(800) // Symulacja API call
+            val result = MockData.markSettlementAsPaid(
+                tripId = tripId,
+                fromUserId = fromUserId,
+                toUserId = toUserId,
+                amount = amount,
+                currency = currency
+            )
 
-            // Mock - zawsze sukces
-            Result.success(true)
+            if (result.success.success) {
+                result.trip?.let { updateTripInCache(it) }
+                Result.success(result)
+            } else {
+                Result.failure(Exception(result.success.message))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
+
+    fun getSettlementData(tripId: String): Result<SettlementDto?> {
+        return try {
+            val trip = tripsCache[tripId]
+            if (trip != null) {
+                Result.success(trip.settlement)
+            } else {
+                Result.failure(Exception("Trip not found"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
