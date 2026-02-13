@@ -1,21 +1,29 @@
 package com.example.tripapp2.ui.tripdetails.settlements
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
-import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
 import com.example.tripapp2.R
 import com.example.tripapp2.ui.common.base.BaseFragment
 import com.example.tripapp2.ui.common.extension.hide
 import com.example.tripapp2.ui.common.extension.show
 import com.example.tripapp2.ui.dashboard.DashboardActivity
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 
 /**
- * Fragment rozliczeń między uczestnikami
+ * Fragment rozliczeń (NOWA WERSJA)
+ *
+ * Funkcjonalności:
+ * - Wyświetlanie listy uczestników z informacją o balansie względem mnie
+ * - Przyciski: Zaliczka (dla wszystkich), Rozlicz (tylko dla nie-zerowych)
+ * - Modal zaliczki z kierunkiem i kwotą
+ * - Brak logiki n-do-n, tylko moje relacje
  */
 class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.fragment_trip_settlements) {
 
@@ -23,15 +31,12 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         TripSettlementsViewModelFactory(getTripId())
     }
 
+    // Views
     private lateinit var backButton: ImageView
-    private lateinit var scrollView: NestedScrollView
-    private lateinit var balanceCard: MaterialCardView
+    private lateinit var balanceSummaryCard: MaterialCardView
     private lateinit var balanceAmount: TextView
-    private lateinit var balanceStatus: TextView
-    private lateinit var owedToYou: TextView
-    private lateinit var youOwe: TextView
-    private lateinit var tripNameLabel: TextView
-    private lateinit var relationsContainer: LinearLayout
+    private lateinit var scrollParticipants: ScrollView
+    private lateinit var participantsContainer: LinearLayout
     private lateinit var emptyState: LinearLayout
 
     override fun setupUI() {
@@ -40,23 +45,31 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
     }
 
     override fun setupCustomObservers() {
-        // Stan rozliczeń
+        // Stan ekranu
         viewModel.settlementsState.observe(viewLifecycleOwner) { state ->
             handleSettlementsState(state)
         }
 
-        // Event pokazania szczegółów
-        viewModel.showSettlementDetailEvent.observe(viewLifecycleOwner) { event ->
-            event.getContentIfNotHandled()?.let { detail ->
-                showSettlementDetailModal(detail)
+        // Event otwarcia modala zaliczki
+        viewModel.showPrepaymentModalEvent.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { model ->
+                showPrepaymentModal(model)
             }
         }
 
-        // Event potwierdzenia rozliczenia
-        viewModel.settlementConfirmedEvent.observe(viewLifecycleOwner) { event ->
+        // Event otwarcia modala rozliczenia (na przyszłość)
+        viewModel.showSettleModalEvent.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { participant ->
+                // TODO: Implementacja modala rozliczenia
+                showMessage("Rozliczenie z ${participant.nickname} - do implementacji")
+            }
+        }
+
+
+        // Event potwierdzenia akcji
+        viewModel.actionConfirmedEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { message ->
                 showMessage(message)
-                viewModel.loadSettlements() // Odśwież dane
             }
         }
     }
@@ -64,14 +77,10 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
     private fun initializeViews() {
         val view = requireView()
         backButton = view.findViewById(R.id.backButton)
-        scrollView = view.findViewById(R.id.scrollViewSettlements)
-        balanceCard = view.findViewById(R.id.balanceCard)
+        balanceSummaryCard = view.findViewById(R.id.balanceSummaryCard)
         balanceAmount = view.findViewById(R.id.balanceAmount)
-        balanceStatus = view.findViewById(R.id.balanceStatus)
-        owedToYou = view.findViewById(R.id.owedToYou)
-        youOwe = view.findViewById(R.id.youOwe)
-        tripNameLabel = view.findViewById(R.id.tripNameLabel)
-        relationsContainer = view.findViewById(R.id.relationsContainer)
+        scrollParticipants = view.findViewById(R.id.scrollParticipants)
+        participantsContainer = view.findViewById(R.id.participantsContainer)
         emptyState = view.findViewById(R.id.emptyState)
     }
 
@@ -89,13 +98,13 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
             // Pokaż bottom nav z powrotem
             tripBottomNav.visibility = View.VISIBLE
 
-            // Wróć do TripDetails (bez wywoływania setOnItemSelectedListener)
+            // Wróć do TripDetails
             val fragment = com.example.tripapp2.ui.tripdetails.TripDetailsFragment.newInstance(getTripId())
             supportFragmentManager.beginTransaction()
                 .replace(R.id.tripContainer, fragment, "tripDetails")
                 .commit()
 
-            // Ustaw wybrany item (to NIE wywoła listenera, bo fragment już został zmieniony)
+            // Ustaw wybrany item
             tripBottomNav.selectedItemId = R.id.menu_overview
         }
     }
@@ -106,147 +115,142 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
     private fun handleSettlementsState(state: TripSettlementsState) {
         when (state) {
             is TripSettlementsState.Loading -> {
-                balanceCard.hide()
-                relationsContainer.hide()
+                balanceSummaryCard.hide()
+                participantsContainer.hide()
                 emptyState.hide()
             }
             is TripSettlementsState.Success -> {
                 emptyState.hide()
-                balanceCard.show()
-                relationsContainer.show()
+                balanceSummaryCard.show()
+                scrollParticipants.show()
 
-                displayBalance(state.userBalance)
-                displayRelations(state.relations)
-                tripNameLabel.text = state.tripName
+                displayBalanceSummary(state.myTotalBalance, state.formattedMyTotalBalance)
+                displayParticipants(state.participants, state.tripCurrency)
             }
-            is TripSettlementsState.AllSettled -> {
-                balanceCard.hide()
-                relationsContainer.hide()
+            is TripSettlementsState.Empty -> {
+                balanceSummaryCard.hide()
+                scrollParticipants.hide()
                 emptyState.show()
             }
             is TripSettlementsState.Error -> {
-                balanceCard.hide()
-                relationsContainer.hide()
+                balanceSummaryCard.hide()
+                participantsContainer.hide()
                 emptyState.hide()
                 showError(state.message)
             }
-
         }
     }
 
     /**
-     * Wyświetla bilans użytkownika
+     * Wyświetla podsumowanie mojego całkowitego balansu
      */
-    private fun displayBalance(balance: UserBalanceUiModel) {
-        balanceAmount.text = balance.formattedBalance
-
-        // ✅ ZMIANA: Używamy getString() zamiast .toString()
-        when (balance.balanceStatus) {
-            BalanceStatusUi.NA_PLUSIE -> {
-                balanceAmount.setTextColor(resources.getColor(R.color.success, null))
-                balanceStatus.text = getString(R.string.settlements_balance_positive)
-                balanceStatus.setTextColor(resources.getColor(R.color.success, null))
-            }
-            BalanceStatusUi.NA_MINUSIE -> {
-                balanceAmount.setTextColor(resources.getColor(R.color.error, null))
-                balanceStatus.text = getString(R.string.settlements_balance_negative)
-                balanceStatus.setTextColor(resources.getColor(R.color.error, null))
-            }
-            BalanceStatusUi.ROZLICZONY -> {
-                balanceAmount.setTextColor(resources.getColor(R.color.text_secondary, null))
-                balanceStatus.text = getString(R.string.settlements_balance_settled)
-                balanceStatus.setTextColor(resources.getColor(R.color.text_secondary, null))
-            }
-        }
-
-        owedToYou.text = balance.formattedOwedToYou
-        youOwe.text = balance.formattedYouOwe
-    }
-
-    /**
-     * Wyświetla listę relacji
-     */
-    private fun displayRelations(relations: List<SettlementRelationUiModel>) {
-        relationsContainer.removeAllViews()
-
-        relations.forEach { relation ->
-            val view = createRelationView(relation)
-            relationsContainer.addView(view)
-        }
-    }
-
-    /**
-     * Tworzy widok pojedynczej relacji
-     */
-    private fun createRelationView(relation: SettlementRelationUiModel): View {
-        val view = layoutInflater.inflate(R.layout.item_settlement_relation, relationsContainer, false)
-
-        // ✅ ZMIANA: Używamy getString() dla tworzenia opisów
-        // Description
-        val description = when {
-            relation.currentUserIsDebtor -> {
-                val label = getString(R.string.settlements_you_owe)
-                "$label ${relation.toUserName}"
-            }
-            relation.isCurrentUserInvolved -> {
-                val label = getString(R.string.settlements_owed_to_you)
-                "${relation.fromUserName} $label"
-            }
-            else -> {
-                // Dla tego przypadku może być potrzebny dodatkowy string w strings.xml
-                "${relation.fromUserName} → ${relation.toUserName}"
-            }
-        }
-
-        view.findViewById<TextView>(R.id.relationDescription).text = description
-        view.findViewById<TextView>(R.id.relationAmount).text = relation.formattedAmount
-
-        // Button visibility
-        val settleButton = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.settleButton)
-        val settledBadge = view.findViewById<LinearLayout>(R.id.settledBadge)
+    private fun displayBalanceSummary(totalBalance: Float, formattedBalance: String) {
+        balanceAmount.text = formattedBalance
 
         when {
-            relation.isSettled -> {
-                // Już rozliczone
-                settleButton.visibility = View.GONE
-                settledBadge.visibility = View.VISIBLE
+            totalBalance > 0.01f -> {
+                balanceAmount.setTextColor(resources.getColor(R.color.success, null))
             }
-            relation.isCurrentUserInvolved -> {
-                // Dotyczy zalogowanego użytkownika - pokaż przycisk
-                settleButton.visibility = View.VISIBLE
-                settledBadge.visibility = View.GONE
+            totalBalance < -0.01f -> {
+                balanceAmount.setTextColor(resources.getColor(R.color.error, null))
             }
             else -> {
-                // Relacja innych osób - tylko podgląd
-                settleButton.visibility = View.GONE
-                settledBadge.visibility = View.GONE
+                balanceAmount.setTextColor(resources.getColor(R.color.text_secondary, null))
+            }
+        }
+    }
+
+    /**
+     * Wyświetla listę uczestników z balansami
+     */
+    private fun displayParticipants(
+        participants: List<SettlementParticipantUiModel>,
+        tripCurrency: String
+    ) {
+        participantsContainer.removeAllViews()
+
+        participants.forEach { participant ->
+            val itemView = createParticipantView(participant)
+            participantsContainer.addView(itemView)
+        }
+    }
+
+    /**
+     * Tworzy widok pojedynczego uczestnika
+     */
+    private fun createParticipantView(participant: SettlementParticipantUiModel): View {
+        val view = layoutInflater.inflate(R.layout.item_settlement_participant, participantsContainer, false)
+
+        // Nickname
+        view.findViewById<TextView>(R.id.participantNickname).text = participant.nickname
+
+        // Kwota balansu
+        val balanceAmountView = view.findViewById<TextView>(R.id.balanceAmount)
+        balanceAmountView.text = participant.formattedBalance
+
+        // Ustaw kolor
+        when (participant.balanceStatus) {
+            ParticipantBalanceStatus.POSITIVE -> {
+                balanceAmountView.setTextColor(resources.getColor(R.color.success, null))
+            }
+            ParticipantBalanceStatus.NEGATIVE -> {
+                balanceAmountView.setTextColor(resources.getColor(R.color.error, null))
+            }
+            ParticipantBalanceStatus.SETTLED -> {
+                balanceAmountView.setTextColor(resources.getColor(R.color.text_secondary, null))
             }
         }
 
-        // Click listeners
-        view.setOnClickListener {
-            viewModel.onRelationClicked(relation)
+        // Przyciski akcji
+        val detailsButton = view.findViewById<MaterialButton>(R.id.settlementDetailsButton)
+        val prepaymentButton = view.findViewById<MaterialButton>(R.id.prepaymentButton)
+        val settleButton = view.findViewById<MaterialButton>(R.id.settleButton)
+
+        // Przycisk Szczegóły - tylko jeśli są dane rozliczeń
+        if (participant.hasSettlementDetails) {
+            detailsButton.visibility = View.VISIBLE
+            detailsButton.setOnClickListener {
+                viewModel.onDetailsClicked(participant)
+            }
+        } else {
+            detailsButton.visibility = View.GONE
         }
 
-        settleButton.setOnClickListener {
-            viewModel.onRelationClicked(relation)
+        // Przycisk Zaliczka - zawsze widoczny
+        prepaymentButton.setOnClickListener {
+            viewModel.onPrepaymentClicked(participant)
+        }
+
+        // Przycisk Rozlicz - tylko jeśli nie na 0
+        if (participant.balanceStatus != ParticipantBalanceStatus.SETTLED) {
+            settleButton.visibility = View.VISIBLE
+            settleButton.setOnClickListener {
+                viewModel.onSettleClicked(participant)
+            }
+        } else {
+            settleButton.visibility = View.GONE
         }
 
         return view
     }
 
     /**
-     * Pokazuje modal ze szczegółami rozliczenia
+     * Pokazuje modal zaliczki
      */
-    private fun showSettlementDetailModal(detail: SettlementDetailUiModel) {
-        val modal = SettlementDetailModalFragment.newInstance(detail) { currency, amount ->
-            viewModel.onSettleInCurrency(detail.relationId, currency, amount)
+    private fun showPrepaymentModal(model: PrepaymentUiModel) {
+        val modal = PrepaymentModalFragment.newInstance(model) { request ->
+            // Uzupełnij tripId
+            val fullRequest = request.copy(tripId = getTripId())
+            viewModel.onPrepaymentConfirmed(fullRequest)
         }
-        modal.show(parentFragmentManager, "settlement_detail_modal")
+        modal.show(parentFragmentManager, "prepayment_modal")
     }
 
+    /**
+     * Pobiera ID wycieczki
+     */
     private fun getTripId(): String {
-        return arguments?.getString(ARG_TRIP_ID) ?: "trip_2"
+        return arguments?.getString(ARG_TRIP_ID) ?: ""
     }
 
     companion object {

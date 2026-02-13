@@ -1,71 +1,63 @@
 package com.example.tripapp2.ui.tripdetails.settlements
 
-import com.example.tripapp2.data.model.BalanceStatus
-import com.example.tripapp2.data.model.SettlementDto
+import com.example.tripapp2.data.model.ParticipantDto
 import com.example.tripapp2.data.model.SettlementRelationDto
 
 // ==========================================
-// UI MODELS
+// UI MODELS - Settlements (moje relacje)
 // ==========================================
 
 /**
- * Model bilansu użytkownika
+ * Model uczestnika z informacją o balansie względem mnie
  */
-data class UserBalanceUiModel(
-    val totalBalance: Float,
-    val mainCurrency: String,
-    val formattedBalance: String,
-    val balanceStatus: BalanceStatusUi,
-    val owedToYou: Float,
-    val youOwe: Float,
-    val formattedOwedToYou: String,
-    val formattedYouOwe: String
+data class SettlementParticipantUiModel(
+    val participantId: String,
+    val nickname: String,
+    val isPlaceholder: Boolean,
+    val balance: Float,                    // Dodatni = on mi jest winien, Ujemny = ja jestem winien
+    val formattedBalance: String,          // "+150,00 PLN" lub "-75,00 PLN"
+    val balanceStatus: ParticipantBalanceStatus,
+    val currency: String,
+    val hasSettlementDetails: Boolean
 )
 
-enum class BalanceStatusUi {
-    NA_PLUSIE,
-    NA_MINUSIE,
-    ROZLICZONY
+/**
+ * Status balansu względem uczestnika
+ */
+enum class ParticipantBalanceStatus {
+    POSITIVE,      // On mi jest winien (jestem na +)
+    NEGATIVE,      // Ja mu jestem winien (jestem na -)
+    SETTLED        // Rozliczeni (0)
 }
 
 /**
- * Model pojedynczej relacji rozliczeniowej
+ * Kierunek zaliczki
  */
-data class SettlementRelationUiModel(
-    val id: String,
-    val fromUserId: String,
-    val toUserId: String,
-    val fromUserName: String,
-    val toUserName: String,
-    val amountMainCurrency: Float,
-    val mainCurrency: String,
-    val formattedAmount: String,
-    val isCurrentUserInvolved: Boolean,
-    val currentUserIsDebtor: Boolean,
-    val isSettled: Boolean
+enum class PrepaymentDirection {
+    TO_ME,         // Pieniądze trafiają do mnie (uczestnik daje mi zaliczkę)
+    FROM_ME        // Ja daję pieniądze (ja daję zaliczkę uczestnikowi)
+}
+
+/**
+ * Model dla modala zaliczki
+ */
+data class PrepaymentUiModel(
+    val participantId: String,
+    val participantNickname: String,
+    val availableCurrencies: List<String>,
+    val currentBalance: Float,
+    val formattedCurrentBalance: String
 )
 
 /**
- * Model szczegółów rozliczenia (dla modala)
+ * Request dodania zaliczki
  */
-data class SettlementDetailUiModel(
-    val relationId: String,
-    val fromUserName: String,
-    val toUserName: String,
-    val amountMainCurrency: Float,
-    val mainCurrency: String,
-    val formattedAmountMain: String,
-    val otherCurrencies: List<CurrencyAmountUiModel>,
-    val isCurrentUserDebtor: Boolean
-)
-
-/**
- * Model kwoty w konkretnej walucie
- */
-data class CurrencyAmountUiModel(
-    val currency: String,
+data class PrepaymentRequest(
+    val tripId: String,
+    val participantId: String,
     val amount: Float,
-    val formattedAmount: String
+    val currency: String,
+    val direction: PrepaymentDirection
 )
 
 /**
@@ -73,12 +65,17 @@ data class CurrencyAmountUiModel(
  */
 sealed class TripSettlementsState {
     object Loading : TripSettlementsState()
+
     data class Success(
-        val userBalance: UserBalanceUiModel,
-        val relations: List<SettlementRelationUiModel>,
-        val tripName: String
+        val participants: List<SettlementParticipantUiModel>,
+        val tripName: String,
+        val tripCurrency: String,
+        val myTotalBalance: Float,
+        val formattedMyTotalBalance: String
     ) : TripSettlementsState()
-    object AllSettled : TripSettlementsState()
+
+    object Empty : TripSettlementsState()  // Brak innych uczestników
+
     data class Error(val message: String) : TripSettlementsState()
 }
 
@@ -87,97 +84,74 @@ sealed class TripSettlementsState {
 // ==========================================
 
 /**
- * Mapuje SettlementDto na Success state
+ * Mapuje uczestnika na model z balansem
+ *
+ * @param participant - uczestnik z listy
+ * @param myRelationsAsDebtor - relacje gdzie JA jestem dłużnikiem (ja winien innym)
+ * @param myRelationsAsCreditor - relacje gdzie JA jestem wierzycielem (inni winni mnie)
+ * @param currency - waluta tripu
  */
-fun SettlementDto.toSuccessState(
-    currentUserId: String,
-    tripTitle: String,
-    tripCurrency: String
-): TripSettlementsState.Success {
+fun ParticipantDto.toSettlementUiModel(
+    myRelationsAsDebtor: List<SettlementRelationDto>,
+    myRelationsAsCreditor: List<SettlementRelationDto>,
+    currency: String
+): SettlementParticipantUiModel {
 
-    // Mapuj status balansu
-    val balanceStatusUi = when (balanceStatus) {
-        BalanceStatus.PLUS -> BalanceStatusUi.NA_PLUSIE
-        BalanceStatus.MINUS -> BalanceStatusUi.NA_MINUSIE
+    // Ile TEN uczestnik jest mi winien (relacje gdzie on jest dłużnikiem, ja wierzycielem)
+    val theyOweMe = myRelationsAsCreditor
+        .filter { it.fromUserId == this.id && !it.isSettled }
+        .sumOf { it.amount.valueMainCurrency.toDouble() }
+        .toFloat()
+
+    // Ile JA jestem winien TEMU uczestnikowi (relacje gdzie ja jestem dłużnikiem, on wierzycielem)
+    val iOweThem = myRelationsAsDebtor
+        .filter { it.toUserId == this.id && !it.isSettled }
+        .sumOf { it.amount.valueMainCurrency.toDouble() }
+        .toFloat()
+
+    // Bilans: dodatni = on mi jest winien, ujemny = ja mu jestem winien
+    val balance = theyOweMe - iOweThem
+
+    val balanceStatus = when {
+        balance > 0.01f -> ParticipantBalanceStatus.POSITIVE
+        balance < -0.01f -> ParticipantBalanceStatus.NEGATIVE
+        else -> ParticipantBalanceStatus.SETTLED
     }
 
-    // Oblicz ile Ci winni i ile ty winien
-    val owedToYou = relations?.filter {
-        it.toUserId == currentUserId && !it.isSettled
-    }?.sumOf { it.amount.valueMainCurrency.toDouble() }?.toFloat() ?: 0f
+    val formattedBalance = when (balanceStatus) {
+        ParticipantBalanceStatus.POSITIVE -> "+%.2f %s".format(balance, currency)
+        ParticipantBalanceStatus.NEGATIVE -> "%.2f %s".format(balance, currency)
+        ParticipantBalanceStatus.SETTLED -> "0,00 %s".format(currency)
+    }
 
-    val youOwe = relations?.filter {
-        it.fromUserId == currentUserId && !it.isSettled
-    }?.sumOf { it.amount.valueMainCurrency.toDouble() }?.toFloat() ?: 0f
+    // Sprawdź czy są jakiekolwiek relacje z tym uczestnikiem
+    val hasDetails = myRelationsAsCreditor.any { it.fromUserId == this.id } ||
+            myRelationsAsDebtor.any { it.toUserId == this.id }
 
-    // Stwórz bilans użytkownika
-    val userBalance = UserBalanceUiModel(
-        totalBalance = balance,
-        mainCurrency = tripCurrency,
-        formattedBalance = "%.0f %s".format(kotlin.math.abs(balance), tripCurrency),
-        balanceStatus = balanceStatusUi,
-        owedToYou = owedToYou,
-        youOwe = youOwe,
-        formattedOwedToYou = "%.0f %s".format(owedToYou, tripCurrency),
-        formattedYouOwe = "%.0f %s".format(youOwe, tripCurrency)
-    )
-
-    // Mapuj relacje
-    val relationModels = relations?.map { it.toUiModel(currentUserId, tripCurrency) } ?: emptyList()
-
-    return TripSettlementsState.Success(
-        userBalance = userBalance,
-        relations = relationModels,
-        tripName = tripTitle
+    return SettlementParticipantUiModel(
+        participantId = this.id,
+        nickname = this.nickname,
+        isPlaceholder = this.isPlaceholder,
+        balance = balance,
+        formattedBalance = formattedBalance,
+        balanceStatus = balanceStatus,
+        currency = currency,
+        hasSettlementDetails = hasDetails
     )
 }
 
 /**
- * Mapuje SettlementRelationDto na UI model
+ * Sortuje uczestników: najpierw nie-rozliczeni (wg wielkości balansu), potem rozliczeni
  */
-fun SettlementRelationDto.toUiModel(
-    currentUserId: String,
-    tripCurrency: String
-): SettlementRelationUiModel {
-    return SettlementRelationUiModel(
-        id = "${fromUserId}_${toUserId}",
-        fromUserId = fromUserId,
-        toUserId = toUserId,
-        fromUserName = fromUserName,
-        toUserName = toUserName,
-        amountMainCurrency = amount.valueMainCurrency,
-        mainCurrency = tripCurrency,
-        formattedAmount = "%.2f %s".format(amount.valueMainCurrency, tripCurrency),
-        isCurrentUserInvolved = fromUserId == currentUserId || toUserId == currentUserId,
-        currentUserIsDebtor = fromUserId == currentUserId,
-        isSettled = isSettled
-    )
-}
-
-/**
- * Tworzy szczegóły rozliczenia dla modala
- */
-fun SettlementRelationDto.toDetailUiModel(
-    currentUserId: String,
-    tripCurrency: String
-): SettlementDetailUiModel {
-    // Mapuj inne waluty
-    val otherCurrencies = amount.valueOtherCurrencies.map { currency ->
-        CurrencyAmountUiModel(
-            currency = currency.currency,
-            amount = currency.value,
-            formattedAmount = "%.2f %s".format(currency.value, currency.currency)
-        )
-    }
-
-    return SettlementDetailUiModel(
-        relationId = "${fromUserId}_${toUserId}",
-        fromUserName = fromUserName,
-        toUserName = toUserName,
-        amountMainCurrency = amount.valueMainCurrency,
-        mainCurrency = tripCurrency,
-        formattedAmountMain = "%.2f %s".format(amount.valueMainCurrency, tripCurrency),
-        otherCurrencies = otherCurrencies,
-        isCurrentUserDebtor = fromUserId == currentUserId
-    )
+fun List<SettlementParticipantUiModel>.sortByBalance(): List<SettlementParticipantUiModel> {
+    return sortedWith(compareBy(
+        { participant ->
+            when (participant.balanceStatus) {
+                ParticipantBalanceStatus.NEGATIVE -> 0  // Najpierw ci, którym jestem winien
+                ParticipantBalanceStatus.POSITIVE -> 1  // Potem ci, którzy mi są winni
+                ParticipantBalanceStatus.SETTLED -> 2   // Na końcu rozliczeni
+            }
+        },
+        { -kotlin.math.abs(it.balance) }  // W ramach grupy: wg wielkości balansu (malejąco)
+    ))
 }

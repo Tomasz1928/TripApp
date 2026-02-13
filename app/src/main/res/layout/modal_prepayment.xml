@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Modal Prepayment (Zaliczka)
+    Wzorowany na modal_settlement_detail.xml - używa TYLKO istniejących styli
+-->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Card.Modal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/modal_margin">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_default">
+
+            <!-- Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/modalTitle"
+                    style="@style/Text.Title"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settlements_prepayment_title"/>
+
+                <ImageView
+                    android:id="@+id/closeButton"
+                    android:layout_width="@dimen/modal_close_button_size"
+                    android:layout_height="@dimen/modal_close_button_size"
+                    android:src="@drawable/ic_back_arrow"
+                    android:contentDescription="@string/cd_close_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="@dimen/padding_tiny"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+            </LinearLayout>
+
+            <!-- Separator -->
+            <View
+                style="@style/Divider"
+                android:layout_marginVertical="@dimen/spacing_medium"/>
+
+            <!-- Informacja o uczestniku -->
+            <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settlements_prepayment_participant"/>
+
+                <TextView
+                    android:id="@+id/participantNickname"
+                    style="@style/Text.Body.Bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:text="Adam"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="end">
+
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settlements_prepayment_current_balance"/>
+
+                <TextView
+                    android:id="@+id/currentBalance"
+                    style="@style/Text.Body.Bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:text="+150,00 PLN"
+                    android:textColor="@color/success"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+            <!-- Separator -->
+            <View
+                style="@style/Divider"
+                android:layout_marginVertical="@dimen/spacing_medium"/>
+
+            <!-- Kierunek: Pieniądze trafiają do mnie -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/directionToMeCard"
+                style="@style/Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/divider"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/padding_tiny"
+                    android:gravity="center_vertical">
+
+                    <RadioButton
+                        android:id="@+id/directionToMeRadio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/spacing_small">
+
+                        <TextView
+                            style="@style/Text.Body.Bold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settlements_prepayment_to_me"/>
+
+                        <TextView
+                            style="@style/Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settlements_prepayment_to_me_desc"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_arrow_downward"
+                        app:tint="@color/success"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Kierunek: Ja daję pieniądze -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/directionFromMeCard"
+                style="@style/Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/divider"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/padding_tiny"
+                    android:gravity="center_vertical">
+
+                    <RadioButton
+                        android:id="@+id/directionFromMeRadio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/spacing_small">
+
+                        <TextView
+                            style="@style/Text.Body.Bold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settlements_prepayment_from_me"/>
+
+                        <TextView
+                            style="@style/Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settlements_prepayment_from_me_desc"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_arrow_upward"
+                        app:tint="@color/error"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Input kwoty -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/spacing_medium">
+
+                <!-- Input kwoty (waga 2) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/amountInputLayout"
+                    style="@style/InputLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:layout_marginEnd="@dimen/spacing_small"
+                    android:hint="@string/settlements_prepayment_amount_hint"
+                    app:errorEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/amountInput"
+                        style="@style/InputEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:maxLines="1" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Dropdown waluty (waga 1) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/currencyInputLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/settlements_prepayment_currency_hint">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/currencyDropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:padding="@dimen/padding_medium"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+            <!-- Przycisk potwierdzenia -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/confirmButton"
+                style="@style/Button.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settlements_prepayment_confirm"
+                android:layout_marginTop="@dimen/spacing_small"/>
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.cardview.widget.CardView>

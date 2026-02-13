@@ -230,23 +230,32 @@
     <string name="settlements_balance_positive">NA PLUSIE</string>
     <string name="settlements_balance_negative">NA MINUSIE</string>
     <string name="settlements_balance_settled">ROZLICZONY</string>
-    <string name="settlements_owed_to_you">Winni Tobie</string>
-    <string name="settlements_you_owe">Ty winien</string>
-    <string name="settlements_owed_to_owed">winien</string>
-    <string name="settlements_all_settled">Wszystko rozliczone! 🎉</string>
-    <string name="settlements_all_settled_description">Wszyscy uczestnicy są na zero. Świetna robota!</string>
     <string name="settlements_settle_button">Rozlicz</string>
-    <string name="settlements_settled_badge">ROZLICZONE</string>
-    <string name="settlements_placeholder_badge">OCZEKUJE</string>
-    <string name="settlements_detail_title">Szczegóły rozliczenia</string>
-    <string name="settlements_detail_breakdown">Rozbicie po walutach:</string>
-    <string name="settlements_detail_mark_settled">Oznacz jako rozliczone</string>
-    <string name="settlements_detail_info">Po kliknięciu "Rozlicz" system oznaczy ten dług jako spłacony. Upewnij się, że pieniądze zostały faktycznie przekazane.</string>
-    <string name="settlements_marked_as_settled">Rozliczenie zostało potwierdzone</string>
-    <string name="settlements_error_loading">Nie udało się załadować rozliczeń</string>
-    <string name="settlements_error_settling">Nie udało się potwierdzić rozliczenia</string>
-    <string name="settlement_you_owe_user">Ty winien %s</string>
-    <string name="settlement_user_owes_you">%s winna Tobie</string>
+
+    <!-- Nagłówki i etykiety -->
+    <string name="settlements_my_balance">Mój bilans</string>
+    <string name="settlements_empty_title">Brak uczestników</string>
+    <string name="settlements_empty_message">W tej wycieczce nie ma innych uczestników do rozliczenia.</string>
+
+    <!-- Przyciski -->
+    <string name="settlements_prepayment_button">Zaliczka</string>
+    <string name="settlements_prepayment_currency_hint">Waluta</string>
+    <string name="settlements_settlements_details_button">Szczegóły</string>
+
+    <!-- Modal zaliczki -->
+    <string name="settlements_prepayment_title">Dodaj zaliczkę</string>
+    <string name="settlements_prepayment_participant">Uczestnik</string>
+    <string name="settlements_prepayment_current_balance">Aktualny bilans</string>
+    <string name="settlements_prepayment_direction">Kierunek zaliczki</string>
+    <string name="settlements_prepayment_to_me">Pieniądze do mnie</string>
+    <string name="settlements_prepayment_to_me_desc">Uczestnik daje mi zaliczkę</string>
+    <string name="settlements_prepayment_from_me">Ja daję pieniądze</string>
+    <string name="settlements_prepayment_from_me_desc">Daję uczestnikowi zaliczkę</string>
+    <string name="settlements_prepayment_amount_hint">Kwota zaliczki</string>
+    <string name="settlements_prepayment_currency_info">Zaliczka zostanie zapisana w walucie wycieczki</string>
+    <string name="settlements_prepayment_currency_info_format">Zaliczka zostanie zapisana w walucie wycieczki (%s)</string>
+    <string name="settlements_prepayment_confirm">Dodaj zaliczkę</string>
+
 
     <!-- ========================================= -->
     <!-- MODAL -->

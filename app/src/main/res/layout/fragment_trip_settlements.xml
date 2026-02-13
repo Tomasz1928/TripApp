@@ -1,209 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Trip Settlements Fragment Layout
-    Struktura: Obrazek (35%) → Nagłówek → Treść (Rozliczenia)
+    Trip Settlements Fragment Layout (NOWY)
+    Struktura: Obrazek (25%) → Nagłówek → Podsumowanie balansu → Lista uczestników z balansami
+    Wzorowany na fragment_trip_participants - używa TYLKO istniejących styli
 -->
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <!-- ================================== -->
-    <!-- HEADER IMAGE - 35% wysokości ekranu -->
-    <!-- ================================== -->
-    <FrameLayout
-        android:id="@+id/headerImageContainer"
-        style="@style/HeaderImageContainer"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.25">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/headerImage"
-            style="@style/HeaderImage"
-            android:src="@drawable/header_l_settlements"/>
-    </FrameLayout>
+        <!-- ================================== -->
+        <!-- HEADER IMAGE - 25% wysokości ekranu -->
+        <!-- ================================== -->
+        <FrameLayout
+            android:id="@+id/headerImageContainer"
+            style="@style/HeaderImageContainer"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.25">
 
-    <!-- Back Button (na obrazku) -->
-    <ImageView
-        android:id="@+id/backButton"
-        style="@style/BackButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/headerImageContainer"/>
+            <ImageView
+                android:id="@+id/headerImage"
+                style="@style/HeaderImage"
+                android:src="@drawable/header_l_settlements"/>
 
-    <!-- ================================== -->
-    <!-- NAGŁÓWEK WIDOKU (WYŚRODKOWANY) -->
-    <!-- ================================== -->
-    <TextView
-        android:id="@+id/settlementsTitle"
-        style="@style/Text.Heading.Screen"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/settlements_title"
-        android:gravity="center"
-        android:textAlignment="center"
-        app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <!-- Back Button (na obrazku) -->
+            <ImageView
+                android:id="@+id/backButton"
+                style="@style/BackButton" />
+        </FrameLayout>
 
-    <!-- ================================== -->
-    <!-- TREŚĆ - Rozliczenia -->
-    <!-- ================================== -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollViewSettlements"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/settlementsTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- ================================== -->
+        <!-- NAGŁÓWEK WIDOKU (WYŚRODKOWANY) -->
+        <!-- ================================== -->
+        <TextView
+            android:id="@+id/settlementsTitle"
+            style="@style/Text.Heading.Screen"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/padding_default"
-            android:paddingBottom="@dimen/spacing_large">
+            android:text="@string/settlements_title"
+            android:gravity="center"
+            android:textAlignment="center"
+            app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Balance Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/balanceCard"
-                style="@style/Card"
+        <!-- ================================== -->
+        <!-- KARTA PODSUMOWANIA MOJEGO BALANSU -->
+        <!-- ================================== -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/balanceSummaryCard"
+            style="@style/Card"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/padding_default"
+            android:layout_marginTop="@dimen/spacing_small"
+            app:layout_constraintTop_toBottomOf="@id/settlementsTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_medium">
+                android:orientation="vertical"
+                android:padding="@dimen/padding_medium"
+                android:gravity="center">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/balanceLabel"
+                    style="@style/Text.Body.Secondary"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/padding_default"
-                    android:gravity="center">
+                    android:text="@string/settlements_my_balance"/>
 
-                    <!-- Balance Amount -->
-                    <TextView
-                        android:id="@+id/balanceAmount"
-                        style="@style/Text.Title.Large"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="+128,33 EUR"
-                        android:textColor="@color/success"
-                        android:layout_marginTop="@dimen/spacing_tiny"/>
+                <TextView
+                    android:id="@+id/balanceAmount"
+                    style="@style/Text.Title.Medium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+0,00 PLN"
+                    android:textColor="@color/success"
+                    android:layout_marginTop="@dimen/spacing_tiny"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Balance Status -->
-                    <TextView
-                        android:id="@+id/balanceStatus"
-                        style="@style/Text.Body.Bold"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/settlements_balance_positive"
-                        android:textColor="@color/success"
-                        android:layout_marginTop="@dimen/spacing_tiny"/>
+        <!-- ================================== -->
+        <!-- TREŚĆ - Lista uczestników z balansami -->
+        <!-- ================================== -->
+        <ScrollView
+            android:id="@+id/scrollParticipants"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            android:clipToPadding="false"
+            app:layout_constraintTop_toBottomOf="@id/balanceSummaryCard"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-                    <!-- Separator -->
-                    <View
-                        style="@style/Divider"
-                        android:layout_marginVertical="@dimen/spacing_medium"/>
+            <LinearLayout
+                android:id="@+id/participantsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/padding_default"/>
+        </ScrollView>
 
-                    <!-- Breakdown -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+        <!-- ================================== -->
+        <!-- EMPTY STATE - Brak uczestników -->
+        <!-- ================================== -->
+        <LinearLayout
+            android:id="@+id/emptyState"
+            style="@style/EmptyState"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/balanceSummaryCard"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-                        <!-- Owed to You -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_category_other_fees"
+                app:tint="@color/text_hint"/>
 
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/settlements_owed_to_you"/>
-
-                            <TextView
-                                android:id="@+id/owedToYou"
-                                style="@style/Text.Body.Bold"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="156,67 EUR"
-                                android:textColor="@color/success"
-                                android:layout_marginTop="@dimen/spacing_tiny"/>
-                        </LinearLayout>
-
-                        <!-- You Owe -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="end">
-
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/settlements_you_owe"/>
-
-                            <TextView
-                                android:id="@+id/youOwe"
-                                style="@style/Text.Body.Bold"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="28,34 EUR"
-                                android:textColor="@color/error"
-                                android:layout_marginTop="@dimen/spacing_tiny"/>
-                        </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Trip Name Label -->
             <TextView
-                android:id="@+id/tripNameLabel"
-                style="@style/Text.Title"
+                android:id="@+id/emptyStateTitle"
+                style="@style/Text.Title.Medium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Włochy - Lato"
-                android:layout_marginBottom="@dimen/spacing_small"/>
+                android:text="@string/settlements_empty_title"
+                android:layout_marginTop="@dimen/spacing_medium"/>
 
-            <!-- Relations Container -->
-            <LinearLayout
-                android:id="@+id/relationsContainer"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/emptyStateMessage"
+                style="@style/Text.Body.Secondary"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"/>
+                android:text="@string/settlements_empty_message"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/spacing_small"/>
 
-            <!-- Empty State -->
-            <LinearLayout
-                android:id="@+id/emptyState"
-                style="@style/EmptyState"
-                android:visibility="gone">
-
-                <TextView
-                    style="@style/Text.Body.Bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settlements_all_settled"
-                    android:textColor="@color/success"
-                    android:textAlignment="center"/>
-
-                <TextView
-                    style="@style/Text.Caption"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_small"
-                    android:text="@string/settlements_all_settled_description"
-                    android:textAlignment="center"/>
-            </LinearLayout>
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
