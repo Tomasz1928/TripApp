@@ -88,25 +88,29 @@ enum class BalanceStatus {
     MINUS
 }
 
-data class UserInfoDto (
+data class SettlementResultDto(
+    val success: SuccessDto,
+    val trip: TripDto? = null
+)
+
+data class UserInfoDto(
     val id: String,
     val nickname: String
 )
 
 data class SuccessDto(
     val success: Boolean,
-    val message: String?=null
+    val message: String? = null
 )
-
 
 data class CreateTripDto(
     val success: SuccessDto,
-    val trip: TripDto?=null
+    val trip: TripDto? = null
 )
 
 data class JoinTripDto(
     val success: SuccessDto,
-    val trip: TripDto?=null
+    val trip: TripDto? = null
 )
 
 data class AddExpenseDto(
@@ -114,6 +118,24 @@ data class AddExpenseDto(
     val trip: TripDto? = null
 )
 
+data class UpdateExpenseDto(
+    val success: SuccessDto,
+    val trip: TripDto? = null
+)
+
+data class DeleteExpenseDto(
+    val success: SuccessDto,
+    val trip: TripDto? = null
+)
+
+data class ParticipantsDto(
+    val success: SuccessDto,
+    val trip: TripDto? = null
+)
+
+// ==========================================
+// REQUEST MODELS
+// ==========================================
 
 data class AddExpenseRequest(
     val tripId: String,
@@ -128,12 +150,6 @@ data class AddExpenseRequest(
     val sharedWith: List<ShareDto>
 )
 
-data class ParticipantsDto(
-    val success: SuccessDto,
-    val trip: TripDto? = null
-
-)
-
 data class UpdateExpenseRequest(
     val tripId: String,
     val expenseId: String,
@@ -146,14 +162,4 @@ data class UpdateExpenseRequest(
     val payerId: String,
     val payerNickname: String,
     val sharedWith: List<ShareDto>
-)
-
-data class UpdateExpenseDto(
-    val success: SuccessDto,
-    val trip: TripDto? = null
-)
-
-data class DeleteExpenseDto(
-    val success: SuccessDto,
-    val trip: TripDto? = null
 )

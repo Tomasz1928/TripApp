@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.example.tripapp2.R
 import com.example.tripapp2.ui.common.base.BaseFragment
@@ -17,13 +18,16 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 
 /**
- * Fragment rozliczeń (NOWA WERSJA)
+ * Fragment rozliczeń
  *
- * Funkcjonalności:
- * - Wyświetlanie listy uczestników z informacją o balansie względem mnie
- * - Przyciski: Zaliczka (dla wszystkich), Rozlicz (tylko dla nie-zerowych)
- * - Modal zaliczki z kierunkiem i kwotą
- * - Brak logiki n-do-n, tylko moje relacje
+ * Przepływ danych:
+ * - Lista uczestników pochodzi z TripDto.participants (bez mnie)
+ * - Balans pochodzi z TripDto.settlement.relations
+ *
+ * Logika przycisków:
+ * - Zaliczka: ZAWSZE widoczny dla każdego uczestnika
+ * - Szczegóły: widoczny TYLKO gdy hasSettlementRelation = true
+ * - Rozlicz: widoczny TYLKO gdy hasSettlementRelation = true AND balance != 0
  */
 class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.fragment_trip_settlements) {
 
@@ -57,14 +61,19 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
             }
         }
 
-        // Event otwarcia modala rozliczenia (na przyszłość)
-        viewModel.showSettleModalEvent.observe(viewLifecycleOwner) { event ->
+        // Event otwarcia modala szczegółów
+        viewModel.showDetailsModalEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { participant ->
-                // TODO: Implementacja modala rozliczenia
-                showMessage("Rozliczenie z ${participant.nickname} - do implementacji")
+                showDetailsModal(participant)
             }
         }
 
+        // Event otwarcia modala rozliczenia
+        viewModel.showSettleModalEvent.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { participant ->
+                showSettleModal(participant)
+            }
+        }
 
         // Event potwierdzenia akcji
         viewModel.actionConfirmedEvent.observe(viewLifecycleOwner) { event ->
@@ -95,16 +104,13 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
      */
     private fun onBackClicked() {
         (activity as? DashboardActivity)?.apply {
-            // Pokaż bottom nav z powrotem
             tripBottomNav.visibility = View.VISIBLE
 
-            // Wróć do TripDetails
             val fragment = com.example.tripapp2.ui.tripdetails.TripDetailsFragment.newInstance(getTripId())
             supportFragmentManager.beginTransaction()
                 .replace(R.id.tripContainer, fragment, "tripDetails")
                 .commit()
 
-            // Ustaw wybrany item
             tripBottomNav.selectedItemId = R.id.menu_overview
         }
     }
@@ -116,6 +122,7 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         when (state) {
             is TripSettlementsState.Loading -> {
                 balanceSummaryCard.hide()
+                scrollParticipants.hide()
                 participantsContainer.hide()
                 emptyState.hide()
             }
@@ -123,17 +130,24 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
                 emptyState.hide()
                 balanceSummaryCard.show()
                 scrollParticipants.show()
+                participantsContainer.show()
 
-                displayBalanceSummary(state.myTotalBalance, state.formattedMyTotalBalance)
+                displayBalanceSummary(
+                    state.myTotalBalance,
+                    state.formattedMyTotalBalance,
+                    state.myBalanceStatus
+                )
                 displayParticipants(state.participants, state.tripCurrency)
             }
             is TripSettlementsState.Empty -> {
                 balanceSummaryCard.hide()
                 scrollParticipants.hide()
+                participantsContainer.hide()
                 emptyState.show()
             }
             is TripSettlementsState.Error -> {
                 balanceSummaryCard.hide()
+                scrollParticipants.hide()
                 participantsContainer.hide()
                 emptyState.hide()
                 showError(state.message)
@@ -144,70 +158,102 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
     /**
      * Wyświetla podsumowanie mojego całkowitego balansu
      */
-    private fun displayBalanceSummary(totalBalance: Float, formattedBalance: String) {
+    private fun displayBalanceSummary(
+        totalBalance: Float,
+        formattedBalance: String,
+        balanceStatus: ParticipantBalanceStatus
+    ) {
         balanceAmount.text = formattedBalance
 
-        when {
-            totalBalance > 0.01f -> {
-                balanceAmount.setTextColor(resources.getColor(R.color.success, null))
+        val (colorRes, statusTextRes) = when (balanceStatus) {
+            ParticipantBalanceStatus.POSITIVE -> {
+                R.color.success to R.string.settlements_balance_positive
             }
-            totalBalance < -0.01f -> {
-                balanceAmount.setTextColor(resources.getColor(R.color.error, null))
+            ParticipantBalanceStatus.NEGATIVE -> {
+                R.color.error to R.string.settlements_balance_negative
             }
-            else -> {
-                balanceAmount.setTextColor(resources.getColor(R.color.text_secondary, null))
+            ParticipantBalanceStatus.SETTLED -> {
+                R.color.text_secondary to R.string.settlements_balance_settled
             }
         }
+
+        balanceAmount.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
     }
 
     /**
-     * Wyświetla listę uczestników z balansami
+     * Wyświetla listę uczestników z ich balansem
      */
     private fun displayParticipants(
         participants: List<SettlementParticipantUiModel>,
-        tripCurrency: String
+        currency: String
     ) {
         participantsContainer.removeAllViews()
 
         participants.forEach { participant ->
-            val itemView = createParticipantView(participant)
-            participantsContainer.addView(itemView)
+            val cardView = createParticipantCard(participant, currency)
+            participantsContainer.addView(cardView)
         }
     }
 
     /**
-     * Tworzy widok pojedynczego uczestnika
+     * Tworzy kartę uczestnika z przyciskami
+     *
+     * Logika przycisków:
+     * - Zaliczka: ZAWSZE widoczny
+     * - Szczegóły: tylko gdy hasSettlementRelation = true
+     * - Rozlicz: tylko gdy hasSettlementRelation = true AND balanceStatus != SETTLED
      */
-    private fun createParticipantView(participant: SettlementParticipantUiModel): View {
-        val view = layoutInflater.inflate(R.layout.item_settlement_participant, participantsContainer, false)
+    private fun createParticipantCard(
+        participant: SettlementParticipantUiModel,
+        currency: String
+    ): View {
+        val inflater = LayoutInflater.from(requireContext())
+        val cardView = inflater.inflate(R.layout.item_settlement_participant, participantsContainer, false)
 
-        // Nickname
-        view.findViewById<TextView>(R.id.participantNickname).text = participant.nickname
+        // Znajdź views w karcie
+        val nicknameText = cardView.findViewById<TextView>(R.id.participantNickname)
+        val balanceText = cardView.findViewById<TextView>(R.id.balanceAmount)
+        val prepaymentButton = cardView.findViewById<MaterialButton>(R.id.prepaymentButton)
+        val detailsButton = cardView.findViewById<MaterialButton>(R.id.settlementDetailsButton)
+        val settleButton = cardView.findViewById<MaterialButton>(R.id.settleButton)
 
-        // Kwota balansu
-        val balanceAmountView = view.findViewById<TextView>(R.id.balanceAmount)
-        balanceAmountView.text = participant.formattedBalance
+        // Ustaw dane
+        nicknameText.text = participant.nickname
 
-        // Ustaw kolor
-        when (participant.balanceStatus) {
+        // Placeholder badge (jeśli potrzebny)
+        if (participant.isPlaceholder) {
+            nicknameText.text = "${participant.nickname} (placeholder)"
+        }
+
+        // Balans i kolor
+        balanceText.text = participant.formattedBalance
+
+        val (colorRes, statusTextRes) = when (participant.balanceStatus) {
             ParticipantBalanceStatus.POSITIVE -> {
-                balanceAmountView.setTextColor(resources.getColor(R.color.success, null))
+                R.color.success to R.string.settlements_balance_positive
             }
             ParticipantBalanceStatus.NEGATIVE -> {
-                balanceAmountView.setTextColor(resources.getColor(R.color.error, null))
+                R.color.error to R.string.settlements_balance_negative
             }
             ParticipantBalanceStatus.SETTLED -> {
-                balanceAmountView.setTextColor(resources.getColor(R.color.text_secondary, null))
+                R.color.text_secondary to R.string.settlements_balance_settled
             }
         }
 
-        // Przyciski akcji
-        val detailsButton = view.findViewById<MaterialButton>(R.id.settlementDetailsButton)
-        val prepaymentButton = view.findViewById<MaterialButton>(R.id.prepaymentButton)
-        val settleButton = view.findViewById<MaterialButton>(R.id.settleButton)
+        balanceText.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
 
-        // Przycisk Szczegóły - tylko jeśli są dane rozliczeń
-        if (participant.hasSettlementDetails) {
+        // ==========================================
+        // LOGIKA PRZYCISKÓW
+        // ==========================================
+
+        // Zaliczka - ZAWSZE widoczny
+        prepaymentButton.visibility = View.VISIBLE
+        prepaymentButton.setOnClickListener {
+            viewModel.onPrepaymentClicked(participant)
+        }
+
+        // Szczegóły - tylko gdy hasSettlementRelation = true
+        if (participant.hasSettlementRelation) {
             detailsButton.visibility = View.VISIBLE
             detailsButton.setOnClickListener {
                 viewModel.onDetailsClicked(participant)
@@ -216,13 +262,8 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
             detailsButton.visibility = View.GONE
         }
 
-        // Przycisk Zaliczka - zawsze widoczny
-        prepaymentButton.setOnClickListener {
-            viewModel.onPrepaymentClicked(participant)
-        }
-
-        // Przycisk Rozlicz - tylko jeśli nie na 0
-        if (participant.balanceStatus != ParticipantBalanceStatus.SETTLED) {
+        // Rozlicz - tylko gdy hasSettlementRelation = true AND balance != 0
+        if (participant.hasSettlementRelation && participant.balanceStatus != ParticipantBalanceStatus.SETTLED) {
             settleButton.visibility = View.VISIBLE
             settleButton.setOnClickListener {
                 viewModel.onSettleClicked(participant)
@@ -231,35 +272,70 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
             settleButton.visibility = View.GONE
         }
 
-        return view
+        return cardView
     }
 
     /**
      * Pokazuje modal zaliczki
+     *
+     * Przepływ:
+     * 1. Tworzy PrepaymentModalFragment z danymi uczestnika
+     * 2. Po potwierdzeniu w modalu - callback z PrepaymentRequest
+     * 3. Uzupełnia tripId i przekazuje do ViewModel
+     * 4. ViewModel zapisuje przez Repository → cache aktualizowany
+     * 5. UI odświeżane przez loadSettlements()
      */
     private fun showPrepaymentModal(model: PrepaymentUiModel) {
         val modal = PrepaymentModalFragment.newInstance(model) { request ->
-            // Uzupełnij tripId
+            // Uzupełnij tripId (modal go nie zna)
             val fullRequest = request.copy(tripId = getTripId())
+            // Przekaż do ViewModel - zapisze i odświeży dane
             viewModel.onPrepaymentConfirmed(fullRequest)
         }
         modal.show(parentFragmentManager, "prepayment_modal")
     }
 
     /**
-     * Pobiera ID wycieczki
+     * Pokazuje modal szczegółów rozliczenia
      */
-    private fun getTripId(): String {
-        return arguments?.getString(ARG_TRIP_ID) ?: ""
+    private fun showDetailsModal(participant: SettlementParticipantUiModel) {
+        // TODO: Implementacja modala szczegółów
+        val balanceInfo = when (participant.balanceStatus) {
+            ParticipantBalanceStatus.POSITIVE -> "${participant.nickname} jest Ci winien/winna ${participant.formattedBalance}"
+            ParticipantBalanceStatus.NEGATIVE -> "Jesteś winien/winna ${participant.nickname} ${participant.formattedBalance}"
+            ParticipantBalanceStatus.SETTLED -> "Rozliczenie z ${participant.nickname} jest zakończone"
+        }
+        showMessage(balanceInfo)
+    }
+
+    /**
+     * Pokazuje modal rozliczenia
+     */
+    private fun showSettleModal(participant: SettlementParticipantUiModel) {
+        // TODO: Implementacja modala rozliczenia z layout/modal_settlement_detail.xml
+        // Na razie pokazujemy prosty komunikat i od razu rozliczamy
+
+        val message = "Czy chcesz rozliczyć całą kwotę ${participant.formattedBalance} z ${participant.nickname}?"
+        showMessage(message)
+
+        // Przykładowe wywołanie - w prawdziwej implementacji powinien być dialog
+        // viewModel.onSettleConfirmed(participant)
     }
 
     companion object {
-        private const val ARG_TRIP_ID = "trip_id"
+        private const val ARG_TRIP_ID = "tripId"
 
-        fun newInstance(tripId: String) = TripSettlementsFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_TRIP_ID, tripId)
+        fun newInstance(tripId: String): TripSettlementsFragment {
+            return TripSettlementsFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_TRIP_ID, tripId)
+                }
             }
         }
+    }
+
+    private fun getTripId(): String {
+        return arguments?.getString(ARG_TRIP_ID)
+            ?: throw IllegalStateException("Trip ID is required")
     }
 }
