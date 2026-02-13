@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_medium">
+
+        <!-- Górna część: Nickname + Balans -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/spacing_small">
+
+            <!-- Lewa strona: Nickname -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/participantNickname"
+                    style="@style/Text.Body.Large"
+                    android:textStyle="bold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Adam"/>
+            </LinearLayout>
+
+            <!-- Prawa strona: Kwota balansu -->
+            <TextView
+                android:id="@+id/balanceAmount"
+                style="@style/Text.Body.Large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+150,00 PLN"
+                android:textColor="@color/success"
+                android:gravity="end"/>
+        </LinearLayout>
+
+        <!-- Separator -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider"
+            android:layout_marginBottom="@dimen/spacing_small"/>
+
+        <!-- Dolna część: Przyciski akcji - równomiernie rozmieszczone -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Przycisk Szczegóły (od lewej) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/settlementDetailsButton"
+                style="@style/Button.Action.Primary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/settlements_settlements_details_button"
+                android:visibility="gone"/>
+
+            <!-- Przycisk Zaliczka (od środka) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/prepaymentButton"
+                style="@style/Button.Action.Primary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="@dimen/spacing_tiny"
+                android:text="@string/settlements_prepayment_button"/>
+
+            <!-- Przycisk Rozlicz (od prawej) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/settleButton"
+                style="@style/Button.Action.Primary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/settlements_settle_button"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -3,61 +3,104 @@ package com.example.tripapp2.ui.tripdetails.settlements
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.tripapp2.R
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel dla ekranu Settlements
+ *
+ * Nowa koncepcja:
+ * - Pokazuje listę uczestników (poza mną) z informacją o balansie
+ * - Każdy uczestnik ma przyciski: Zaliczka (zawsze), Rozlicz (jeśli nie na 0)
+ * - Brak logiki n-do-n, tylko moje relacje
+ */
 class TripSettlementsViewModel(
-    private val tripId: String,
-    private val currentUserId: String = "current_user", // TODO: Pobierz z UserManager
-    private val tripRepository: TripRepository = TripRepository.getInstance()
+    private val tripId: String
 ) : BaseViewModel() {
 
+    private val tripRepository = TripRepository.getInstance()
+
+    // Mock - w prawdziwej aplikacji pobierane z auth
+    private val currentUserId = "10"
+
+    // Stan ekranu
     private val _settlementsState = MutableLiveData<TripSettlementsState>()
     val settlementsState: LiveData<TripSettlementsState> = _settlementsState
 
-    private val _showSettlementDetailEvent = MutableLiveData<Event<SettlementDetailUiModel>>()
-    val showSettlementDetailEvent: LiveData<Event<SettlementDetailUiModel>> = _showSettlementDetailEvent
+    // Event otwarcia modala zaliczki
+    private val _showPrepaymentModalEvent = MutableLiveData<Event<PrepaymentUiModel>>()
+    val showPrepaymentModalEvent: LiveData<Event<PrepaymentUiModel>> = _showPrepaymentModalEvent
 
-    private val _settlementConfirmedEvent = MutableLiveData<Event<String>>()
-    val settlementConfirmedEvent: LiveData<Event<String>> = _settlementConfirmedEvent
+    // Event otwarcia modala rozliczenia (na przyszłość)
+    private val _showSettleModalEvent = MutableLiveData<Event<SettlementParticipantUiModel>>()
+    val showSettleModalEvent: LiveData<Event<SettlementParticipantUiModel>> = _showSettleModalEvent
+
+    // Event potwierdzenia akcji
+    private val _actionConfirmedEvent = MutableLiveData<Event<String>>()
+    val actionConfirmedEvent: LiveData<Event<String>> = _actionConfirmedEvent
 
     init {
         loadSettlements()
     }
 
     /**
-     * Ładuje rozliczenia dla wycieczki
+     * Ładuje dane rozliczeń
      */
     fun loadSettlements() {
         viewModelScope.launch {
-            _settlementsState.value = TripSettlementsState.Loading
-
             try {
+                _settlementsState.value = TripSettlementsState.Loading
+
                 val trip = tripRepository.getTripDetails(tripId)
 
                 if (trip == null) {
-                    _settlementsState.value = TripSettlementsState.Error(
-                        "Nie znaleziono wycieczki"
-                    )
+                    _settlementsState.value = TripSettlementsState.Error("Nie znaleziono wycieczki")
                     return@launch
                 }
 
-                val settlement = trip.settlement
+                // Pobierz uczestników (bez mnie)
+                val otherParticipants = trip.participants.filter { it.id != currentUserId }
 
-                val hasUnpaidRelations = settlement?.relations?.any { !it.isSettled } ?: false
-
-                if (!hasUnpaidRelations) {
-                    _settlementsState.value = TripSettlementsState.AllSettled
-                } else {
-                    _settlementsState.value = settlement?.toSuccessState(
-                        currentUserId = currentUserId,
-                        tripTitle = trip.title,
-                        tripCurrency = trip.currency
-                    )
+                if (otherParticipants.isEmpty()) {
+                    _settlementsState.value = TripSettlementsState.Empty
+                    return@launch
                 }
+
+                // Pobierz relacje rozliczeniowe
+                val allRelations = trip.settlement?.relations ?: emptyList()
+
+                // Moje relacje jako dłużnik (ja winien innym)
+                val myRelationsAsDebtor = allRelations.filter { it.fromUserId == currentUserId }
+
+                // Moje relacje jako wierzyciel (inni winni mnie)
+                val myRelationsAsCreditor = allRelations.filter { it.toUserId == currentUserId }
+
+                // Mapuj uczestników na model z balansem
+                val settlementParticipants = otherParticipants.map { participant ->
+                    participant.toSettlementUiModel(
+                        myRelationsAsDebtor = myRelationsAsDebtor,
+                        myRelationsAsCreditor = myRelationsAsCreditor,
+                        currency = trip.currency
+                    )
+                }.sortByBalance()
+
+                // Oblicz mój całkowity bilans
+                val myTotalBalance = settlementParticipants.sumOf { it.balance.toDouble() }.toFloat()
+                val formattedTotalBalance = when {
+                    myTotalBalance > 0.01f -> "+%.2f %s".format(myTotalBalance, trip.currency)
+                    myTotalBalance < -0.01f -> "%.2f %s".format(myTotalBalance, trip.currency)
+                    else -> "0,00 %s".format(trip.currency)
+                }
+
+                _settlementsState.value = TripSettlementsState.Success(
+                    participants = settlementParticipants,
+                    tripName = trip.title,
+                    tripCurrency = trip.currency,
+                    myTotalBalance = myTotalBalance,
+                    formattedMyTotalBalance = formattedTotalBalance
+                )
 
             } catch (e: Exception) {
                 _settlementsState.value = TripSettlementsState.Error(
@@ -68,78 +111,82 @@ class TripSettlementsViewModel(
     }
 
     /**
-     * Kliknięcie w relację - pokazuje szczegóły
+     * Kliknięcie przycisku "Zaliczka" przy uczestniku
      */
-    fun onRelationClicked(relation: SettlementRelationUiModel) {
+    fun onPrepaymentClicked(participant: SettlementParticipantUiModel) {
+        val prepaymentModel = PrepaymentUiModel(
+            participantId = participant.participantId,
+            participantNickname = participant.nickname,
+            availableCurrencies = listOf("PLN", "EUR", "USD", "GBP", "CHF", "CZK"),
+            currentBalance = participant.balance,
+            formattedCurrentBalance = participant.formattedBalance
+        )
+        _showPrepaymentModalEvent.value = Event(prepaymentModel)
+    }
+
+    fun onDetailsClicked(participant: SettlementParticipantUiModel) {
+        // TODO: Implementacja pokazania szczegółów rozliczeń
+        // np. _showDetailsModalEvent.value = Event(participant)
+    }
+
+    /**
+     * Kliknięcie przycisku "Rozlicz" przy uczestniku
+     */
+    fun onSettleClicked(participant: SettlementParticipantUiModel) {
+        // Na razie tylko event - do implementacji później
+        _showSettleModalEvent.value = Event(participant)
+    }
+
+    /**
+     * Potwierdzenie zaliczki z modala
+     */
+    fun onPrepaymentConfirmed(request: PrepaymentRequest) {
         viewModelScope.launch {
             try {
-                val trip = tripRepository.getTripDetails(tripId)
+                setLoading(true)
 
-                if (trip == null) {
-                    showError("Nie znaleziono wycieczki")
-                    return@launch
+                // TODO: Wywołanie API do zapisania zaliczki
+                // val result = tripRepository.addPrepayment(request)
+
+                // Mock - symulacja sukcesu
+                kotlinx.coroutines.delay(500)
+
+                val directionText = when (request.direction) {
+                    PrepaymentDirection.TO_ME -> "od uczestnika"
+                    PrepaymentDirection.FROM_ME -> "dla uczestnika"
                 }
 
-                // Znajdź odpowiednią relację w danych z backendu
-                val settlementRelation = trip.settlement?.relations?.find {
-                    it.fromUserId == relation.fromUserId && it.toUserId == relation.toUserId
-                }
+                _actionConfirmedEvent.value = Event(
+                    "Zaliczka ${request.amount} ${request.currency} $directionText została zapisana"
+                )
 
-                if (settlementRelation != null) {
-                    val detail = settlementRelation.toDetailUiModel(
-                        currentUserId = currentUserId,
-                        tripCurrency = trip.currency
-                    )
-
-                    _showSettlementDetailEvent.value = Event(detail)
-                }
+                // Odśwież dane
+                loadSettlements()
 
             } catch (e: Exception) {
-                showError(e.message ?:  R.string.error_trip_details_load_failed.toString())
+                showError(e.message ?: "Nie udało się zapisać zaliczki")
+            } finally {
+                setLoading(false)
             }
         }
     }
 
     /**
-     * Rozliczenie w wybranej walucie
+     * Potwierdzenie rozliczenia (na przyszłość)
      */
-    fun onSettleInCurrency(
-        relationId: String,
-        currency: String,
-        amount: Float?
-    ) {
+    fun onSettleConfirmed(participantId: String) {
         viewModelScope.launch {
             try {
                 setLoading(true)
 
-                // Parsuj relationId na fromUserId i toUserId
-                val parts = relationId.split("_")
-                if (parts.size != 2) {
-                    showError("Nieprawidłowy ID relacji")
-                    return@launch
-                }
+                // TODO: Implementacja rozliczenia
+                kotlinx.coroutines.delay(500)
 
-                val fromUserId = parts[0]
-                val toUserId = parts[1]
-
-                // Wywołaj API
-                val result = tripRepository.markSettlementAsPaid(
-                    tripId = tripId,
-                    fromUserId = fromUserId,
-                    toUserId = toUserId,
-                    amount = amount ?: 0f, // Backend powinien obsłużyć null jako "całość"
-                    currency = currency
-                )
-
-                result.onSuccess {
-                    _settlementConfirmedEvent.value = Event("Rozliczenie potwierdzone!")
-                    loadSettlements() // Odśwież dane
-                }.onFailure { error ->
-                    showError(error.message ?: "Nie udało się potwierdzić rozliczenia")
-                }
+                _actionConfirmedEvent.value = Event("Rozliczenie zostało potwierdzone")
+                loadSettlements()
 
             } catch (e: Exception) {
-                showError(e.message ?: "Wystąpił błąd")
+                showError(e.message ?: "Nie udało się potwierdzić rozliczenia")
             } finally {
                 setLoading(false)
             }
