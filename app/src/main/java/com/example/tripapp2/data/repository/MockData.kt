@@ -29,6 +29,7 @@ object MockData {
             tripsStorage["2"] = createTripEurotrip()
             tripsStorage["3"] = createTripWakacjeNadMorzem()
             tripsStorage["4"] = createTripBarcelona()
+            tripsStorage["5"] = createTripMultiCurrency()
             isInitialized = true
         }
     }
@@ -628,7 +629,8 @@ object MockData {
         fromUserId: String,
         toUserId: String,
         amount: Float,
-        currency: String
+        currency: String,
+        isMainCurrency: Boolean  // NOWY PARAMETR
     ): SettlementResultDto {
         initializeIfNeeded()
 
@@ -664,18 +666,59 @@ object MockData {
         }
 
         val relation = currentRelations[relationIndex]
-        val currentAmount = relation.amount.valueMainCurrency
 
-        if (amount >= currentAmount - 0.01f) {
-            // Pełne rozliczenie - oznacz jako settled, zachowaj valueOtherCurrencies
-            currentRelations[relationIndex] = relation.copy(
-                amount = relation.amount.copy(valueMainCurrency = 0f),
-                isSettled = true
-            )
+        if (isMainCurrency) {
+            // === ROZLICZENIE W GŁÓWNEJ WALUCIE ===
+            val currentAmount = relation.amount.valueMainCurrency
+
+            if (amount >= currentAmount - 0.01f) {
+                // Pełne rozliczenie głównej waluty
+                val hasOtherCurrencies = relation.amount.valueOtherCurrencies.isNotEmpty()
+
+                currentRelations[relationIndex] = relation.copy(
+                    amount = relation.amount.copy(valueMainCurrency = 0f),
+                    // Oznacz jako settled tylko jeśli nie ma innych walut do rozliczenia
+                    isSettled = !hasOtherCurrencies
+                )
+            } else {
+                // Częściowe rozliczenie - zmniejsz kwotę
+                currentRelations[relationIndex] = relation.copy(
+                    amount = relation.amount.copy(valueMainCurrency = currentAmount - amount)
+                )
+            }
         } else {
-            // Częściowe rozliczenie - zmniejsz kwotę
+            // === ROZLICZENIE W DODATKOWEJ WALUCIE ===
+            val otherCurrencies = relation.amount.valueOtherCurrencies.toMutableList()
+            val currencyIndex = otherCurrencies.indexOfFirst { it.currency == currency }
+
+            if (currencyIndex == -1) {
+                return SettlementResultDto(
+                    success = SuccessDto(success = false, message = "Currency not found in relation"),
+                    trip = null
+                )
+            }
+
+            val currentCurrencyAmount = otherCurrencies[currencyIndex].value
+
+            if (amount >= currentCurrencyAmount - 0.01f) {
+                // Pełne rozliczenie tej waluty - usuń ją z listy
+                otherCurrencies.removeAt(currencyIndex)
+            } else {
+                // Częściowe rozliczenie - zmniejsz kwotę
+                otherCurrencies[currencyIndex] = MoneyValueDetailsDto(
+                    currency = currency,
+                    value = currentCurrencyAmount - amount
+                )
+            }
+
+            // Sprawdź czy wszystko rozliczone (główna = 0 i brak innych walut)
+            val mainCurrencyZero = relation.amount.valueMainCurrency <= 0.01f
+            val noOtherCurrencies = otherCurrencies.isEmpty()
+            val allSettled = mainCurrencyZero && noOtherCurrencies
+
             currentRelations[relationIndex] = relation.copy(
-                amount = relation.amount.copy(valueMainCurrency = currentAmount - amount)
+                amount = relation.amount.copy(valueOtherCurrencies = otherCurrencies),
+                isSettled = allSettled
             )
         }
 
@@ -1333,4 +1376,183 @@ object MockData {
             )
         )
     }
+
+    private fun createTripMultiCurrency(): TripDto {
+        return TripDto(
+            id = "5",
+            title = "Azja 2024",
+            dateStart = 1727740800000,  // 1 października 2024
+            dateEnd = 1729555200000,    // 22 października 2024
+            description = "Podróż po Azji - Japonia, Tajlandia, Wietnam",
+            currency = "PLN",
+            totalExpenses = 15000f,
+            accessCode = "AZJA-2024",
+            ownerId = "10",
+            imOwner = true,
+            myCost = MoneyValueDto(
+                valueMainCurrency = 7500f,
+                valueOtherCurrencies = listOf(
+                    MoneyValueDetailsDto("EUR", 300f),
+                    MoneyValueDetailsDto("USD", 400f),
+                    MoneyValueDetailsDto("JPY", 10000f)
+                )
+            ),
+            categories = listOf(
+                CategoryDto("1", 8000f),   // Noclegi
+                CategoryDto("2", 4000f),   // Jedzenie
+                CategoryDto("3", 3000f)    // Transport
+            ),
+            expenses = createMultiCurrencyExpenses(),
+            participants = createMultiCurrencyParticipants(),
+            settlement = SettlementDto(
+                balance = 500f,  // Balans w głównej walucie
+                balanceStatus = BalanceStatus.PLUS,
+                relations = listOf(
+                    // Gosia (16) jest winna Adamowi (10) w wielu walutach
+                    SettlementRelationDto(
+                        fromUserId = "16",
+                        fromUserName = "Gosia",
+                        toUserId = "10",
+                        toUserName = "Adam",
+                        amount = MoneyValueDto(
+                            valueMainCurrency = 500f,  // 500 PLN
+                            valueOtherCurrencies = listOf(
+                                MoneyValueDetailsDto("EUR", 150f),   // 150 EUR
+                                MoneyValueDetailsDto("USD", 200f),   // 200 USD
+                                MoneyValueDetailsDto("JPY", 5000f)   // 5000 JPY
+                            )
+                        ),
+                        isSettled = false
+                    )
+                )
+            )
+        )
+    }
+
+    private fun createMultiCurrencyExpenses(): List<ExpenseDto> {
+        return listOf(
+            // Wydatek w PLN
+            ExpenseDto(
+                id = "51",
+                name = "Loty międzynarodowe",
+                description = "Warszawa - Tokio - Warszawa",
+                totalExpense = MoneyValueDto(valueMainCurrency = 6000f),
+                amount = 6000f,
+                currency = "PLN",
+                date = 1727740800000,
+                categoryId = "3",
+                payerId = "10",
+                payerNickname = "Adam",
+                sharedWith = listOf(
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 3000f)),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 3000f))
+                )
+            ),
+            // Wydatek w EUR
+            ExpenseDto(
+                id = "52",
+                name = "Hotel Tokio",
+                description = "5 nocy w Shinjuku",
+                totalExpense = MoneyValueDto(valueMainCurrency = 600f),
+                amount = 600f,
+                currency = "EUR",
+                date = 1727827200000,
+                categoryId = "1",
+                payerId = "10",
+                payerNickname = "Adam",
+                sharedWith = listOf(
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 300f)),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 300f))
+                )
+            ),
+            // Wydatek w USD
+            ExpenseDto(
+                id = "53",
+                name = "Wycieczka Mount Fuji",
+                description = "Całodniowa wycieczka z przewodnikiem",
+                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                amount = 400f,
+                currency = "USD",
+                date = 1728086400000,
+                categoryId = "3",
+                payerId = "10",
+                payerNickname = "Adam",
+                sharedWith = listOf(
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 200f))
+                )
+            ),
+            // Wydatek w JPY
+            ExpenseDto(
+                id = "54",
+                name = "Kolacja Omakase",
+                description = "Ekskluzywna kolacja sushi",
+                totalExpense = MoneyValueDto(valueMainCurrency = 10000f),
+                amount = 10000f,
+                currency = "JPY",
+                date = 1728172800000,
+                categoryId = "2",
+                payerId = "10",
+                payerNickname = "Adam",
+                sharedWith = listOf(
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 5000f)),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 5000f))
+                )
+            ),
+            // Kolejny wydatek w PLN
+            ExpenseDto(
+                id = "55",
+                name = "Ubezpieczenie podróżne",
+                description = "Pełne ubezpieczenie na 3 tygodnie",
+                totalExpense = MoneyValueDto(valueMainCurrency = 1000f),
+                amount = 1000f,
+                currency = "PLN",
+                date = 1727654400000,
+                categoryId = "3",
+                payerId = "10",
+                payerNickname = "Adam",
+                sharedWith = listOf(
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 500f)),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 500f))
+                )
+            )
+        )
+    }
+
+    private fun createMultiCurrencyParticipants(): List<ParticipantDto> {
+        return listOf(
+            ParticipantDto(
+                id = "10",
+                nickname = "Adam",
+                totalExpenses = MoneyValueDto(
+                    valueMainCurrency = 7000f,
+                    valueOtherCurrencies = listOf(
+                        MoneyValueDetailsDto("EUR", 600f),
+                        MoneyValueDetailsDto("USD", 400f),
+                        MoneyValueDetailsDto("JPY", 10000f)
+                    )
+                ),
+                isOwner = true,
+                isPlaceholder = false,
+                accessCode = null,
+                isActive = true
+            ),
+            ParticipantDto(
+                id = "16",
+                nickname = "Gosia",
+                totalExpenses = MoneyValueDto(
+                    valueMainCurrency = 0f,
+                    valueOtherCurrencies = emptyList()
+                ),
+                isOwner = false,
+                isPlaceholder = false,
+                accessCode = null,
+                isActive = true
+            )
+        )
+    }
+
+
+
+
 }

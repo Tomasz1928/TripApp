@@ -70,8 +70,8 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
 
         // Event otwarcia modala rozliczenia
         viewModel.showSettleModalEvent.observe(viewLifecycleOwner) { event ->
-            event.getContentIfNotHandled()?.let { participant ->
-                showSettleModal(participant)
+            event.getContentIfNotHandled()?.let { model ->
+                showSettleModal(model)
             }
         }
 
@@ -311,15 +311,16 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
     /**
      * Pokazuje modal rozliczenia
      */
-    private fun showSettleModal(participant: SettlementParticipantUiModel) {
-        // TODO: Implementacja modala rozliczenia z layout/modal_settlement_detail.xml
-        // Na razie pokazujemy prosty komunikat i od razu rozliczamy
-
-        val message = "Czy chcesz rozliczyć całą kwotę ${participant.formattedBalance} z ${participant.nickname}?"
-        showMessage(message)
-
-        // Przykładowe wywołanie - w prawdziwej implementacji powinien być dialog
-        // viewModel.onSettleConfirmed(participant)
+    private fun showSettleModal(model: SettleModalUiModel) {
+        val modal = SettleModalFragment.newInstance(
+            model = model,
+            tripId = getTripId(),
+            currentUserId = viewModel.getCurrentUserId(),  // Dodaj getter w ViewModel
+            onConfirm = { request ->
+                viewModel.onSettleConfirmedFromModal(request)
+            }
+        )
+        modal.show(parentFragmentManager, "settle_modal")
     }
 
     companion object {

@@ -264,7 +264,8 @@ class TripRepository private constructor() {
         fromUserId: String,
         toUserId: String,
         amount: Float,
-        currency: String
+        currency: String,
+        isMainCurrency: Boolean
     ): Result<SettlementResultDto> {
         return try {
             val result = MockData.markSettlementAsPaid(
@@ -272,7 +273,8 @@ class TripRepository private constructor() {
                 fromUserId = fromUserId,
                 toUserId = toUserId,
                 amount = amount,
-                currency = currency
+                currency = currency,
+                isMainCurrency = isMainCurrency
             )
 
             if (result.success.success) {
