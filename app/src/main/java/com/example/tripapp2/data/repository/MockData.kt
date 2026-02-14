@@ -163,6 +163,14 @@ object MockData {
 
         val newExpenseId = "${request.tripId}${(100..999).random()}"
 
+        val sharedWith = request.sharedWith.map {share -> ShareDto(
+            participantNickname = share.participantId,
+            participantId = share.participantId,
+            splitValue = share.splitValue,
+            isSettlement = request.payerId == share.participantId
+        )  }
+
+
         val newExpense = ExpenseDto(
             id = newExpenseId,
             name = request.name,
@@ -177,7 +185,7 @@ object MockData {
             categoryId = request.categoryId,
             payerId = request.payerId,
             payerNickname = request.payerNickname,
-            sharedWith = request.sharedWith
+            sharedWith = sharedWith
         )
 
         val updatedExpenses = trip.expenses + newExpense
@@ -221,6 +229,13 @@ object MockData {
 
         val oldExpense = trip.expenses[expenseIndex]
 
+        val sharedWith = request.sharedWith.map {share -> ShareDto(
+            participantNickname = share.participantId,
+            participantId = share.participantId,
+            splitValue = share.splitValue,
+            isSettlement = request.payerId == share.participantId
+        )  }
+
         val updatedExpense = ExpenseDto(
             id = request.expenseId,
             name = request.name,
@@ -235,7 +250,7 @@ object MockData {
             categoryId = request.categoryId,
             payerId = request.payerId,
             payerNickname = request.payerNickname,
-            sharedWith = request.sharedWith
+            sharedWith = sharedWith
         )
 
         val updatedExpenses = trip.expenses.toMutableList().apply {
@@ -852,8 +867,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 600f)),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 600f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 600f),false),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 600f),false)
                 )
             ),
             ExpenseDto(
@@ -868,8 +883,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f),false)
                 )
             ),
             ExpenseDto(
@@ -884,8 +899,8 @@ object MockData {
                 payerId = "11",
                 payerNickname = "Beata",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f),false)
                 )
             ),
             ExpenseDto(
@@ -900,8 +915,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f),false)
                 )
             )
         )
@@ -1005,10 +1020,10 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 225f)),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 225f)),
-                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 225f)),
-                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 225f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 225f),false),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 225f),false),
+                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 225f),false),
+                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 225f),false)
                 )
             ),
             ExpenseDto(
@@ -1023,10 +1038,10 @@ object MockData {
                 payerId = "11",
                 payerNickname = "Beata",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 450f)),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 450f)),
-                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 450f)),
-                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 450f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 450f),false),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 450f),false),
+                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 450f),false),
+                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 450f),false)
                 )
             ),
             ExpenseDto(
@@ -1041,10 +1056,10 @@ object MockData {
                 payerId = "12",
                 payerNickname = "Cezary",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 100f)),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 100f)),
-                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 100f)),
-                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 100f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 100f),false),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 100f),false),
+                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 100f),false),
+                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 100f),false)
                 )
             )
         )
@@ -1151,9 +1166,9 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 1166.67f)),
-                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 1166.67f)),
-                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 1166.66f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 1166.67f),false),
+                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 1166.67f),false),
+                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 1166.66f),false)
                 )
             ),
             ExpenseDto(
@@ -1168,9 +1183,9 @@ object MockData {
                 payerId = "14",
                 payerNickname = "Ewa",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
-                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 200f)),
-                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 200f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
+                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 200f),false),
+                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 200f),false)
                 )
             ),
             ExpenseDto(
@@ -1185,9 +1200,9 @@ object MockData {
                 payerId = "15",
                 payerNickname = "Filip",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 166.67f)),
-                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 166.67f)),
-                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 166.66f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 166.67f),false),
+                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 166.67f),false),
+                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 166.66f),false)
                 )
             )
         )
@@ -1291,10 +1306,10 @@ object MockData {
                 payerId = "20",
                 payerNickname = "Kasia",
                 sharedWith = listOf(
-                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 200f)),
-                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 200f)),
-                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 200f)),
-                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 200f))
+                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 200f),false),
+                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 200f),false),
+                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 200f),false),
+                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 200f),false)
                 )
             ),
             ExpenseDto(
@@ -1309,10 +1324,10 @@ object MockData {
                 payerId = "21",
                 payerNickname = "Michał",
                 sharedWith = listOf(
-                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 162.50f)),
-                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 162.50f)),
-                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 162.50f)),
-                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 162.50f))
+                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 162.50f),false),
+                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 162.50f),false),
+                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 162.50f),false),
+                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 162.50f),false)
                 )
             ),
             ExpenseDto(
@@ -1327,10 +1342,10 @@ object MockData {
                 payerId = "22",
                 payerNickname = "Ola",
                 sharedWith = listOf(
-                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 100f)),
-                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 100f)),
-                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 100f)),
-                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 100f))
+                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 100f),false),
+                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 100f),false),
+                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 100f),false),
+                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 100f),false)
                 )
             )
         )
@@ -1444,8 +1459,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 3000f)),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 3000f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 3000f),false),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 3000f),false)
                 )
             ),
             // Wydatek w EUR
@@ -1461,8 +1476,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 300f)),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 300f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 300f),false),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 300f),false)
                 )
             ),
             // Wydatek w USD
@@ -1478,8 +1493,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f)),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 200f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 200f),false)
                 )
             ),
             // Wydatek w JPY
@@ -1495,8 +1510,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 5000f)),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 5000f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 5000f),false),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 5000f),false)
                 )
             ),
             // Kolejny wydatek w PLN
@@ -1512,8 +1527,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 500f)),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 500f))
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 500f),false),
+                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 500f),false)
                 )
             )
         )

@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.tripapp2.R
 import com.example.tripapp2.data.model.AddExpenseRequest
 import com.example.tripapp2.data.model.MoneyValueDto
-import com.example.tripapp2.data.model.ShareDto
+import com.example.tripapp2.data.model.ShareRequest
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -215,9 +215,9 @@ class AddExpenseViewModel(
         )
     }
 
-    private fun buildSharedWithList(split: ExpenseSplit): List<ShareDto> {
+    private fun buildSharedWithList(split: ExpenseSplit): List<ShareRequest> {
         return split.getSelectedParticipants().map { participant ->
-            ShareDto(
+            ShareRequest(
                 participantId = participant.id,
                 participantNickname = participant.name,
                 splitValue = MoneyValueDto(
