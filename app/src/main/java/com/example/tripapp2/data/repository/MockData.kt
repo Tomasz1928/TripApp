@@ -164,7 +164,7 @@ object MockData {
         val newExpenseId = "${request.tripId}${(100..999).random()}"
 
         val sharedWith = request.sharedWith.map {share -> ShareDto(
-            participantNickname = share.participantId,
+            participantNickname = share.participantNickname,
             participantId = share.participantId,
             splitValue = share.splitValue,
             isSettlement = request.payerId == share.participantId
@@ -230,7 +230,7 @@ object MockData {
         val oldExpense = trip.expenses[expenseIndex]
 
         val sharedWith = request.sharedWith.map {share -> ShareDto(
-            participantNickname = share.participantId,
+            participantNickname = share.participantNickname,
             participantId = share.participantId,
             splitValue = share.splitValue,
             isSettlement = request.payerId == share.participantId
@@ -860,15 +860,15 @@ object MockData {
                 name = "Nocleg - Pensjonat Górski",
                 description = "2 noce dla 2 osób",
                 totalExpense = MoneyValueDto(valueMainCurrency = 1200f),
-                amount = 1200f,
-                currency = "PLN",
+                amount = 900f,
+                currency = "EUR",
                 date = 1711929600000,
                 categoryId = "1",
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 600f),false),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 600f),false)
+                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 300f,valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 200f))),true),
+                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 600f,valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 200f))),false)
                 )
             ),
             ExpenseDto(

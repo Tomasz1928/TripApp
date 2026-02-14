@@ -1,42 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:paddingVertical="@dimen/spacing_tiny"
     android:gravity="center_vertical">
 
-    <!-- Imię osoby - ZAWSZE widoczne (must have) -->
-    <TextView
-        android:id="@+id/sharePerson"
-        style="@style/Text.Body.Bold"
+    <!-- LEWY KONTENER 40% -->
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="3"
-        android:text="Anna"
-        android:gravity="start"/>
+        android:layout_weight="5"
+        android:orientation="horizontal">
 
-    <!-- Kwota w cost currency - ZAWSZE widoczna (must have) -->
-    <TextView
-        android:id="@+id/shareAmountMain"
-        style="@style/Text.Body.Bold"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="2"
-        android:text="123,56 PLN"
-        android:textColor="@color/primary"
-        android:gravity="end"/>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="5">
 
-    <!-- Kwota w trip currency - dynamicznie widoczna gdy trip currency != cost currency -->
-    <TextView
-        android:id="@+id/shareAmountSecondary"
-        style="@style/Text.Caption"
-        android:textStyle="bold"
+            <TextView
+                android:id="@+id/sharePerson"
+                style="@style/Text.Body.Bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:text="Anna"/>
+        </FrameLayout>
+
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="5">
+
+            <ImageView
+                android:id="@+id/shareSettlement"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_arrow_downward"
+                app:tint="@color/success"/>
+        </FrameLayout>
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
-        android:text="12,45 EUR"
-        android:textColor="@color/secondary"
-        android:gravity="end"
-        android:visibility="gone"/>
+        android:layout_weight="5"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/shareAmountSecondary"
+                style="@style/Text.Caption"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="12,45 EUR"
+                android:textColor="@color/secondary"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/shareAmountMain"
+                style="@style/Text.Body.Bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="123,56 PLN"
+                android:textColor="@color/primary"/>
+        </FrameLayout>
+    </LinearLayout>
 </LinearLayout>

@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.example.tripapp2.R
 import com.example.tripapp2.ui.tripdetails.costs.ExpenseDetailUiModel
+import androidx.core.content.ContextCompat
 
 /**
  * Modal ze szczegółami wydatku
@@ -108,13 +109,22 @@ class ExpenseDetailModalFragment : DialogFragment() {
         detail.sharedWith.forEach { share ->
             val shareRow = layoutInflater.inflate(R.layout.item_share_expensts, sharedContainer, false)
 
-            // Imię osoby - ZAWSZE widoczne
             shareRow.findViewById<TextView>(R.id.sharePerson).text = share.personName
+            val settlementIcon = shareRow.findViewById<ImageView>(R.id.shareSettlement)
+            if (share.isSettlement) {
+                settlementIcon.setImageResource(R.drawable.ic_success)
+                settlementIcon.imageTintList = ContextCompat.getColorStateList(requireContext(),
+                    R.color.success
+                )
+            } else {
+                settlementIcon.setImageResource(R.drawable.ic_cross)
+                settlementIcon.imageTintList = ContextCompat.getColorStateList(requireContext(),
+                    R.color.error
+                )
+            }
 
-            // Kwota w cost currency - ZAWSZE widoczna
             shareRow.findViewById<TextView>(R.id.shareAmountMain).text = share.formattedAmountCostCurrency
 
-            // Kwota w trip currency - tylko gdy INNA niż cost currency i są dane
             val amountSecondaryView = shareRow.findViewById<TextView>(R.id.shareAmountSecondary)
             if (detail.currencyTrip != detail.currencyCost && share.formattedAmountTripCurrency.isNotEmpty()) {
                 amountSecondaryView.text = share.formattedAmountTripCurrency
