@@ -11,11 +11,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/spacing_tiny"
-    app:strokeWidth="2dp"
-    app:strokeColor="@color/divider"
     app:cardElevation="0dp"
     android:clickable="true"
     android:focusable="true"
+    android:layout_marginHorizontal="@dimen/spacing_small"
     android:foreground="?attr/selectableItemBackground">
 
     <LinearLayout
@@ -33,30 +32,32 @@
             android:minWidth="0dp"
             android:minHeight="0dp"/>
 
-        <LinearLayout
+        <!-- Kwota -->
+        <TextView
+            android:id="@+id/currencyAmount"
+            style="@style/Text.Body.Bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_small"
+            android:text="150,00"/>
+
+        <!-- Waluta -->
+        <TextView
+            android:id="@+id/currencyLabel"
+            style="@style/Text.Body"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="@dimen/spacing_small">
+            android:layout_marginStart="@dimen/spacing_tiny"
+            android:text="EUR"/>
 
-            <TextView
-                android:id="@+id/currencyLabel"
-                style="@style/Text.Body.Bold"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:text="EUR"/>
-
-            <TextView
-                android:id="@+id/currencyAmount"
-                style="@style/Text.Caption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:text="Do rozliczenia: 50,00 EUR"/>
-
-        </LinearLayout>
+        <!-- Ikona kierunku -->
+        <ImageView
+            android:id="@+id/currencyDirectionIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_arrow_downward"
+            app:tint="@color/success"/>
 
     </LinearLayout>
 

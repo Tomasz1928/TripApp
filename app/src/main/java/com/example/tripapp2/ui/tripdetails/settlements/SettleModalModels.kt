@@ -8,14 +8,23 @@ import com.example.tripapp2.data.model.SettlementRelationDto
 // ==========================================
 
 /**
+ * Kierunek kwoty w rozliczeniu
+ */
+enum class SettleAmountDirection {
+    TO_RECEIVE,  // Do odebrania (kwota dodatnia - on mi jest winien)
+    TO_GIVE      // Do oddania (kwota ujemna - ja jestem winien)
+}
+
+/**
  * Model waluty do rozliczenia
  * Zawiera informacje o dostępnej kwocie w danej walucie
  */
 data class SettleCurrencyOption(
     val currency: String,
-    val availableAmount: Float,
+    val availableAmount: Float,              // Zawsze wartość bezwzględna (bez minusa)
     val isMainCurrency: Boolean,
-    val formattedAmount: String  // "200,00 PLN"
+    val direction: SettleAmountDirection,    // Kierunek: do odebrania czy do oddania
+    val formattedAmount: String              // "200,00 PLN" (bez znaku)
 )
 
 /**
@@ -39,9 +48,10 @@ data class SettleRequest(
     val tripId: String,
     val fromUserId: String,         // ID dłużnika
     val toUserId: String,           // ID wierzyciela
-    val amount: Float,              // Kwota do rozliczenia
+    val amount: Float,              // Kwota do rozliczenia (zawsze dodatnia)
     val currency: String,           // Waluta rozliczenia
-    val isMainCurrency: Boolean     // Czy to główna waluta wycieczki
+    val isMainCurrency: Boolean,    // Czy to główna waluta wycieczki
+    val direction: SettleAmountDirection  // Kierunek: TO_RECEIVE lub TO_GIVE
 )
 
 // ==========================================
@@ -63,7 +73,7 @@ fun createSettleModalModel(
     currentUserId: String
 ): SettleModalUiModel {
 
-    // Określ czy on mi jest winien czy ja jemu
+    // Określ czy on mi jest winien czy ja jemu (na podstawie relacji, nie kwoty)
     val isOwedToMe = relation.toUserId == currentUserId
 
     // Opis relacji
@@ -73,21 +83,38 @@ fun createSettleModalModel(
         "Jesteś winien/winna"
     }
 
-    // Główna waluta
+    // Główna waluta - obsługa ujemnych wartości
+    val mainCurrencyValue = relation.amount.valueMainCurrency
+    val mainCurrencyDirection = if (mainCurrencyValue >= 0) {
+        SettleAmountDirection.TO_RECEIVE
+    } else {
+        SettleAmountDirection.TO_GIVE
+    }
+    val mainCurrencyAbsValue = kotlin.math.abs(mainCurrencyValue)
+
     val mainCurrencyOption = SettleCurrencyOption(
         currency = tripCurrency,
-        availableAmount = relation.amount.valueMainCurrency,
+        availableAmount = mainCurrencyAbsValue,
         isMainCurrency = true,
-        formattedAmount = "%.2f %s".format(relation.amount.valueMainCurrency, tripCurrency)
+        direction = mainCurrencyDirection,
+        formattedAmount = "%.2f %s".format(mainCurrencyAbsValue, tripCurrency)
     )
 
-    // Dodatkowe waluty
+    // Dodatkowe waluty - obsługa ujemnych wartości
     val otherCurrencyOptions = relation.amount.valueOtherCurrencies.map { moneyDetail ->
+        val direction = if (moneyDetail.value >= 0) {
+            SettleAmountDirection.TO_RECEIVE
+        } else {
+            SettleAmountDirection.TO_GIVE
+        }
+        val absValue = kotlin.math.abs(moneyDetail.value)
+
         SettleCurrencyOption(
             currency = moneyDetail.currency,
-            availableAmount = moneyDetail.value,
+            availableAmount = absValue,
             isMainCurrency = false,
-            formattedAmount = "%.2f %s".format(moneyDetail.value, moneyDetail.currency)
+            direction = direction,
+            formattedAmount = "%.2f %s".format(absValue, moneyDetail.currency)
         )
     }
 

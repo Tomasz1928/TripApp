@@ -1418,7 +1418,7 @@ object MockData {
                             valueMainCurrency = 500f,  // 500 PLN
                             valueOtherCurrencies = listOf(
                                 MoneyValueDetailsDto("EUR", 150f),   // 150 EUR
-                                MoneyValueDetailsDto("USD", 200f),   // 200 USD
+                                MoneyValueDetailsDto("USD", -200f),   // 200 USD
                                 MoneyValueDetailsDto("JPY", 5000f)   // 5000 JPY
                             )
                         ),
@@ -1528,7 +1528,7 @@ object MockData {
                     valueMainCurrency = 7000f,
                     valueOtherCurrencies = listOf(
                         MoneyValueDetailsDto("EUR", 600f),
-                        MoneyValueDetailsDto("USD", 400f),
+                        MoneyValueDetailsDto("USD", -400f),
                         MoneyValueDetailsDto("JPY", 10000f)
                     )
                 ),

@@ -70,8 +70,6 @@
             android:layout_height="wrap_content"
             app:tabGravity="fill"
             app:tabIndicatorColor="@color/primary"
-            app:tabMode="fixed"
-            app:tabRippleColor="@color/ripple"
             app:tabSelectedTextColor="@color/primary"
             app:tabTextColor="@color/text_secondary">
 
@@ -122,7 +120,7 @@
                         android:id="@+id/currencyScrollView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:maxHeight="80dp"
+                        android:maxHeight="180dp"
                         android:fillViewport="true"
                         android:scrollbars="vertical"
                         android:fadeScrollbars="false">
@@ -141,10 +139,9 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginBottom="@dimen/spacing_tiny"
-                                app:strokeWidth="2dp"
-                                app:strokeColor="@color/primary"
                                 android:clickable="true"
                                 android:focusable="true"
+                                android:layout_marginHorizontal="@dimen/spacing_small"
                                 android:foreground="?attr/selectableItemBackground">
 
                                 <LinearLayout
@@ -163,29 +160,33 @@
                                         android:minHeight="0dp"
                                         android:checked="true"/>
 
-                                    <LinearLayout
+                                    <!-- Kwota -->
+                                    <TextView
+                                        android:id="@+id/mainCurrencyAmount"
+                                        style="@style/Text.Body.Bold"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/spacing_small"
+                                        android:text="500,00"/>
+
+                                    <!-- Waluta (główna) -->
+                                    <TextView
+                                        android:id="@+id/mainCurrencyLabel"
+                                        style="@style/Text.Body"
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
-                                        android:orientation="vertical"
-                                        android:layout_marginStart="@dimen/spacing_small">
+                                        android:layout_marginStart="@dimen/spacing_tiny"
+                                        android:text="PLN (główna)"/>
 
-                                        <TextView
-                                            android:id="@+id/mainCurrencyLabel"
-                                            style="@style/Text.Body.Bold"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:textSize="14sp"
-                                            android:text="PLN (główna)"/>
+                                    <!-- Ikona kierunku -->
+                                    <ImageView
+                                        android:id="@+id/mainCurrencyDirectionIcon"
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_arrow_downward"
+                                        app:tint="@color/success"/>
 
-                                        <TextView
-                                            android:id="@+id/mainCurrencyAmount"
-                                            style="@style/Text.Caption"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:textSize="12sp"
-                                            android:text="Do rozliczenia: 200,00 PLN"/>
-                                    </LinearLayout>
                                 </LinearLayout>
                             </com.google.android.material.card.MaterialCardView>
 

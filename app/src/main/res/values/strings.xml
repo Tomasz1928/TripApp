@@ -266,8 +266,8 @@
     <string name="settle_modal_relation">Relacja</string>
 
     <!-- Tabs -->
-    <string name="settle_tab_by_value">Per wartość</string>
-    <string name="settle_tab_by_costs">Per koszty</string>
+    <string name="settle_tab_by_value">Wartość</string>
+    <string name="settle_tab_by_costs">Koszty</string>
 
     <!-- Tab 1: Per wartość -->
     <string name="settle_select_currency">WYBIERZ WALUTĘ</string>
@@ -278,6 +278,10 @@
     <string name="settle_fill_max">Wszystko</string>
     <string name="settle_confirm_button">Rozlicz</string>
     <string name="settle_currency_to_settle">Do rozliczenia: %s</string>
+
+    <!-- Kierunek kwoty -->
+    <string name="settle_to_receive">Do odebrania: %s</string>
+    <string name="settle_to_give">Do oddania: %s</string>
 
     <!-- Tab 2: Per koszty (placeholder) -->
     <string name="settle_by_costs_coming_soon">Rozliczenie per koszty\nbędzie dostępne wkrótce</string>

@@ -57,6 +57,7 @@ class SettleModalFragment : DialogFragment() {
     private lateinit var mainCurrencyRadio: RadioButton
     private lateinit var mainCurrencyLabel: TextView
     private lateinit var mainCurrencyAmount: TextView
+    private lateinit var mainCurrencyDirectionIcon: ImageView
     private lateinit var otherCurrenciesContainer: LinearLayout
     private lateinit var amountInputLayout: TextInputLayout
     private lateinit var amountInput: TextInputEditText
@@ -144,6 +145,7 @@ class SettleModalFragment : DialogFragment() {
         mainCurrencyRadio = view.findViewById(R.id.mainCurrencyRadio)
         mainCurrencyLabel = view.findViewById(R.id.mainCurrencyLabel)
         mainCurrencyAmount = view.findViewById(R.id.mainCurrencyAmount)
+        mainCurrencyDirectionIcon = view.findViewById(R.id.mainCurrencyDirectionIcon)
         otherCurrenciesContainer = view.findViewById(R.id.otherCurrenciesContainer)
         amountInputLayout = view.findViewById(R.id.amountInputLayout)
         amountInput = view.findViewById(R.id.amountInput)
@@ -176,12 +178,6 @@ class SettleModalFragment : DialogFragment() {
 
     private fun populateData(model: SettleModalUiModel) {
         participantNickname.text = model.participantNickname
-        // Kolor opisu relacji
-        val descColor = if (model.isOwedToMe) {
-            R.color.success  // On mi jest winien = zielony
-        } else {
-            R.color.error    // Ja jestem winien = czerwony
-        }
     }
 
     // ==========================================
@@ -189,9 +185,10 @@ class SettleModalFragment : DialogFragment() {
     // ==========================================
 
     private fun setupCurrencySelection(model: SettleModalUiModel) {
-        // Główna waluta
+        // Główna waluta - ustaw wartości
         mainCurrencyLabel.text = "${model.mainCurrency.currency} (główna)"
-        mainCurrencyAmount.text = "Do rozliczenia: ${model.mainCurrency.formattedAmount}"
+        mainCurrencyAmount.text = "%.2f".format(model.mainCurrency.availableAmount)
+        updateDirectionIcon(mainCurrencyDirectionIcon, model.mainCurrency.direction)
 
         // Ustaw główną walutę jako domyślną
         selectedCurrencyOption = model.mainCurrency
@@ -214,6 +211,25 @@ class SettleModalFragment : DialogFragment() {
         model.otherCurrencies.forEach { currencyOption ->
             addOtherCurrencyCard(currencyOption, model)
         }
+    }
+
+    /**
+     * Ustawia ikonę kierunku:
+     * TO_RECEIVE: strzałka w dół (zielona) - mam otrzymać
+     * TO_GIVE: strzałka w górę (czerwona) - mam oddać
+     */
+    private fun updateDirectionIcon(iconView: ImageView, direction: SettleAmountDirection) {
+        val (iconResId, colorResId) = when (direction) {
+            SettleAmountDirection.TO_RECEIVE -> {
+                R.drawable.ic_arrow_downward to R.color.success
+            }
+            SettleAmountDirection.TO_GIVE -> {
+                R.drawable.ic_arrow_upward to R.color.error
+            }
+        }
+
+        iconView.setImageResource(iconResId)
+        iconView.imageTintList = ContextCompat.getColorStateList(requireContext(), colorResId)
     }
 
     private fun selectMainCurrency(model: SettleModalUiModel) {
@@ -241,13 +257,16 @@ class SettleModalFragment : DialogFragment() {
         val radio = card.findViewById<RadioButton>(R.id.currencyRadio)
         val label = card.findViewById<TextView>(R.id.currencyLabel)
         val amount = card.findViewById<TextView>(R.id.currencyAmount)
+        val directionIcon = card.findViewById<ImageView>(R.id.currencyDirectionIcon)
 
         // Generuj unikalne ID dla RadioButton
         radio.id = View.generateViewId()
         radioToCurrencyMap[radio.id] = currencyOption
 
+        // Ustaw wartości - kwota, waluta, ikona kierunku
+        amount.text = "%.2f".format(currencyOption.availableAmount)
         label.text = currencyOption.currency
-        amount.text = "Do rozliczenia: ${currencyOption.formattedAmount}"
+        updateDirectionIcon(directionIcon, currencyOption.direction)
 
         // Kliknięcie na kartę
         val selectThisCurrency: () -> Unit = {
@@ -386,13 +405,18 @@ class SettleModalFragment : DialogFragment() {
         val amount = getEnteredAmount() ?: return
         val currency = selectedCurrencyOption ?: return
 
-        // Określ fromUserId i toUserId na podstawie relacji
-        val (fromUserId, toUserId) = if (model.isOwedToMe) {
-            // On mi jest winien → on jest dłużnikiem (from), ja wierzycielem (to)
-            model.participantId to currentUserId
-        } else {
-            // Ja jestem winien → ja jestem dłużnikiem (from), on wierzycielem (to)
-            currentUserId to model.participantId
+        // Określ fromUserId i toUserId na podstawie kierunku kwoty w wybranej walucie
+        // TO_RECEIVE: participant jest mi winien → participant = from, ja = to
+        // TO_GIVE: ja jestem winien participantowi → ja = from, participant = to
+        val (fromUserId, toUserId) = when (currency.direction) {
+            SettleAmountDirection.TO_RECEIVE -> {
+                // On mi jest winien tę kwotę → on jest dłużnikiem
+                model.participantId to currentUserId
+            }
+            SettleAmountDirection.TO_GIVE -> {
+                // Ja jestem winien tę kwotę → ja jestem dłużnikiem
+                currentUserId to model.participantId
+            }
         }
 
         val request = SettleRequest(
@@ -401,7 +425,8 @@ class SettleModalFragment : DialogFragment() {
             toUserId = toUserId,
             amount = amount,
             currency = currency.currency,
-            isMainCurrency = currency.isMainCurrency
+            isMainCurrency = currency.isMainCurrency,
+            direction = currency.direction
         )
 
         onConfirm?.invoke(request)
