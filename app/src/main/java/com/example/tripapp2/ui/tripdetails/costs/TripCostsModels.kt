@@ -40,7 +40,8 @@ data class ShareItemUiModel(
     val amountCostCurrency: Float?,
     val formattedAmountCostCurrency: String,
     val amountTripCurrency: Float,
-    val formattedAmountTripCurrency: String
+    val formattedAmountTripCurrency: String,
+    val isSettlement: Boolean
 )
 
 /**
@@ -103,6 +104,7 @@ fun ExpenseDto.toDetailUiModel(
                 .firstOrNull { it.currency == mainCurrency }
 
             ShareItemUiModel(
+                isSettlement = share.isSettlement,
                 personName = share.participantNickname,
 
                 // Kwota w cost currency - ZAWSZE dostępna jako valueMainCurrency

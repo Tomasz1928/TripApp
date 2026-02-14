@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Modal Prepayment (Zaliczka)
-    Wzorowany na modal_settlement_detail.xml - używa TYLKO istniejących styli
 -->
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"

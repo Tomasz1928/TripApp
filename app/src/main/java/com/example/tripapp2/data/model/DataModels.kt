@@ -55,7 +55,8 @@ data class ExpenseDto(
 data class ShareDto(
     val participantId: String,
     val participantNickname: String,
-    val splitValue: MoneyValueDto
+    val splitValue: MoneyValueDto,
+    val isSettlement : Boolean
 )
 
 data class ParticipantDto(
@@ -136,6 +137,11 @@ data class ParticipantsDto(
 // ==========================================
 // REQUEST MODELS
 // ==========================================
+data class ShareRequest(
+    val participantId: String,
+    val participantNickname: String,
+    val splitValue: MoneyValueDto
+)
 
 data class AddExpenseRequest(
     val tripId: String,
@@ -147,7 +153,7 @@ data class AddExpenseRequest(
     val date: Long,
     val payerId: String,
     val payerNickname: String,
-    val sharedWith: List<ShareDto>
+    val sharedWith: List<ShareRequest>
 )
 
 data class UpdateExpenseRequest(
@@ -161,5 +167,5 @@ data class UpdateExpenseRequest(
     val date: Long,
     val payerId: String,
     val payerNickname: String,
-    val sharedWith: List<ShareDto>
+    val sharedWith: List<ShareRequest>
 )

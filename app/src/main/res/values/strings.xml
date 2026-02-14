@@ -258,6 +258,45 @@
 
 
     <!-- ========================================= -->
+    <!-- SETTLE MODAL - Modal rozliczenia -->
+    <!-- ========================================= -->
+
+    <string name="settle_modal_title">Rozliczenie</string>
+    <string name="settle_modal_participant">Uczestnik</string>
+    <string name="settle_modal_relation">Relacja</string>
+
+    <!-- Tabs -->
+    <string name="settle_tab_by_value">Wartość</string>
+    <string name="settle_tab_by_costs">Koszty</string>
+
+    <!-- Tab 1: Per wartość -->
+    <string name="settle_select_currency">WYBIERZ WALUTĘ</string>
+    <string name="settle_main_currency_label">%s (główna)</string>
+    <string name="settle_amount_label">KWOTA DO ROZLICZENIA</string>
+    <string name="settle_amount_hint">Kwota</string>
+    <string name="settle_amount_range">Zakres: 0,01 - %s</string>
+    <string name="settle_fill_max">Wszystko</string>
+    <string name="settle_confirm_button">Rozlicz</string>
+    <string name="settle_currency_to_settle">Do rozliczenia: %s</string>
+
+    <!-- Kierunek kwoty -->
+    <string name="settle_to_receive">Do odebrania: %s</string>
+    <string name="settle_to_give">Do oddania: %s</string>
+
+    <!-- Tab 2: Per koszty (placeholder) -->
+    <string name="settle_by_costs_coming_soon">Rozliczenie per koszty\nbędzie dostępne wkrótce</string>
+
+    <!-- Walidacja -->
+    <string name="settle_error_invalid_amount">Nieprawidłowa kwota</string>
+    <string name="settle_error_amount_too_low">Kwota musi być większa od 0</string>
+    <string name="settle_error_amount_too_high">Maksymalna kwota: %s</string>
+
+    <!-- Relacje -->
+    <string name="settle_relation_owed_to_me">Jest Ci winien/winna</string>
+    <string name="settle_relation_you_owe">Jesteś winien/winna</string>
+
+
+    <!-- ========================================= -->
     <!-- MODAL -->
     <!-- ========================================= -->
 

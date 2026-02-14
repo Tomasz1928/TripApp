@@ -48,8 +48,8 @@ class TripSettlementsViewModel(
     val showDetailsModalEvent: LiveData<Event<SettlementParticipantUiModel>> = _showDetailsModalEvent
 
     // Event otwarcia modala rozliczenia
-    private val _showSettleModalEvent = MutableLiveData<Event<SettlementParticipantUiModel>>()
-    val showSettleModalEvent: LiveData<Event<SettlementParticipantUiModel>> = _showSettleModalEvent
+    private val _showSettleModalEvent = MutableLiveData<Event<SettleModalUiModel>>()
+    val showSettleModalEvent: LiveData<Event<SettleModalUiModel>> = _showSettleModalEvent
 
     // Event potwierdzenia akcji (feedback dla użytkownika)
     private val _actionConfirmedEvent = MutableLiveData<Event<String>>()
@@ -78,6 +78,11 @@ class TripSettlementsViewModel(
             }
         }
     }
+    /**
+     * Zwraca ID aktualnego użytkownika
+     * Potrzebne dla modala rozliczenia
+     */
+    fun getCurrentUserId(): String = currentUserId
 
     /**
      * Ładuje dane rozliczeń z cache
@@ -179,10 +184,70 @@ class TripSettlementsViewModel(
      * Dostępny tylko gdy hasSettlementRelation = true i balance != 0
      */
     fun onSettleClicked(participant: SettlementParticipantUiModel) {
-        if (!participant.hasSettlementRelation || participant.balanceStatus == ParticipantBalanceStatus.SETTLED) {
-            return // Zabezpieczenie - przycisk nie powinien być widoczny
+        viewModelScope.launch {
+            try {
+                // Pobierz trip z cache
+                val trip = tripRepository.getTripDetails(tripId) ?: return@launch
+
+                // Znajdź relację dla tego uczestnika
+                val relations = trip.settlement?.relations ?: return@launch
+                val relation = relations.find { relation ->
+                    (relation.fromUserId == participant.participantId && relation.toUserId == currentUserId) ||
+                            (relation.fromUserId == currentUserId && relation.toUserId == participant.participantId)
+                } ?: return@launch
+
+                // Utwórz model dla modala
+                val settleModel = createSettleModalModel(
+                    participant = participant,
+                    relation = relation,
+                    tripCurrency = trip.currency,
+                    currentUserId = currentUserId
+                )
+
+                // Emituj event do pokazania modala
+                _showSettleModalEvent.value = Event(settleModel)
+
+            } catch (e: Exception) {
+                showError("Nie udało się przygotować rozliczenia: ${e.message}")
+            }
         }
-        _showSettleModalEvent.value = Event(participant)
+    }
+
+    /**
+     * Przetwarza potwierdzenie rozliczenia z modala
+     */
+    fun onSettleConfirmedFromModal(request: SettleRequest) {
+        viewModelScope.launch {
+            try {
+                setLoading(true)
+
+                val result = tripRepository.markSettlementAsPaid(
+                    tripId = request.tripId,
+                    fromUserId = request.fromUserId,
+                    toUserId = request.toUserId,
+                    amount = request.amount,
+                    currency = request.currency,
+                    isMainCurrency = request.isMainCurrency
+                )
+
+                result.onSuccess {
+                    _actionConfirmedEvent.value = Event(
+                        "Rozliczono %.2f %s".format(request.amount, request.currency)
+                    )
+
+                    // Odśwież dane
+                    loadSettlements()
+
+                }.onFailure { error ->
+                    showError(error.message ?: "Nie udało się rozliczyć")
+                }
+
+            } catch (e: Exception) {
+                showError(e.message ?: "Nie udało się rozliczyć")
+            } finally {
+                setLoading(false)
+            }
+        }
     }
 
     // ==========================================
@@ -238,47 +303,48 @@ class TripSettlementsViewModel(
     /**
      * Potwierdzenie rozliczenia z modala
      */
-    fun onSettleConfirmed(participant: SettlementParticipantUiModel, amount: Float? = null) {
-        viewModelScope.launch {
-            try {
-                setLoading(true)
-
-                // Kwota do rozliczenia - pełna lub częściowa
-                val settleAmount = amount ?: kotlin.math.abs(participant.balance)
-
-                val result = tripRepository.markSettlementAsPaid(
-                    tripId = tripId,
-                    fromUserId = if (participant.balanceStatus == ParticipantBalanceStatus.NEGATIVE) {
-                        currentUserId // Ja jestem winien
-                    } else {
-                        participant.participantId // On mi jest winien
-                    },
-                    toUserId = if (participant.balanceStatus == ParticipantBalanceStatus.NEGATIVE) {
-                        participant.participantId
-                    } else {
-                        currentUserId
-                    },
-                    amount = settleAmount,
-                    currency = participant.currency
-                )
-
-                result.onSuccess {
-                    _actionConfirmedEvent.value = Event(
-                        "Rozliczenie z ${participant.nickname} zostało potwierdzone"
-                    )
-
-                    // Odśwież dane
-                    loadSettlements()
-
-                }.onFailure { error ->
-                    showError(error.message ?: "Nie udało się potwierdzić rozliczenia")
-                }
-
-            } catch (e: Exception) {
-                showError(e.message ?: "Nie udało się potwierdzić rozliczenia")
-            } finally {
-                setLoading(false)
-            }
-        }
-    }
+//    fun onSettleConfirmed(participant: SettlementParticipantUiModel, amount: Float? = null) {
+//        viewModelScope.launch {
+//            try {
+//                setLoading(true)
+//
+//                // Kwota do rozliczenia - pełna lub częściowa
+//                val settleAmount = amount ?: kotlin.math.abs(participant.balance)
+//
+//                val result = tripRepository.markSettlementAsPaid(
+//                    tripId = tripId,
+//                    fromUserId = if (participant.balanceStatus == ParticipantBalanceStatus.NEGATIVE) {
+//                        currentUserId // Ja jestem winien
+//                    } else {
+//                        participant.participantId // On mi jest winien
+//                    },
+//                    toUserId = if (participant.balanceStatus == ParticipantBalanceStatus.NEGATIVE) {
+//                        participant.participantId
+//                    } else {
+//                        currentUserId
+//                    },
+//                    amount = settleAmount,
+//                    currency = participant.currency,
+//                    mainCurrency =participant.
+//                )
+//
+//                result.onSuccess {
+//                    _actionConfirmedEvent.value = Event(
+//                        "Rozliczenie z ${participant.nickname} zostało potwierdzone"
+//                    )
+//
+//                    // Odśwież dane
+//                    loadSettlements()
+//
+//                }.onFailure { error ->
+//                    showError(error.message ?: "Nie udało się potwierdzić rozliczenia")
+//                }
+//
+//            } catch (e: Exception) {
+//                showError(e.message ?: "Nie udało się potwierdzić rozliczenia")
+//            } finally {
+//                setLoading(false)
+//            }
+//        }
+//    }
 }
