@@ -6,15 +6,19 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.tripapp2.R
+import com.example.tripapp2.data.model.ExpenseDto
+import com.example.tripapp2.data.model.TripDto
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.tabs.TabLayout
@@ -26,17 +30,17 @@ import com.google.android.material.textfield.TextInputLayout
  *
  * Funkcjonalności:
  * - 2 karty: "Per wartość" i "Per koszty"
- * - Wybór waluty (główna + dodatkowe) przez RadioButtons
- * - Input kwoty z walidacją (min 0, max = dostępna kwota)
- * - Przycisk "Wszystko" do uzupełnienia max wartości
- * - Przycisk "Rozlicz" do potwierdzenia
+ * - Tab 1: Wybór waluty (główna + dodatkowe) przez RadioButtons + input kwoty
+ * - Tab 2: Lista kosztów z checkboxami + podsumowanie + rozlicz
  */
 class SettleModalFragment : DialogFragment() {
 
     private var settleModel: SettleModalUiModel? = null
     private var currentUserId: String = ""
     private var tripId: String = ""
+    private var tripData: TripDto? = null
     private var onConfirm: ((SettleRequest) -> Unit)? = null
+    private var onConfirmByCosts: ((SettleByCostsRequest) -> Unit)? = null
 
     // Aktualnie wybrana opcja waluty
     private var selectedCurrencyOption: SettleCurrencyOption? = null
@@ -63,8 +67,20 @@ class SettleModalFragment : DialogFragment() {
     private lateinit var amountInput: TextInputEditText
     private lateinit var settleButton: MaterialButton
 
+    // Views - Tab 2 (Per koszty)
+    private lateinit var costsScrollView: ScrollView
+    private lateinit var costsListContainer: LinearLayout
+    private lateinit var costsSummaryContainer: LinearLayout
+    private lateinit var summaryCard: MaterialCardView
+    private lateinit var summaryAmountsContainer: LinearLayout
+    private lateinit var costsEmptySelection: TextView
+    private lateinit var settleByCostsButton: MaterialButton
+
     // Mapa RadioButton -> CurrencyOption (dla dodatkowych walut)
     private val radioToCurrencyMap = mutableMapOf<Int, SettleCurrencyOption>()
+
+    // Lista kosztów do rozliczenia (tab 2)
+    private val costItems = mutableListOf<SettleCostItemUiModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,6 +110,7 @@ class SettleModalFragment : DialogFragment() {
         setupCurrencyScrollViewMaxHeight(model)
         setupAmountInput(model)
         setupListeners(model)
+        setupByCostsTab(model)
     }
 
     /**
@@ -101,11 +118,10 @@ class SettleModalFragment : DialogFragment() {
      * Max 3 waluty widoczne, powyżej - scroll
      */
     private fun setupCurrencyScrollViewMaxHeight(model: SettleModalUiModel) {
-        val totalCurrencies = 1 + model.otherCurrencies.size  // główna + dodatkowe
+        val totalCurrencies = 1 + model.otherCurrencies.size
 
         if (totalCurrencies > 3) {
-            // Oblicz wysokość dla 3 elementów (około 56dp na element)
-            val itemHeightDp = 56
+            val itemHeightDp = 60
             val maxHeightDp = itemHeightDp * 3
             val density = resources.displayMetrics.density
             val maxHeightPx = (maxHeightDp * density).toInt()
@@ -150,6 +166,15 @@ class SettleModalFragment : DialogFragment() {
         amountInputLayout = view.findViewById(R.id.amountInputLayout)
         amountInput = view.findViewById(R.id.amountInput)
         settleButton = view.findViewById(R.id.settleButton)
+
+        // Tab 2 - Per koszty
+        costsScrollView = view.findViewById(R.id.costsScrollView)
+        costsListContainer = view.findViewById(R.id.costsListContainer)
+        costsSummaryContainer = view.findViewById(R.id.costsSummaryContainer)
+        summaryCard = view.findViewById(R.id.summaryCard)
+        summaryAmountsContainer = view.findViewById(R.id.summaryAmountsContainer)
+        costsEmptySelection = view.findViewById(R.id.costsEmptySelection)
+        settleByCostsButton = view.findViewById(R.id.settleByCostsButton)
     }
 
     private fun setupTabLayout() {
@@ -181,7 +206,261 @@ class SettleModalFragment : DialogFragment() {
     }
 
     // ==========================================
-    // CURRENCY SELECTION
+    // TAB 2: PER KOSZTY
+    // ==========================================
+
+    /**
+     * Inicjalizacja taba "Per koszty"
+     *
+     * Przepływ:
+     * 1. Pobierz wydatki z tripData
+     * 2. Filtruj: (ja płaciłem i participant w sharedWith) LUB (participant płacił i ja w sharedWith)
+     * 3. Dodatkowy filtr: sharedWith[osoba].isSettlement == false
+     * 4. Utwórz listę SettleCostItemUiModel
+     * 5. Wyświetl wiersze z checkboxami
+     */
+    private fun setupByCostsTab(model: SettleModalUiModel) {
+        val trip = tripData ?: return
+        val participantId = model.participantId
+
+        // Filtruj wydatki
+        costItems.clear()
+        costItems.addAll(filterExpensesForSettlement(trip.expenses, participantId))
+
+        // Wyświetl listę
+        costsListContainer.removeAllViews()
+
+        if (costItems.isEmpty()) {
+            // Brak kosztów do rozliczenia
+            costsEmptySelection.text = getString(R.string.settle_by_costs_no_costs)
+            costsEmptySelection.visibility = View.VISIBLE
+            summaryCard.visibility = View.GONE
+            settleByCostsButton.isEnabled = false
+            return
+        }
+
+        costItems.forEach { item ->
+            val row = createCostRow(item)
+            costsListContainer.addView(row)
+        }
+
+        // Ustaw maksymalną wysokość scroll view (max 5 wierszy po ~40dp = 200dp)
+        costsScrollView.post {
+            val maxHeightDp = 200
+            val density = resources.displayMetrics.density
+            val maxHeightPx = (maxHeightDp * density).toInt()
+
+            if (costsListContainer.height > maxHeightPx) {
+                costsScrollView.layoutParams = costsScrollView.layoutParams.apply {
+                    height = maxHeightPx
+                }
+            }
+        }
+
+        // Setup przycisku rozlicz
+        settleByCostsButton.setOnClickListener {
+            onSettleByCostsClicked(model)
+        }
+
+        // Odśwież podsumowanie (na start = puste)
+        updateCostsSummary()
+    }
+
+    /**
+     * Filtruje wydatki dla rozliczenia między mną a uczestnikiem
+     *
+     * Warunki:
+     * - Ja płaciłem i participant jest w sharedWith z isSettlement == false
+     * - LUB participant płacił i ja jestem w sharedWith z isSettlement == false
+     */
+    private fun filterExpensesForSettlement(
+        expenses: List<ExpenseDto>,
+        participantId: String
+    ): List<SettleCostItemUiModel> {
+        val result = mutableListOf<SettleCostItemUiModel>()
+
+        for (expense in expenses) {
+            // Przypadek 1: Ja płaciłem, participant jest w sharedWith
+            if (expense.payerId == currentUserId) {
+                val share = expense.sharedWith.find {
+                    it.participantId == participantId && !it.isSettlement
+                }
+                if (share != null) {
+                    result.add(
+                        SettleCostItemUiModel(
+                            expenseId = expense.id,
+                            expenseName = expense.name,
+                            amount = share.splitValue.valueMainCurrency,
+                            currency = expense.currency,
+                            formattedAmount = "%.2f %s".format(share.splitValue.valueMainCurrency, expense.currency),
+                            payerDirection = CostPayerDirection.I_PAID,
+                            payerId = currentUserId,
+                            participantId = participantId
+                        )
+                    )
+                }
+            }
+
+            // Przypadek 2: Participant płacił, ja jestem w sharedWith
+            if (expense.payerId == participantId) {
+                val share = expense.sharedWith.find {
+                    it.participantId == currentUserId && !it.isSettlement
+                }
+                if (share != null) {
+                    result.add(
+                        SettleCostItemUiModel(
+                            expenseId = expense.id,
+                            expenseName = expense.name,
+                            amount = share.splitValue.valueMainCurrency,
+                            currency = expense.currency,
+                            formattedAmount = "%.2f %s".format(share.splitValue.valueMainCurrency, expense.currency),
+                            payerDirection = CostPayerDirection.PARTICIPANT_PAID,
+                            payerId = participantId,
+                            participantId = currentUserId
+                        )
+                    )
+                }
+            }
+        }
+
+        return result
+    }
+
+    /**
+     * Tworzy wiersz kosztu z checkboxem
+     */
+    private fun createCostRow(item: SettleCostItemUiModel): View {
+        val view = LayoutInflater.from(requireContext())
+            .inflate(R.layout.item_settle_cost, costsListContainer, false)
+
+        val checkbox = view.findViewById<CheckBox>(R.id.costCheckbox)
+        val title = view.findViewById<TextView>(R.id.costTitle)
+        val amount = view.findViewById<TextView>(R.id.costAmount)
+
+        title.text = item.expenseName
+        amount.text = item.formattedAmount
+
+        // Kolor zależny od kierunku
+        val color = when (item.payerDirection) {
+            CostPayerDirection.I_PAID -> ContextCompat.getColor(requireContext(), R.color.success)
+            CostPayerDirection.PARTICIPANT_PAID -> ContextCompat.getColor(requireContext(), R.color.error)
+        }
+        amount.setTextColor(color)
+
+        // Long press na tytuł - pokaż pełną nazwę
+        title.setOnLongClickListener {
+            Toast.makeText(requireContext(), item.expenseName, Toast.LENGTH_SHORT).show()
+            true
+        }
+
+        // Checkbox listener
+        checkbox.setOnCheckedChangeListener { _, isChecked ->
+            item.isChecked = isChecked
+            updateCostsSummary()
+        }
+
+        // Kliknięcie na cały wiersz toggleuje checkbox
+        view.setOnClickListener {
+            checkbox.isChecked = !checkbox.isChecked
+        }
+
+        return view
+    }
+
+    /**
+     * Aktualizuje podsumowanie zaznaczonych kosztów
+     *
+     * Logika netto per waluta:
+     * - I_PAID → dodaj kwotę (participant mi jest winien)
+     * - PARTICIPANT_PAID → odejmij kwotę (ja jestem winien)
+     * - Wynik > 0 → zielony (kolor success) → participant mi jest winien netto
+     * - Wynik < 0 → czerwony (kolor error) → ja jestem winien netto
+     * - Wynik == 0 → pomijamy walutę (rozliczone)
+     *
+     * Wyświetlamy tylko kwotę bezwzględną + walutę, kolor mówi o kierunku.
+     */
+    private fun updateCostsSummary() {
+        val checkedItems = costItems.filter { it.isChecked }
+
+        if (checkedItems.isEmpty()) {
+            summaryCard.visibility = View.GONE
+            costsEmptySelection.text = getString(R.string.settle_by_costs_empty_selection)
+            costsEmptySelection.visibility = View.VISIBLE
+            settleByCostsButton.isEnabled = false
+            return
+        }
+
+        costsEmptySelection.visibility = View.GONE
+        summaryCard.visibility = View.VISIBLE
+
+        // Oblicz netto per waluta
+        val netPerCurrency = mutableMapOf<String, Float>()
+
+        for (item in checkedItems) {
+            val current = netPerCurrency.getOrDefault(item.currency, 0f)
+            val delta = when (item.payerDirection) {
+                CostPayerDirection.I_PAID -> item.amount           // participant mi jest winien
+                CostPayerDirection.PARTICIPANT_PAID -> -item.amount // ja jestem winien
+            }
+            netPerCurrency[item.currency] = current + delta
+        }
+
+        // Przycisk aktywny gdy cokolwiek zaznaczono
+        settleByCostsButton.isEnabled = true
+
+        // Wyświetl sumy
+        summaryAmountsContainer.removeAllViews()
+
+        netPerCurrency.forEach { (currency, netAmount) ->
+            val absAmount = kotlin.math.abs(netAmount)
+            val colorRes = when {
+                netAmount > 0 -> R.color.success
+                netAmount < 0 -> R.color.error
+                else -> R.color.text_secondary  // Netto == 0 → szary
+            }
+
+            val amountText = TextView(requireContext()).apply {
+                text = "%.2f %s".format(absAmount, currency)
+                setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+                textSize = 14f
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    bottomMargin = resources.getDimensionPixelSize(R.dimen.spacing_tiny)
+                }
+            }
+
+            summaryAmountsContainer.addView(amountText)
+        }
+    }
+
+    /**
+     * Obsługa kliknięcia "Rozlicz" w tabie per koszty
+     */
+    private fun onSettleByCostsClicked(model: SettleModalUiModel) {
+        val checkedItems = costItems.filter { it.isChecked }
+
+        if (checkedItems.isEmpty()) return
+
+        val request = SettleByCostsRequest(
+            tripId = tripId,
+            items = checkedItems.map { item ->
+                SettleByCostsItem(
+                    expenseId = item.expenseId,
+                    payerId = item.payerId,
+                    participantId = item.participantId
+                )
+            }
+        )
+
+        onConfirmByCosts?.invoke(request)
+        dismiss()
+    }
+
+    // ==========================================
+    // CURRENCY SELECTION (Tab 1)
     // ==========================================
 
     private fun setupCurrencySelection(model: SettleModalUiModel) {
@@ -219,74 +498,63 @@ class SettleModalFragment : DialogFragment() {
      * TO_GIVE: strzałka w górę (czerwona) - mam oddać
      */
     private fun updateDirectionIcon(iconView: ImageView, direction: SettleAmountDirection) {
-        val (iconResId, colorResId) = when (direction) {
+        when (direction) {
             SettleAmountDirection.TO_RECEIVE -> {
-                R.drawable.ic_arrow_downward to R.color.success
+                iconView.setImageResource(R.drawable.ic_arrow_downward)
+                iconView.setColorFilter(ContextCompat.getColor(requireContext(), R.color.success))
             }
             SettleAmountDirection.TO_GIVE -> {
-                R.drawable.ic_arrow_upward to R.color.error
+                iconView.setImageResource(R.drawable.ic_arrow_upward)
+                iconView.setColorFilter(ContextCompat.getColor(requireContext(), R.color.error))
             }
         }
-
-        iconView.setImageResource(iconResId)
-        iconView.imageTintList = ContextCompat.getColorStateList(requireContext(), colorResId)
     }
 
     private fun selectMainCurrency(model: SettleModalUiModel) {
-        // Odznacz wszystkie inne radio buttons
-        radioToCurrencyMap.keys.forEach { radioId ->
-            view?.findViewById<RadioButton>(radioId)?.isChecked = false
-        }
-        // Odznacz karty dodatkowych walut
-        updateOtherCurrencyCardsState(null)
-
-        // Zaznacz główną walutę
         mainCurrencyRadio.isChecked = true
         selectedCurrencyOption = model.mainCurrency
         updateMainCurrencyCardState(true)
         updateAmountUI(model.mainCurrency)
-        clearAmountInput()
+
+        // Odznacz wszystkie inne radio buttony
+        radioToCurrencyMap.keys.forEach { radioId ->
+            view?.findViewById<RadioButton>(radioId)?.isChecked = false
+        }
+        updateOtherCurrencyCardsState(null)
     }
 
     private fun addOtherCurrencyCard(currencyOption: SettleCurrencyOption, model: SettleModalUiModel) {
-        val inflater = LayoutInflater.from(requireContext())
-        val cardView = inflater.inflate(R.layout.item_currency_option, otherCurrenciesContainer, false)
+        val cardView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.item_currency_option, otherCurrenciesContainer, false)
 
-        // cardView IS the MaterialCardView (root of item_currency_option.xml)
-        val card = cardView as MaterialCardView
-        val radio = card.findViewById<RadioButton>(R.id.currencyRadio)
-        val label = card.findViewById<TextView>(R.id.currencyLabel)
-        val amount = card.findViewById<TextView>(R.id.currencyAmount)
-        val directionIcon = card.findViewById<ImageView>(R.id.currencyDirectionIcon)
+        val radio = cardView.findViewById<RadioButton>(R.id.currencyRadio)
+        val amountText = cardView.findViewById<TextView>(R.id.currencyAmount)
+        val labelText = cardView.findViewById<TextView>(R.id.currencyLabel)
+        val directionIcon = cardView.findViewById<ImageView>(R.id.currencyDirectionIcon)
+        val card = cardView.findViewById<MaterialCardView>(R.id.currencyCard)
 
-        // Generuj unikalne ID dla RadioButton
         radio.id = View.generateViewId()
-        radioToCurrencyMap[radio.id] = currencyOption
-
-        // Ustaw wartości - kwota, waluta, ikona kierunku
-        amount.text = "%.2f".format(currencyOption.availableAmount)
-        label.text = currencyOption.currency
+        amountText.text = "%.2f".format(currencyOption.availableAmount)
+        labelText.text = currencyOption.currency
         updateDirectionIcon(directionIcon, currencyOption.direction)
 
-        // Kliknięcie na kartę
-        val selectThisCurrency: () -> Unit = {
-            // Odznacz główną walutę
-            mainCurrencyRadio.isChecked = false
-            updateMainCurrencyCardState(false)
+        radioToCurrencyMap[radio.id] = currencyOption
 
-            // Odznacz inne dodatkowe waluty
-            radioToCurrencyMap.keys.forEach { radioId ->
-                if (radioId != radio.id) {
-                    view?.findViewById<RadioButton>(radioId)?.isChecked = false
+        val selectThisCurrency = {
+            // Odznacz główną
+            mainCurrencyRadio.isChecked = false
+            // Odznacz wszystkie inne dodatkowe
+            radioToCurrencyMap.keys.forEach { otherRadioId ->
+                if (otherRadioId != radio.id) {
+                    view?.findViewById<RadioButton>(otherRadioId)?.isChecked = false
                 }
             }
-            updateOtherCurrencyCardsState(radio.id)
-
-            // Zaznacz tę walutę
+            // Zaznacz tę
             radio.isChecked = true
             selectedCurrencyOption = currencyOption
+            updateMainCurrencyCardState(false)
+            updateOtherCurrencyCardsState(radio.id)
             updateAmountUI(currencyOption)
-            clearAmountInput()
         }
 
         card.setOnClickListener { selectThisCurrency() }
@@ -296,84 +564,48 @@ class SettleModalFragment : DialogFragment() {
     }
 
     private fun updateMainCurrencyCardState(isSelected: Boolean) {
-        val strokeColor = if (isSelected) R.color.primary else R.color.divider
-        mainCurrencyCard.strokeColor = ContextCompat.getColor(requireContext(), strokeColor)
+        val strokeColor = if (isSelected) {
+            ContextCompat.getColor(requireContext(), R.color.primary)
+        } else {
+            ContextCompat.getColor(requireContext(), R.color.divider)
+        }
+        mainCurrencyCard.strokeColor = strokeColor
+        mainCurrencyCard.strokeWidth = if (isSelected) 2 else 1
     }
 
     private fun updateOtherCurrencyCardsState(selectedRadioId: Int?) {
-        for (i in 0 until otherCurrenciesContainer.childCount) {
-            val childView = otherCurrenciesContainer.getChildAt(i)
-            // Child IS the MaterialCardView (root of item_currency_option.xml)
-            val card = childView as? MaterialCardView ?: continue
-            val radio = card.findViewById<RadioButton>(R.id.currencyRadio) ?: continue
+        for ((radioId, _) in radioToCurrencyMap) {
+            val card = view?.findViewById<RadioButton>(radioId)
+                ?.parent?.parent as? MaterialCardView ?: continue
 
-            val isSelected = radio.id == selectedRadioId
-            val strokeColor = if (isSelected) R.color.primary else R.color.divider
-            card.strokeColor = ContextCompat.getColor(requireContext(), strokeColor)
+            val isSelected = radioId == selectedRadioId
+            card.strokeColor = if (isSelected) {
+                ContextCompat.getColor(requireContext(), R.color.primary)
+            } else {
+                ContextCompat.getColor(requireContext(), R.color.divider)
+            }
+            card.strokeWidth = if (isSelected) 2 else 1
         }
     }
 
     // ==========================================
-    // AMOUNT INPUT
+    // AMOUNT INPUT (Tab 1)
     // ==========================================
+
+    private fun updateAmountUI(currencyOption: SettleCurrencyOption) {
+        amountInput.setText("")
+        amountInputLayout.error = null
+        amountInputLayout.suffixText = currencyOption.currency
+    }
 
     private fun setupAmountInput(model: SettleModalUiModel) {
         amountInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                validateAmount()
+                amountInputLayout.error = null
             }
         })
-    }
-
-    private fun updateAmountUI(currencyOption: SettleCurrencyOption) {
-        // Aktualizuj suffix w TextInputLayout
-        amountInputLayout.suffixText = currencyOption.currency
-    }
-
-    private fun clearAmountInput() {
-        amountInput.setText("")
-        amountInputLayout.error = null
-    }
-
-    private fun validateAmount(): Boolean {
-        val amountText = amountInput.text?.toString() ?: ""
-        val currencyOption = selectedCurrencyOption ?: return false
-
-        if (amountText.isEmpty()) {
-            amountInputLayout.error = null
-            return false
-        }
-
-        val amount = amountText.replace(",", ".").toFloatOrNull()
-
-        return when {
-            amount == null -> {
-                amountInputLayout.error = "Nieprawidłowa kwota"
-                false
-            }
-            amount <= 0 -> {
-                amountInputLayout.error = "Kwota musi być większa od 0"
-                false
-            }
-            amount > currencyOption.availableAmount + 0.01f -> {
-                amountInputLayout.error = "Maksymalna kwota: %.2f %s".format(
-                    currencyOption.availableAmount,
-                    currencyOption.currency
-                )
-                false
-            }
-            else -> {
-                amountInputLayout.error = null
-                true
-            }
-        }
-    }
-
-    private fun getEnteredAmount(): Float? {
-        val amountText = amountInput.text?.toString() ?: return null
-        return amountText.replace(",", ".").toFloatOrNull()
     }
 
     // ==========================================
@@ -381,10 +613,7 @@ class SettleModalFragment : DialogFragment() {
     // ==========================================
 
     private fun setupListeners(model: SettleModalUiModel) {
-        // Zamknij modal
-        closeButton.setOnClickListener {
-            dismiss()
-        }
+        closeButton.setOnClickListener { dismiss() }
 
         // Ikonka "Wszystko" w inputie - wypełnij maksymalną kwotą
         amountInputLayout.setEndIconOnClickListener {
@@ -393,28 +622,35 @@ class SettleModalFragment : DialogFragment() {
             }
         }
 
-        // Przycisk "Rozlicz"
         settleButton.setOnClickListener {
-            if (validateAmount()) {
-                confirmSettle(model)
-            }
+            onSettleByValueClicked(model)
         }
     }
 
-    private fun confirmSettle(model: SettleModalUiModel) {
-        val amount = getEnteredAmount() ?: return
+    private fun onSettleByValueClicked(model: SettleModalUiModel) {
+        val amountText = amountInput.text?.toString()
+        val amount = amountText?.toFloatOrNull()
+
+        if (amount == null || amount <= 0) {
+            amountInputLayout.error = getString(R.string.settle_error_invalid_amount)
+            return
+        }
+
         val currency = selectedCurrencyOption ?: return
 
-        // Określ fromUserId i toUserId na podstawie kierunku kwoty w wybranej walucie
-        // TO_RECEIVE: participant jest mi winien → participant = from, ja = to
-        // TO_GIVE: ja jestem winien participantowi → ja = from, participant = to
+        if (amount > currency.availableAmount) {
+            amountInputLayout.error = getString(
+                R.string.settle_error_amount_too_high,
+                "%.2f".format(currency.availableAmount)
+            )
+            return
+        }
+
         val (fromUserId, toUserId) = when (currency.direction) {
             SettleAmountDirection.TO_RECEIVE -> {
-                // On mi jest winien tę kwotę → on jest dłużnikiem
                 model.participantId to currentUserId
             }
             SettleAmountDirection.TO_GIVE -> {
-                // Ja jestem winien tę kwotę → ja jestem dłużnikiem
                 currentUserId to model.participantId
             }
         }
@@ -444,19 +680,25 @@ class SettleModalFragment : DialogFragment() {
          * @param model Dane do wyświetlenia w modalu
          * @param tripId ID wycieczki
          * @param currentUserId ID aktualnego użytkownika
-         * @param onConfirm Callback wywoływany po potwierdzeniu rozliczenia
+         * @param tripData Dane wycieczki (potrzebne do tab 2 - lista wydatków)
+         * @param onConfirm Callback rozliczenia per wartość
+         * @param onConfirmByCosts Callback rozliczenia per koszty
          */
         fun newInstance(
             model: SettleModalUiModel,
             tripId: String,
             currentUserId: String,
-            onConfirm: (SettleRequest) -> Unit
+            tripData: TripDto? = null,
+            onConfirm: (SettleRequest) -> Unit,
+            onConfirmByCosts: ((SettleByCostsRequest) -> Unit)? = null
         ): SettleModalFragment {
             return SettleModalFragment().apply {
                 this.settleModel = model
                 this.tripId = tripId
                 this.currentUserId = currentUserId
+                this.tripData = tripData
                 this.onConfirm = onConfirm
+                this.onConfirmByCosts = onConfirmByCosts
             }
         }
     }

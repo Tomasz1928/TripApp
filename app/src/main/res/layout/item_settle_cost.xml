@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Item Settle Cost - Wiersz kosztu w tabie "Per koszty"
+    Kompaktowy: CheckBox | Tytuł (ellipsize) | Kwota + Waluta
+    Kolory: zielony = ja płaciłem, czerwony = participant płacił
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="6dp"
+    android:paddingHorizontal="@dimen/padding_small"
+    android:background="?attr/selectableItemBackground"
+    android:minHeight="40dp">
+
+    <CheckBox
+        android:id="@+id/costCheckbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingStart="0dp"/>
+
+    <!-- Tytuł kosztu - ucinany z ... -->
+    <TextView
+        android:id="@+id/costTitle"
+        style="@style/Text.Body"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_small"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:singleLine="true"
+        tools:text="Hotel Berlin na 3 noce"/>
+
+    <!-- Kwota -->
+    <TextView
+        android:id="@+id/costAmount"
+        style="@style/Text.Body.Bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_small"
+        tools:text="225,00 EUR"/>
+
+</LinearLayout>

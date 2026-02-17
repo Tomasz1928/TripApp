@@ -5,6 +5,7 @@ import com.example.tripapp2.data.repository.MockData.createTripMock
 import com.example.tripapp2.data.repository.MockData.joinTripMock
 import com.example.tripapp2.data.repository.MockData.addExpenseMock
 import com.example.tripapp2.data.repository.MockData.updateExpenseMock
+import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsRequest
 import kotlinx.coroutines.delay
 
 class TripRepository private constructor() {
@@ -57,7 +58,7 @@ class TripRepository private constructor() {
     // TRIP DETAILS
     // ==========================================
 
-    suspend fun getTripDetails(tripId: String): TripDto? {
+     fun getTripDetails(tripId: String): TripDto? {
         return tripsCache[tripId]
     }
 
@@ -276,6 +277,24 @@ class TripRepository private constructor() {
                 currency = currency,
                 isMainCurrency = isMainCurrency
             )
+
+            if (result.success.success) {
+                result.trip?.let { updateTripInCache(it) }
+                Result.success(result)
+            } else {
+                Result.failure(Exception(result.success.message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Rozlicza wybrane koszty - oznacza sharedWith jako isSettlement = true
+     */
+    fun settleByCosts(request: SettleByCostsRequest): Result<SettlementResultDto> {
+        return try {
+            val result = MockData.settleByCosts(request.tripId, request.items)
 
             if (result.success.success) {
                 result.trip?.let { updateTripInCache(it) }
