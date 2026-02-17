@@ -315,9 +315,13 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         val modal = SettleModalFragment.newInstance(
             model = model,
             tripId = getTripId(),
-            currentUserId = viewModel.getCurrentUserId(),  // Dodaj getter w ViewModel
+            currentUserId = viewModel.getCurrentUserId(),
+            tripData = viewModel.getTripData(),  // NOWE: dane wycieczki dla tab 2
             onConfirm = { request ->
                 viewModel.onSettleConfirmedFromModal(request)
+            },
+            onConfirmByCosts = { request ->        // NOWE: callback dla tab 2
+                viewModel.onSettleByCostsConfirmed(request)
             }
         )
         modal.show(parentFragmentManager, "settle_modal")

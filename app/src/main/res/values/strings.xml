@@ -256,6 +256,14 @@
     <string name="settlements_prepayment_currency_info_format">Zaliczka zostanie zapisana w walucie wycieczki (%s)</string>
     <string name="settlements_prepayment_confirm">Dodaj zaliczkę</string>
 
+    <!-- ========================================= -->
+    <!-- SETTLE BY COSTS - Rozliczenie per koszty -->
+    <!-- ========================================= -->
+
+    <string name="settle_by_costs_summary_label">PODSUMOWANIE ZAZNACZONYCH</string>
+    <string name="settle_by_costs_empty_selection">Zaznacz koszty do rozliczenia</string>
+    <string name="settle_by_costs_no_costs">Brak kosztów do rozliczenia</string>
+
 
     <!-- ========================================= -->
     <!-- SETTLE MODAL - Modal rozliczenia -->

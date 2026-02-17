@@ -3,6 +3,7 @@ package com.example.tripapp2.ui.tripdetails.settlements
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.tripapp2.data.model.TripDto
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -45,7 +46,8 @@ class TripSettlementsViewModel(
 
     // Event otwarcia modala szczegółów
     private val _showDetailsModalEvent = MutableLiveData<Event<SettlementParticipantUiModel>>()
-    val showDetailsModalEvent: LiveData<Event<SettlementParticipantUiModel>> = _showDetailsModalEvent
+    val showDetailsModalEvent: LiveData<Event<SettlementParticipantUiModel>> =
+        _showDetailsModalEvent
 
     // Event otwarcia modala rozliczenia
     private val _showSettleModalEvent = MutableLiveData<Event<SettleModalUiModel>>()
@@ -54,6 +56,10 @@ class TripSettlementsViewModel(
     // Event potwierdzenia akcji (feedback dla użytkownika)
     private val _actionConfirmedEvent = MutableLiveData<Event<String>>()
     val actionConfirmedEvent: LiveData<Event<String>> = _actionConfirmedEvent
+
+    // Event rozliczenia per koszty
+    private val _settleByCostsEvent = MutableLiveData<Event<SettleByCostsRequest>>()
+    val settleByCostsEvent: LiveData<Event<SettleByCostsRequest>> = _settleByCostsEvent
 
     init {
         loadCurrentUserAndSettlements()
@@ -78,11 +84,16 @@ class TripSettlementsViewModel(
             }
         }
     }
+
     /**
      * Zwraca ID aktualnego użytkownika
      * Potrzebne dla modala rozliczenia
      */
     fun getCurrentUserId(): String = currentUserId
+
+    fun getTripData(): TripDto? {
+        return tripRepository.getTripDetails(tripId)
+    }
 
     /**
      * Ładuje dane rozliczeń z cache
@@ -250,6 +261,36 @@ class TripSettlementsViewModel(
         }
     }
 
+    /**
+     * Przetwarza rozliczenie per koszty
+     * Oznacza wybrane wydatki jako rozliczone (isSettlement = true)
+     */
+    fun onSettleByCostsConfirmed(request: SettleByCostsRequest) {
+        viewModelScope.launch {
+            try {
+                setLoading(true)
+
+                val result = tripRepository.settleByCosts(request)
+
+                result.onSuccess {
+                    _actionConfirmedEvent.value = Event(
+                        "Rozliczono ${request.items.size} kosztów"
+                    )
+                    // Odśwież dane
+                    loadSettlements()
+
+                }.onFailure { error ->
+                    showError(error.message ?: "Nie udało się rozliczyć")
+                }
+
+            } catch (e: Exception) {
+                showError(e.message ?: "Błąd rozliczenia")
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
     // ==========================================
     // OBSŁUGA MODALI
     // ==========================================
@@ -299,52 +340,4 @@ class TripSettlementsViewModel(
             }
         }
     }
-
-    /**
-     * Potwierdzenie rozliczenia z modala
-     */
-//    fun onSettleConfirmed(participant: SettlementParticipantUiModel, amount: Float? = null) {
-//        viewModelScope.launch {
-//            try {
-//                setLoading(true)
-//
-//                // Kwota do rozliczenia - pełna lub częściowa
-//                val settleAmount = amount ?: kotlin.math.abs(participant.balance)
-//
-//                val result = tripRepository.markSettlementAsPaid(
-//                    tripId = tripId,
-//                    fromUserId = if (participant.balanceStatus == ParticipantBalanceStatus.NEGATIVE) {
-//                        currentUserId // Ja jestem winien
-//                    } else {
-//                        participant.participantId // On mi jest winien
-//                    },
-//                    toUserId = if (participant.balanceStatus == ParticipantBalanceStatus.NEGATIVE) {
-//                        participant.participantId
-//                    } else {
-//                        currentUserId
-//                    },
-//                    amount = settleAmount,
-//                    currency = participant.currency,
-//                    mainCurrency =participant.
-//                )
-//
-//                result.onSuccess {
-//                    _actionConfirmedEvent.value = Event(
-//                        "Rozliczenie z ${participant.nickname} zostało potwierdzone"
-//                    )
-//
-//                    // Odśwież dane
-//                    loadSettlements()
-//
-//                }.onFailure { error ->
-//                    showError(error.message ?: "Nie udało się potwierdzić rozliczenia")
-//                }
-//
-//            } catch (e: Exception) {
-//                showError(e.message ?: "Nie udało się potwierdzić rozliczenia")
-//            } finally {
-//                setLoading(false)
-//            }
-//        }
-//    }
 }

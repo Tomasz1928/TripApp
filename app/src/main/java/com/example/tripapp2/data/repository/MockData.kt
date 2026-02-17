@@ -1,6 +1,7 @@
 package com.example.tripapp2.data.repository
 
 import com.example.tripapp2.data.model.*
+import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsItem
 
 /**
  * MockData - Dane testowe dla aplikacji
@@ -448,6 +449,68 @@ object MockData {
             trip = updatedTrip
         )
     }
+
+    // Import potrzebny na górze pliku:
+    // import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsItem
+
+    /**
+     * Rozlicza wybrane koszty - oznacza odpowiednie sharedWith jako isSettlement = true
+     *
+     * Dla każdego elementu:
+     * 1. Znajdź wydatek po expenseId
+     * 2. Znajdź wpis sharedWith po participantId
+     * 3. Ustaw isSettlement = true
+     *
+     * @param tripId ID wycieczki
+     * @param items Lista kosztów do rozliczenia (expenseId + payerId + participantId)
+     */
+    fun settleByCosts(
+        tripId: String,
+        items: List<SettleByCostsItem>
+    ): SettlementResultDto {
+        initializeIfNeeded()
+
+        val trip = tripsStorage[tripId]
+            ?: return SettlementResultDto(
+                success = SuccessDto(success = false, message = "Trip not found"),
+                trip = null
+            )
+
+        var updatedExpenses = trip.expenses.toList()
+
+        for (item in items) {
+            updatedExpenses = updatedExpenses.map { expense ->
+                if (expense.id == item.expenseId) {
+                    // Znajdź wpis sharedWith dla participanta (osoba która NIE płaciła)
+                    val targetParticipantId = if (expense.payerId == item.payerId) {
+                        item.participantId
+                    } else {
+                        item.payerId
+                    }
+
+                    val updatedSharedWith = expense.sharedWith.map { share ->
+                        if (share.participantId == targetParticipantId) {
+                            share.copy(isSettlement = true)
+                        } else {
+                            share
+                        }
+                    }
+                    expense.copy(sharedWith = updatedSharedWith)
+                } else {
+                    expense
+                }
+            }
+        }
+
+        val updatedTrip = trip.copy(expenses = updatedExpenses)
+        tripsStorage[tripId] = updatedTrip
+
+        return SettlementResultDto(
+            success = SuccessDto(success = true, message = "Koszty rozliczone pomyślnie"),
+            trip = updatedTrip
+        )
+    }
+
 
     // ==========================================
     // PUBLIC API - SETTLEMENTS
