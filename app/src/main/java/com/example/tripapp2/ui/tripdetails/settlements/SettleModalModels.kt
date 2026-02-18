@@ -1,7 +1,7 @@
 package com.example.tripapp2.ui.tripdetails.settlements
 
-import com.example.tripapp2.data.model.MoneyValueDto
 import com.example.tripapp2.data.model.SettlementRelationDto
+import com.example.tripapp2.data.model.SimpleMoneyValueDto
 
 // ==========================================
 // UI MODELS - Settle Modal
@@ -34,10 +34,9 @@ data class SettleCurrencyOption(
 data class SettleModalUiModel(
     val participantId: String,
     val participantNickname: String,
-    val isOwedToMe: Boolean,                    // true = on mi jest winien, false = ja jestem winien
+    val isOwedToMe: Boolean,                    // true = on mi jest winien (główna waluta), false = ja jestem winien
     val relationDescription: String,            // "Jesteś winien" lub "Jest Ci winien"
-    val mainCurrency: SettleCurrencyOption,     // Główna waluta wycieczki
-    val otherCurrencies: List<SettleCurrencyOption>,  // Dodatkowe waluty
+    val currencies: List<SettleCurrencyOption>,  // Wszystkie waluty do rozliczenia (główna + dodatkowe)
     val tripCurrency: String                    // Waluta wycieczki (do referencji)
 )
 
@@ -59,93 +58,64 @@ data class SettleRequest(
 // ==========================================
 
 /**
- * Tworzy SettleModalUiModel z danych uczestnika i relacji
+ * Tworzy SettleModalUiModel z nowego SettlementRelationDto
+ *
+ * Nowa logika:
+ * - leftForSettled zawiera listę SimpleMoneyValueDto ze znakiem (+/-)
+ * - Każda waluta z leftForSettled staje się SettleCurrencyOption
+ * - Pomijamy waluty z amount ~= 0
  *
  * @param participant Model UI uczestnika
- * @param relation Relacja rozliczeniowa z MockData
+ * @param relation Relacja rozliczeniowa (nowy format)
  * @param tripCurrency Główna waluta wycieczki
- * @param currentUserId ID aktualnego użytkownika
  */
 fun createSettleModalModel(
     participant: SettlementParticipantUiModel,
     relation: SettlementRelationDto,
-    tripCurrency: String,
-    currentUserId: String
+    tripCurrency: String
 ): SettleModalUiModel {
 
-    // Określ czy on mi jest winien czy ja jemu (na podstawie relacji, nie kwoty)
-    val isOwedToMe = relation.toUserId == currentUserId
+    // Buduj listę opcji walutowych z leftForSettled
+    val currencyOptions = relation.leftForSettled
+        .filter { kotlin.math.abs(it.amount) > 0.01f }  // Pomijaj zerowe
+        .map { money ->
+            val direction = if (money.amount > 0) {
+                SettleAmountDirection.TO_RECEIVE
+            } else {
+                SettleAmountDirection.TO_GIVE
+            }
+            val absAmount = kotlin.math.abs(money.amount)
 
-    // Opis relacji
+            SettleCurrencyOption(
+                currency = money.currency,
+                availableAmount = absAmount,
+                isMainCurrency = money.isMainCurrency,
+                direction = direction,
+                formattedAmount = "%.2f %s".format(absAmount, money.currency)
+            )
+        }
+        // Sortuj: główna waluta pierwsza
+        .sortedByDescending { it.isMainCurrency }
+
+    // Kierunek główny - na podstawie głównej waluty (lub pierwszej dostępnej)
+    val mainDirection = currencyOptions.firstOrNull { it.isMainCurrency }?.direction
+        ?: currencyOptions.firstOrNull()?.direction
+        ?: SettleAmountDirection.TO_RECEIVE
+
+    val isOwedToMe = mainDirection == SettleAmountDirection.TO_RECEIVE
+
     val relationDescription = if (isOwedToMe) {
         "Jest Ci winien/winna"
     } else {
         "Jesteś winien/winna"
     }
 
-    // Główna waluta - obsługa ujemnych wartości
-    val mainCurrencyValue = relation.amount.valueMainCurrency
-    val mainCurrencyDirection = if (mainCurrencyValue >= 0) {
-        SettleAmountDirection.TO_RECEIVE
-    } else {
-        SettleAmountDirection.TO_GIVE
-    }
-    val mainCurrencyAbsValue = kotlin.math.abs(mainCurrencyValue)
-
-    val mainCurrencyOption = SettleCurrencyOption(
-        currency = tripCurrency,
-        availableAmount = mainCurrencyAbsValue,
-        isMainCurrency = true,
-        direction = mainCurrencyDirection,
-        formattedAmount = "%.2f %s".format(mainCurrencyAbsValue, tripCurrency)
-    )
-
-    // Dodatkowe waluty - obsługa ujemnych wartości
-    val otherCurrencyOptions = relation.amount.valueOtherCurrencies.map { moneyDetail ->
-        val direction = if (moneyDetail.value >= 0) {
-            SettleAmountDirection.TO_RECEIVE
-        } else {
-            SettleAmountDirection.TO_GIVE
-        }
-        val absValue = kotlin.math.abs(moneyDetail.value)
-
-        SettleCurrencyOption(
-            currency = moneyDetail.currency,
-            availableAmount = absValue,
-            isMainCurrency = false,
-            direction = direction,
-            formattedAmount = "%.2f %s".format(absValue, moneyDetail.currency)
-        )
-    }
-
     return SettleModalUiModel(
-        participantId = participant.participantId,
-        participantNickname = participant.nickname,
+        participantId = relation.relatedId,
+        participantNickname = relation.relatedName,
         isOwedToMe = isOwedToMe,
         relationDescription = relationDescription,
-        mainCurrency = mainCurrencyOption,
-        otherCurrencies = otherCurrencyOptions,
+        currencies = currencyOptions,
         tripCurrency = tripCurrency
     )
-}
-
-/**
- * Pobiera wszystkie dostępne opcje walut (główna + dodatkowe)
- */
-fun SettleModalUiModel.getAllCurrencyOptions(): List<SettleCurrencyOption> {
-    return listOf(mainCurrency) + otherCurrencies
-}
-
-/**
- * Sprawdza czy kwota jest w prawidłowym zakresie dla danej waluty
- */
-fun SettleCurrencyOption.isAmountValid(amount: Float): Boolean {
-    return amount > 0f && amount <= availableAmount + 0.01f // Mały margines na błędy zaokrąglenia
-}
-
-/**
- * Formatuje zakres kwot dla wybranej waluty
- */
-fun SettleCurrencyOption.formatAmountRange(): String {
-    return "Zakres: 0,01 - %.2f %s".format(availableAmount, currency)
 }

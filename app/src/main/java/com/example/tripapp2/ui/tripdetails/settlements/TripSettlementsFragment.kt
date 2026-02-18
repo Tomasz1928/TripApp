@@ -20,14 +20,17 @@ import com.google.android.material.card.MaterialCardView
 /**
  * Fragment rozliczeń
  *
- * Przepływ danych:
+ * Przepływ danych (po refaktorze):
  * - Lista uczestników pochodzi z TripDto.participants (bez mnie)
- * - Balans pochodzi z TripDto.settlement.relations
+ * - Balans pochodzi z TripDto.settlement.relations (nowy format z relatedId)
+ * - Każda relacja jest ZAWSZE w odniesieniu do mojego ID
+ * - SimpleMoneyValueDto.amount > 0 → participant jest mi winien
+ * - SimpleMoneyValueDto.amount < 0 → ja jestem winien participantowi
  *
  * Logika przycisków:
  * - Zaliczka: ZAWSZE widoczny dla każdego uczestnika
  * - Szczegóły: widoczny TYLKO gdy hasSettlementRelation = true
- * - Rozlicz: widoczny TYLKO gdy hasSettlementRelation = true AND balance != 0
+ * - Rozlicz: widoczny TYLKO gdy hasSettlementRelation = true AND balanceStatus != SETTLED
  */
 class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.fragment_trip_settlements) {
 
@@ -297,15 +300,40 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
 
     /**
      * Pokazuje modal szczegółów rozliczenia
+     *
+     * Po refaktorze: pokazuje pełne info per waluta z leftForSettled + prepayment
      */
     private fun showDetailsModal(participant: SettlementParticipantUiModel) {
-        // TODO: Implementacja modala szczegółów
-        val balanceInfo = when (participant.balanceStatus) {
-            ParticipantBalanceStatus.POSITIVE -> "${participant.nickname} jest Ci winien/winna ${participant.formattedBalance}"
-            ParticipantBalanceStatus.NEGATIVE -> "Jesteś winien/winna ${participant.nickname} ${participant.formattedBalance}"
-            ParticipantBalanceStatus.SETTLED -> "Rozliczenie z ${participant.nickname} jest zakończone"
+        val lines = mutableListOf<String>()
+
+        // leftForSettled - ile pozostało per waluta
+        participant.leftForSettled.forEach { money ->
+            val direction = if (money.amount > 0) {
+                "${participant.nickname} jest Ci winien/winna"
+            } else if (money.amount < 0) {
+                "Jesteś winien/winna ${participant.nickname}"
+            } else {
+                "Rozliczone"
+            }
+            lines.add("$direction: ${"%.2f".format(kotlin.math.abs(money.amount))} ${money.currency}")
         }
-        showMessage(balanceInfo)
+
+        // Zaliczki
+        val prepaymentLines = participant.prepayment
+            .filter { kotlin.math.abs(it.amount) > 0.01f }
+            .map { money ->
+                val dir = if (money.amount > 0) "otrzymano" else "wpłacono"
+                "Zaliczka ($dir): ${"%.2f".format(kotlin.math.abs(money.amount))} ${money.currency}"
+            }
+        lines.addAll(prepaymentLines)
+
+        val message = if (lines.isEmpty()) {
+            "Brak danych rozliczenia"
+        } else {
+            lines.joinToString("\n")
+        }
+
+        showMessage(message)
     }
 
     /**
@@ -316,11 +344,11 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
             model = model,
             tripId = getTripId(),
             currentUserId = viewModel.getCurrentUserId(),
-            tripData = viewModel.getTripData(),  // NOWE: dane wycieczki dla tab 2
+            tripData = viewModel.getTripData(),
             onConfirm = { request ->
                 viewModel.onSettleConfirmedFromModal(request)
             },
-            onConfirmByCosts = { request ->        // NOWE: callback dla tab 2
+            onConfirmByCosts = { request ->
                 viewModel.onSettleByCostsConfirmed(request)
             }
         )

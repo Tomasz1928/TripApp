@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.tripapp2.data.model.TripDto
+import com.example.tripapp2.data.model.isSettled
+import com.example.tripapp2.data.model.hasOutstandingAmount
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -12,20 +14,21 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel dla ekranu Settlements
  *
- * Przepływ danych:
+ * Przepływ danych (po refaktorze):
  * 1. Pobierz TripDto z cache (TripRepository)
  * 2. Użyj TripDto.participants do stworzenia listy kart
- * 3. Użyj TripDto.settlement.relations do uzupełnienia balansu
+ * 3. Użyj TripDto.settlement.relations (nowy format z relatedId) do uzupełnienia balansu
  *
- * Logika balansu:
- * - fromUserId != myId → jestem na + (ktoś mi jest winien)
- * - fromUserId == myId → jestem na - (ja jestem winien)
- * - brak relacji dla uczestnika → balance = 0
+ * Logika balansu (nowa):
+ * - Każda relacja jest ZAWSZE w odniesieniu do mnie
+ * - relatedId = ID drugiego uczestnika
+ * - SimpleMoneyValueDto.amount > 0 → on mi jest winien
+ * - SimpleMoneyValueDto.amount < 0 → ja jestem winien
  *
  * Widoczność przycisków:
  * - Zaliczka: zawsze widoczny
- * - Szczegóły: tylko gdy istnieje SettlementRelationDto dla uczestnika
- * - Rozlicz: tylko gdy istnieje SettlementRelationDto i kwota != 0
+ * - Szczegóły: tylko gdy istnieje relacja dla uczestnika
+ * - Rozlicz: tylko gdy istnieje relacja i hasOutstandingAmount
  */
 class TripSettlementsViewModel(
     private val tripId: String
@@ -71,11 +74,8 @@ class TripSettlementsViewModel(
     private fun loadCurrentUserAndSettlements() {
         viewModelScope.launch {
             try {
-                // Najpierw pobierz info o aktualnym użytkowniku
                 val userInfo = tripRepository.getCurrentUserInfo()
                 currentUserId = userInfo.id
-
-                // Następnie załaduj rozliczenia
                 loadSettlements()
             } catch (e: Exception) {
                 _settlementsState.value = TripSettlementsState.Error(
@@ -87,7 +87,6 @@ class TripSettlementsViewModel(
 
     /**
      * Zwraca ID aktualnego użytkownika
-     * Potrzebne dla modala rozliczenia
      */
     fun getCurrentUserId(): String = currentUserId
 
@@ -108,7 +107,6 @@ class TripSettlementsViewModel(
 
                 _settlementsState.value = TripSettlementsState.Loading
 
-                // Pobierz trip z cache
                 val trip = tripRepository.getTripDetails(tripId)
 
                 if (trip == null) {
@@ -129,17 +127,16 @@ class TripSettlementsViewModel(
                 // Pobierz wszystkie relacje rozliczeniowe
                 val allRelations = trip.settlement?.relations ?: emptyList()
 
-                // Mapuj uczestników na modele UI
+                // Mapuj uczestników na modele UI (nie trzeba już myUserId - relacje już są "moje")
                 val settlementParticipants = otherParticipants.map { participant ->
                     participant.toSettlementUiModel(
-                        myUserId = currentUserId,
                         allRelations = allRelations,
                         currency = trip.currency
                     )
                 }.sortByBalance()
 
-                // Oblicz całkowity balans
-                val totalBalance = trip.settlement?.balance ?: 0f
+                // Oblicz całkowity balans z relacji
+                val totalBalance = calculateMyTotalBalance(allRelations)
                 val balanceStatus = totalBalance.toBalanceStatus()
                 val formattedTotalBalance = totalBalance.formatTotalBalance(trip.currency)
 
@@ -164,58 +161,65 @@ class TripSettlementsViewModel(
     // ==========================================
 
     /**
-     * Kliknięcie przycisku "Zaliczka" przy uczestniku
-     * Zawsze dostępny dla każdego uczestnika
+     * Kliknięcie "Zaliczka" - otwiera modal zaliczki
      */
     fun onPrepaymentClicked(participant: SettlementParticipantUiModel) {
-        val prepaymentModel = PrepaymentUiModel(
-            participantId = participant.participantId,
-            participantNickname = participant.nickname,
-            availableCurrencies = listOf("PLN", "EUR", "USD", "GBP", "CHF", "CZK"),
-            currentBalance = participant.balance,
-            formattedCurrentBalance = participant.formattedBalance,
-            balanceStatus = participant.balanceStatus
-        )
-        _showPrepaymentModalEvent.value = Event(prepaymentModel)
+        viewModelScope.launch {
+            try {
+                val trip = tripRepository.getTripDetails(tripId) ?: return@launch
+
+                // Zbierz dostępne waluty z relacji uczestnika
+                val availableCurrencies = mutableListOf(trip.currency)
+                participant.leftForSettled.forEach { money ->
+                    if (!money.isMainCurrency && !availableCurrencies.contains(money.currency)) {
+                        availableCurrencies.add(money.currency)
+                    }
+                }
+
+                val prepaymentModel = PrepaymentUiModel(
+                    participantId = participant.participantId,
+                    participantNickname = participant.nickname,
+                    availableCurrencies = availableCurrencies,
+                    currentBalance = participant.balance,
+                    formattedCurrentBalance = participant.formattedBalance,
+                    balanceStatus = participant.balanceStatus
+                )
+
+                _showPrepaymentModalEvent.value = Event(prepaymentModel)
+
+            } catch (e: Exception) {
+                showError("Nie udało się otworzyć zaliczki: ${e.message}")
+            }
+        }
     }
 
     /**
-     * Kliknięcie przycisku "Szczegóły" przy uczestniku
-     * Dostępny tylko gdy hasSettlementRelation = true
+     * Kliknięcie "Szczegóły" - otwiera modal szczegółów
      */
     fun onDetailsClicked(participant: SettlementParticipantUiModel) {
-        if (!participant.hasSettlementRelation) {
-            return // Zabezpieczenie - przycisk nie powinien być widoczny
-        }
         _showDetailsModalEvent.value = Event(participant)
     }
 
     /**
-     * Kliknięcie przycisku "Rozlicz" przy uczestniku
-     * Dostępny tylko gdy hasSettlementRelation = true i balance != 0
+     * Kliknięcie "Rozlicz" - otwiera modal rozliczenia
      */
     fun onSettleClicked(participant: SettlementParticipantUiModel) {
         viewModelScope.launch {
             try {
-                // Pobierz trip z cache
                 val trip = tripRepository.getTripDetails(tripId) ?: return@launch
 
                 // Znajdź relację dla tego uczestnika
                 val relations = trip.settlement?.relations ?: return@launch
-                val relation = relations.find { relation ->
-                    (relation.fromUserId == participant.participantId && relation.toUserId == currentUserId) ||
-                            (relation.fromUserId == currentUserId && relation.toUserId == participant.participantId)
-                } ?: return@launch
+                val relation = relations.find { it.relatedId == participant.participantId }
+                    ?: return@launch
 
                 // Utwórz model dla modala
                 val settleModel = createSettleModalModel(
                     participant = participant,
                     relation = relation,
-                    tripCurrency = trip.currency,
-                    currentUserId = currentUserId
+                    tripCurrency = trip.currency
                 )
 
-                // Emituj event do pokazania modala
                 _showSettleModalEvent.value = Event(settleModel)
 
             } catch (e: Exception) {
@@ -245,8 +249,6 @@ class TripSettlementsViewModel(
                     _actionConfirmedEvent.value = Event(
                         "Rozliczono %.2f %s".format(request.amount, request.currency)
                     )
-
-                    // Odśwież dane
                     loadSettlements()
 
                 }.onFailure { error ->
@@ -263,7 +265,6 @@ class TripSettlementsViewModel(
 
     /**
      * Przetwarza rozliczenie per koszty
-     * Oznacza wybrane wydatki jako rozliczone (isSettlement = true)
      */
     fun onSettleByCostsConfirmed(request: SettleByCostsRequest) {
         viewModelScope.launch {
@@ -276,7 +277,6 @@ class TripSettlementsViewModel(
                     _actionConfirmedEvent.value = Event(
                         "Rozliczono ${request.items.size} kosztów"
                     )
-                    // Odśwież dane
                     loadSettlements()
 
                 }.onFailure { error ->
@@ -303,7 +303,6 @@ class TripSettlementsViewModel(
             try {
                 setLoading(true)
 
-                // Wywołaj repository aby zapisać zaliczkę
                 val result = tripRepository.addPrepayment(
                     tripId = request.tripId,
                     participantId = request.participantId,
@@ -326,7 +325,6 @@ class TripSettlementsViewModel(
                         )
                     )
 
-                    // Odśwież dane
                     loadSettlements()
 
                 }.onFailure { error ->

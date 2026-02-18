@@ -2,6 +2,10 @@ package com.example.tripapp2.ui.tripdetails.settlements
 
 import com.example.tripapp2.data.model.ParticipantDto
 import com.example.tripapp2.data.model.SettlementRelationDto
+import com.example.tripapp2.data.model.SimpleMoneyValueDto
+import com.example.tripapp2.data.model.isSettled
+import com.example.tripapp2.data.model.mainCurrencyBalance
+import com.example.tripapp2.data.model.hasOutstandingAmount
 
 // ==========================================
 // UI MODELS - Settlements
@@ -18,17 +22,24 @@ enum class ParticipantBalanceStatus {
 
 /**
  * Model uczestnika z informacją o balansie względem mnie
+ *
+ * balance > 0 → on mi jest winien
+ * balance < 0 → ja jestem winien
  */
 data class SettlementParticipantUiModel(
     val participantId: String,
     val nickname: String,
     val isPlaceholder: Boolean,
-    val balance: Float,                         // Dodatni = on mi jest winien, Ujemny = ja jestem winien, 0 = brak relacji
+    val balance: Float,                         // Główna waluta: + on mi jest winien, - ja jestem winien
     val formattedBalance: String,               // "+150,00 PLN" lub "-75,00 PLN" lub "0,00 PLN"
     val balanceStatus: ParticipantBalanceStatus,
-    val currency: String,
+    val currency: String,                       // Główna waluta tripu
     val hasSettlementRelation: Boolean,         // Czy istnieje relacja w SettlementRelationDto
-    val isSettled: Boolean                      // Czy rozliczenie jest oznaczone jako settled
+    val isSettled: Boolean,                     // Czy rozliczenie jest w pełni zakończone
+    val leftForSettled: List<SimpleMoneyValueDto>,       // Ile pozostało do rozliczenia per waluta
+    val allRelatedAmount: List<SimpleMoneyValueDto>,     // Całkowita kwota relacji per waluta
+    val prepayment: List<SimpleMoneyValueDto>,           // Zaliczki per waluta
+    val leftFromPrepayment: List<SimpleMoneyValueDto>    // Reszta z zaliczek per waluta
 )
 
 /**
@@ -85,29 +96,16 @@ sealed class TripSettlementsState {
 // MAPPERS
 // ==========================================
 
-/**
- * Mapuje uczestnika na model UI z informacją o balansie
- *
- * Logika:
- * - Szukamy relacji gdzie fromUserId lub toUserId to ten participant
- * - Jeśli fromUserId != myUserId (ktoś inny jest dłużnikiem) → jestem na + (on mi jest winien)
- * - Jeśli fromUserId == myUserId (ja jestem dłużnikiem) → jestem na - (ja mu jestem winien)
- * - Jeśli brak relacji → balance = 0, hasSettlementRelation = false
- */
 fun ParticipantDto.toSettlementUiModel(
-    myUserId: String,
     allRelations: List<SettlementRelationDto>,
     currency: String
 ): SettlementParticipantUiModel {
 
-    // Szukamy relacji między mną a tym uczestnikiem
-    val relationWithMe = allRelations.find { relation ->
-        (relation.fromUserId == this.id && relation.toUserId == myUserId) ||
-                (relation.fromUserId == myUserId && relation.toUserId == this.id)
-    }
+    // Szukamy relacji dla tego uczestnika (relatedId = participant.id)
+    val relationWithMe = allRelations.find { it.relatedId == this.id }
 
     val hasRelation = relationWithMe != null
-    val isSettled = relationWithMe?.isSettled ?: false
+    val settled = relationWithMe?.isSettled ?: false
 
     val balance: Float
     val balanceStatus: ParticipantBalanceStatus
@@ -116,26 +114,17 @@ fun ParticipantDto.toSettlementUiModel(
         // Brak relacji - kwota 0
         balance = 0f
         balanceStatus = ParticipantBalanceStatus.SETTLED
-    } else if (isSettled) {
-        // Rozliczone - pokazujemy kwotę ale status SETTLED
-        balance = if (relationWithMe.fromUserId != myUserId) {
-            // On mi był winien (fromUserId to ten participant)
-            relationWithMe.amount.valueMainCurrency
-        } else {
-            // Ja mu byłem winien
-            -relationWithMe.amount.valueMainCurrency
-        }
+    } else if (settled) {
+        // W pełni rozliczone
+        balance = relationWithMe.mainCurrencyBalance
         balanceStatus = ParticipantBalanceStatus.SETTLED
     } else {
-        // Nierozliczone - oblicz balans
-        if (relationWithMe.fromUserId != myUserId) {
-            // fromUserId to ten participant, więc ON mi jest winien → jestem na +
-            balance = relationWithMe.amount.valueMainCurrency
-            balanceStatus = ParticipantBalanceStatus.POSITIVE
-        } else {
-            // fromUserId to ja, więc JA mu jestem winien → jestem na -
-            balance = -relationWithMe.amount.valueMainCurrency
-            balanceStatus = ParticipantBalanceStatus.NEGATIVE
+        // Nierozliczone - balans z głównej waluty w leftForSettled
+        balance = relationWithMe.mainCurrencyBalance
+        balanceStatus = when {
+            balance > 0.01f -> ParticipantBalanceStatus.POSITIVE
+            balance < -0.01f -> ParticipantBalanceStatus.NEGATIVE
+            else -> ParticipantBalanceStatus.SETTLED
         }
     }
 
@@ -150,7 +139,11 @@ fun ParticipantDto.toSettlementUiModel(
         balanceStatus = balanceStatus,
         currency = currency,
         hasSettlementRelation = hasRelation,
-        isSettled = isSettled
+        isSettled = settled,
+        leftForSettled = relationWithMe?.leftForSettled ?: emptyList(),
+        allRelatedAmount = relationWithMe?.allRelatedAmount ?: emptyList(),
+        prepayment = relationWithMe?.prepayment ?: emptyList(),
+        leftFromPrepayment = relationWithMe?.leftFromPrepayment ?: emptyList()
     )
 }
 
@@ -205,4 +198,12 @@ fun Float.formatTotalBalance(currency: String): String {
         ParticipantBalanceStatus.NEGATIVE -> "%.2f %s".format(this, currency)
         ParticipantBalanceStatus.SETTLED -> "0,00 %s".format(currency)
     }
+}
+
+/**
+ * Oblicza mój całkowity balans na podstawie relacji
+ * Sumuje mainCurrencyBalance ze wszystkich relacji
+ */
+fun calculateMyTotalBalance(relations: List<SettlementRelationDto>): Float {
+    return relations.sumOf { it.mainCurrencyBalance.toDouble() }.toFloat()
 }
