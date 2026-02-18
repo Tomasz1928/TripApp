@@ -482,10 +482,10 @@ object MockData {
             updatedExpenses = updatedExpenses.map { expense ->
                 if (expense.id == item.expenseId) {
                     // Znajdź wpis sharedWith dla participanta (osoba która NIE płaciła)
-                    val targetParticipantId = if (expense.payerId == item.payerId) {
+                    val targetParticipantId = if (expense.payerId == item.participantId) {
                         item.participantId
                     } else {
-                        item.payerId
+                        item.participantId
                     }
 
                     val updatedSharedWith = expense.sharedWith.map { share ->
@@ -540,7 +540,7 @@ object MockData {
         participantId: String,
         amount: Float,
         currency: String,
-        direction: String
+        direction: String  // "TO_ME" lub "FROM_ME"
     ): SettlementResultDto {
         initializeIfNeeded()
 
@@ -550,8 +550,6 @@ object MockData {
                 trip = null
             )
 
-        val currentUserId = getUsrInfo().id
-        val currentUserName = getUsrInfo().nickname
         val participant = trip.participants.find { it.id == participantId }
             ?: return SettlementResultDto(
                 success = SuccessDto(success = false, message = "Participant not found"),
@@ -561,69 +559,50 @@ object MockData {
         val tripCurrency = trip.currency
         val isMainCurrency = (currency == tripCurrency)
 
-        // Określ kierunek relacji na podstawie direction
-        // TO_ME: uczestnik daje mi → fromUserId = participant (on jest "źródłem" pieniędzy)
-        // FROM_ME: ja daję uczestnikowi → fromUserId = me (ja jestem "źródłem" pieniędzy)
-        val (fromUserId, fromUserName, toUserId, toUserName) = if (direction == "TO_ME") {
-            listOf(participantId, participant.nickname, currentUserId, currentUserName)
-        } else {
-            listOf(currentUserId, currentUserName, participantId, participant.nickname)
-        }
+        // Oblicz kwotę zaliczki ze znakiem
+        // TO_ME: participant daje mi pieniądze → zwiększa mój balans → +amount w prepayment
+        // FROM_ME: ja daję participantowi → zmniejsza mój balans → -amount w prepayment
+        val signedAmount = if (direction == "TO_ME") amount else -amount
 
-        val currentSettlement = trip.settlement
-        val currentRelations = currentSettlement?.relations?.toMutableList() ?: mutableListOf()
+        val currentRelations = trip.settlement?.relations?.toMutableList() ?: mutableListOf()
 
-        // Szukamy istniejącej relacji między mną a tym uczestnikiem (w dowolnym kierunku)
-        val existingRelationIndex = currentRelations.indexOfFirst { relation ->
-            (relation.fromUserId == participantId && relation.toUserId == currentUserId) ||
-                    (relation.fromUserId == currentUserId && relation.toUserId == participantId)
-        }
+        // Znajdź lub utwórz relację
+        val existingIndex = currentRelations.indexOfFirst { it.relatedId == participantId }
 
-        if (existingRelationIndex != -1) {
-            // === AKTUALIZUJ ISTNIEJĄCĄ RELACJĘ ===
-            val existingRelation = currentRelations[existingRelationIndex]
-            val updatedRelation = updateRelationAmount(
-                existingRelation = existingRelation,
-                amount = amount,
-                currency = currency,
-                isMainCurrency = isMainCurrency
+        if (existingIndex != -1) {
+            val existing = currentRelations[existingIndex]
+
+            // Dodaj do prepayment
+            val updatedPrepayment = addToMoneyList(existing.prepayment, isMainCurrency, currency, signedAmount)
+
+            // Przelicz leftForSettled: allRelatedAmount - (prepayment - leftFromPrepayment)
+            // Uproszczenie: leftForSettled zmniejszamy o kwotę zaliczki
+            val updatedLeftForSettled = addToMoneyList(existing.leftForSettled, isMainCurrency, currency, -signedAmount)
+
+            currentRelations[existingIndex] = existing.copy(
+                prepayment = updatedPrepayment,
+                leftForSettled = updatedLeftForSettled
             )
-            currentRelations[existingRelationIndex] = updatedRelation
         } else {
-            // === UTWÓRZ NOWĄ RELACJĘ ===
-            val newAmount = if (isMainCurrency) {
-                MoneyValueDto(
-                    valueMainCurrency = amount,
-                    valueOtherCurrencies = emptyList()
-                )
-            } else {
-                MoneyValueDto(
-                    valueMainCurrency = 0f,
-                    valueOtherCurrencies = listOf(MoneyValueDetailsDto(currency, amount))
-                )
-            }
+            // Nowa relacja
+            val moneyEntry = SimpleMoneyValueDto(isMainCurrency, currency, -signedAmount)
+            val prepaymentEntry = SimpleMoneyValueDto(isMainCurrency, currency, signedAmount)
 
             currentRelations.add(
                 SettlementRelationDto(
-                    fromUserId = fromUserId,
-                    fromUserName = fromUserName,
-                    toUserId = toUserId,
-                    toUserName = toUserName,
-                    amount = newAmount,
-                    isSettled = false
+                    relatedId = participantId,
+                    relatedName = participant.nickname,
+                    leftForSettled = listOf(moneyEntry),
+                    allRelatedAmount = listOf(
+                        SimpleMoneyValueDto(isMainCurrency, currency, 0f)
+                    ),
+                    prepayment = listOf(prepaymentEntry),
+                    leftFromPrepayment = emptyList()
                 )
             )
         }
 
-        // Oblicz nowy całkowity balans (tylko z valueMainCurrency)
-        val newBalance = calculateMyBalance(currentRelations, currentUserId)
-
-        val newSettlement = SettlementDto(
-            balance = newBalance,
-            balanceStatus = if (newBalance >= 0) BalanceStatus.PLUS else BalanceStatus.MINUS,
-            relations = currentRelations
-        )
-
+        val newSettlement = SettlementDto(relations = currentRelations)
         val updatedTrip = trip.copy(settlement = newSettlement)
         tripsStorage[tripId] = updatedTrip
 
@@ -633,65 +612,7 @@ object MockData {
         )
     }
 
-    /**
-     * Aktualizuje kwotę w istniejącej relacji
-     * - Jeśli isMainCurrency = true → dodaj do valueMainCurrency
-     * - Jeśli isMainCurrency = false → dodaj do valueOtherCurrencies
-     */
-    private fun updateRelationAmount(
-        existingRelation: SettlementRelationDto,
-        amount: Float,
-        currency: String,
-        isMainCurrency: Boolean
-    ): SettlementRelationDto {
-        val currentMoneyValue = existingRelation.amount
 
-        val newMoneyValue = if (isMainCurrency) {
-            // Dodaj do głównej waluty
-            currentMoneyValue.copy(
-                valueMainCurrency = currentMoneyValue.valueMainCurrency + amount
-            )
-        } else {
-            // Dodaj do innych walut
-            val otherCurrencies = currentMoneyValue.valueOtherCurrencies.toMutableList()
-            val existingCurrencyIndex = otherCurrencies.indexOfFirst { it.currency == currency }
-
-            if (existingCurrencyIndex != -1) {
-                // Waluta już istnieje - zaktualizuj wartość
-                val existing = otherCurrencies[existingCurrencyIndex]
-                otherCurrencies[existingCurrencyIndex] = existing.copy(
-                    value = existing.value + amount
-                )
-            } else {
-                // Nowa waluta - dodaj
-                otherCurrencies.add(MoneyValueDetailsDto(currency, amount))
-            }
-
-            currentMoneyValue.copy(valueOtherCurrencies = otherCurrencies)
-        }
-
-        return existingRelation.copy(amount = newMoneyValue)
-    }
-
-    /**
-     * Oblicza mój całkowity balans na podstawie relacji
-     * Balans = suma gdzie jestem wierzycielem (toUserId = me) - suma gdzie jestem dłużnikiem (fromUserId = me)
-     * Używa tylko valueMainCurrency
-     */
-    private fun calculateMyBalance(
-        relations: List<SettlementRelationDto>,
-        myUserId: String
-    ): Float {
-        val asCreditor = relations
-            .filter { it.toUserId == myUserId && !it.isSettled }
-            .sumOf { it.amount.valueMainCurrency.toDouble() }
-
-        val asDebtor = relations
-            .filter { it.fromUserId == myUserId && !it.isSettled }
-            .sumOf { it.amount.valueMainCurrency.toDouble() }
-
-        return (asCreditor - asDebtor).toFloat()
-    }
 
     /**
      * Oznacza rozliczenie jako spłacone
@@ -708,7 +629,7 @@ object MockData {
         toUserId: String,
         amount: Float,
         currency: String,
-        isMainCurrency: Boolean  // NOWY PARAMETR
+        isMainCurrency: Boolean
     ): SettlementResultDto {
         initializeIfNeeded()
 
@@ -718,23 +639,17 @@ object MockData {
                 trip = null
             )
 
-        val currentSettlement = trip.settlement
+        val currentRelations = trip.settlement?.relations?.toMutableList()
             ?: return SettlementResultDto(
                 success = SuccessDto(success = false, message = "No settlement data found"),
                 trip = null
             )
 
-        val currentRelations = currentSettlement.relations?.toMutableList()
-            ?: return SettlementResultDto(
-                success = SuccessDto(success = false, message = "No settlement relations found"),
-                trip = null
-            )
-
-        // Znajdź relację do rozliczenia
-        val relationIndex = currentRelations.indexOfFirst { relation ->
-            (relation.fromUserId == fromUserId && relation.toUserId == toUserId) ||
-                    (relation.fromUserId == toUserId && relation.toUserId == fromUserId)
-        }
+        // Znajdź relację - relatedId to ten "drugi" uczestnik
+        // fromUserId lub toUserId — jeden z nich to "ja", drugi to related
+        val currentUserId = getUsrInfo().id
+        val relatedUserId = if (fromUserId == currentUserId) toUserId else fromUserId
+        val relationIndex = currentRelations.indexOfFirst { it.relatedId == relatedUserId }
 
         if (relationIndex == -1) {
             return SettlementResultDto(
@@ -745,71 +660,32 @@ object MockData {
 
         val relation = currentRelations[relationIndex]
 
-        if (isMainCurrency) {
-            // === ROZLICZENIE W GŁÓWNEJ WALUCIE ===
-            val currentAmount = relation.amount.valueMainCurrency
-
-            if (amount >= currentAmount - 0.01f) {
-                // Pełne rozliczenie głównej waluty
-                val hasOtherCurrencies = relation.amount.valueOtherCurrencies.isNotEmpty()
-
-                currentRelations[relationIndex] = relation.copy(
-                    amount = relation.amount.copy(valueMainCurrency = 0f),
-                    // Oznacz jako settled tylko jeśli nie ma innych walut do rozliczenia
-                    isSettled = !hasOtherCurrencies
-                )
-            } else {
-                // Częściowe rozliczenie - zmniejsz kwotę
-                currentRelations[relationIndex] = relation.copy(
-                    amount = relation.amount.copy(valueMainCurrency = currentAmount - amount)
-                )
-            }
-        } else {
-            // === ROZLICZENIE W DODATKOWEJ WALUCIE ===
-            val otherCurrencies = relation.amount.valueOtherCurrencies.toMutableList()
-            val currencyIndex = otherCurrencies.indexOfFirst { it.currency == currency }
-
-            if (currencyIndex == -1) {
-                return SettlementResultDto(
-                    success = SuccessDto(success = false, message = "Currency not found in relation"),
-                    trip = null
-                )
-            }
-
-            val currentCurrencyAmount = otherCurrencies[currencyIndex].value
-
-            if (amount >= currentCurrencyAmount - 0.01f) {
-                // Pełne rozliczenie tej waluty - usuń ją z listy
-                otherCurrencies.removeAt(currencyIndex)
-            } else {
-                // Częściowe rozliczenie - zmniejsz kwotę
-                otherCurrencies[currencyIndex] = MoneyValueDetailsDto(
-                    currency = currency,
-                    value = currentCurrencyAmount - amount
-                )
-            }
-
-            // Sprawdź czy wszystko rozliczone (główna = 0 i brak innych walut)
-            val mainCurrencyZero = relation.amount.valueMainCurrency <= 0.01f
-            val noOtherCurrencies = otherCurrencies.isEmpty()
-            val allSettled = mainCurrencyZero && noOtherCurrencies
-
-            currentRelations[relationIndex] = relation.copy(
-                amount = relation.amount.copy(valueOtherCurrencies = otherCurrencies),
-                isSettled = allSettled
+        // Znajdź walutę w leftForSettled
+        val currencyEntry = relation.leftForSettled.find { it.currency == currency }
+            ?: return SettlementResultDto(
+                success = SuccessDto(success = false, message = "Currency not found in relation"),
+                trip = null
             )
+
+        // Zmniejsz leftForSettled o rozliczoną kwotę (zachowując znak)
+        val currentAmount = currencyEntry.amount
+        val newAmount = if (currentAmount > 0) {
+            // On mi jest winien → zmniejszam kwotę
+            maxOf(0f, currentAmount - amount)
+        } else {
+            // Ja jestem winien → zwiększam (w kierunku 0)
+            minOf(0f, currentAmount + amount)
         }
 
-        // Przelicz całkowity balans używając helper funkcji
-        val currentUserId = getUsrInfo().id
-        val newBalance = calculateMyBalance(currentRelations, currentUserId)
+        val updatedLeftForSettled = relation.leftForSettled.map {
+            if (it.currency == currency) it.copy(amount = newAmount) else it
+        }
 
-        val newSettlement = SettlementDto(
-            balance = newBalance,
-            balanceStatus = if (newBalance >= 0) BalanceStatus.PLUS else BalanceStatus.MINUS,
-            relations = currentRelations
+        currentRelations[relationIndex] = relation.copy(
+            leftForSettled = updatedLeftForSettled
         )
 
+        val newSettlement = SettlementDto(relations = currentRelations)
         val updatedTrip = trip.copy(settlement = newSettlement)
         tripsStorage[tripId] = updatedTrip
 
@@ -898,18 +774,18 @@ object MockData {
             expenses = createZakopaneExpenses(),
             participants = createZakopaneParticipants(),
             settlement = SettlementDto(
-                balance = 200f,
-                balanceStatus = BalanceStatus.PLUS,
                 relations = listOf(
-                    // Beata (11) jest winna Adamowi (10) 200 PLN
-                    // fromUserId = dłużnik, toUserId = wierzyciel
                     SettlementRelationDto(
-                        fromUserId = "11",
-                        fromUserName = "Beata",
-                        toUserId = "10",
-                        toUserName = "Adam",
-                        amount = MoneyValueDto(valueMainCurrency = 200f),
-                        isSettled = false
+                        relatedId = "11",
+                        relatedName = "Beata",
+                        leftForSettled = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 200f)
+                        ),
+                        allRelatedAmount = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 200f)
+                        ),
+                        prepayment = emptyList(),
+                        leftFromPrepayment = emptyList()
                     )
                 )
             )
@@ -1041,29 +917,33 @@ object MockData {
             expenses = createEurotripExpenses(),
             participants = createEurotripParticipants(),
             settlement = SettlementDto(
-                balance = 150f,
-                balanceStatus = BalanceStatus.PLUS,
                 relations = listOf(
                     // Beata (11) jest winna Adamowi (10) 75 EUR
                     SettlementRelationDto(
-                        fromUserId = "11",
-                        fromUserName = "Beata",
-                        toUserId = "10",
-                        toUserName = "Adam",
-                        amount = MoneyValueDto(valueMainCurrency = 75f),
-                        isSettled = false
+                        relatedId = "11",
+                        relatedName = "Beata",
+                        leftForSettled = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 75f)
+                        ),
+                        allRelatedAmount = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 75f)
+                        ),
+                        prepayment = emptyList(),
+                        leftFromPrepayment = emptyList()
                     ),
                     // Diana (13) jest winna Adamowi (10) 75 EUR
                     SettlementRelationDto(
-                        fromUserId = "13",
-                        fromUserName = "Diana",
-                        toUserId = "10",
-                        toUserName = "Adam",
-                        amount = MoneyValueDto(valueMainCurrency = 75f),
-                        isSettled = false
-                    ),
-                    // Cezary (12) - brak relacji z Adamem (balance = 0)
-                    // Nie dodajemy relacji - to będzie testowy przypadek
+                        relatedId = "13",
+                        relatedName = "Diana",
+                        leftForSettled = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 75f)
+                        ),
+                        allRelatedAmount = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 75f)
+                        ),
+                        prepayment = emptyList(),
+                        leftFromPrepayment = emptyList()
+                    )
                 )
             )
         )
@@ -1197,19 +1077,21 @@ object MockData {
             expenses = createWakacjeExpenses(),
             participants = createWakacjeParticipants(),
             settlement = SettlementDto(
-                balance = 0f,
-                balanceStatus = BalanceStatus.PLUS,
                 relations = listOf(
-                    // Ewa (14) była winna Adamowi (10) - JUŻ ROZLICZONE
+                    // Ewa (14) była winna Adamowi - JUŻ ROZLICZONE (leftForSettled = 0)
                     SettlementRelationDto(
-                        fromUserId = "14",
-                        fromUserName = "Ewa",
-                        toUserId = "10",
-                        toUserName = "Adam",
-                        amount = MoneyValueDto(valueMainCurrency = 166.67f),
-                        isSettled = true
+                        relatedId = "14",
+                        relatedName = "Ewa",
+                        leftForSettled = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 0f)
+                        ),
+                        allRelatedAmount = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 166.67f)
+                        ),
+                        prepayment = emptyList(),
+                        leftFromPrepayment = emptyList()
                     )
-                    // Filip (15) - brak relacji z Adamem = balance 0
+                    // Filip (15) - brak relacji z Adamem = brak wpisu
                 )
             )
         )
@@ -1331,26 +1213,7 @@ object MockData {
             expenses = createBarcelonaExpenses(),
             participants = createBarcelonaParticipants(),
             settlement = SettlementDto(
-                balance = 0f,
-                balanceStatus = BalanceStatus.PLUS,
-                relations = listOf(
-                    SettlementRelationDto(
-                        fromUserId = "23",
-                        fromUserName = "Tomek",
-                        toUserId = "20",
-                        toUserName = "Kasia",
-                        amount = MoneyValueDto(valueMainCurrency = 17.50f),
-                        isSettled = true
-                    ),
-                    SettlementRelationDto(
-                        fromUserId = "22",
-                        fromUserName = "Ola",
-                        toUserId = "21",
-                        toUserName = "Michał",
-                        amount = MoneyValueDto(valueMainCurrency = 17.50f),
-                        isSettled = true
-                    )
-                )
+                relations = emptyList()
             )
         )
     }
@@ -1483,24 +1346,40 @@ object MockData {
             expenses = createMultiCurrencyExpenses(),
             participants = createMultiCurrencyParticipants(),
             settlement = SettlementDto(
-                balance = 500f,  // Balans w głównej walucie
-                balanceStatus = BalanceStatus.PLUS,
                 relations = listOf(
-                    // Gosia (16) jest winna Adamowi (10) w wielu walutach
+                    // Gosia (16) jest winna Adamowi w wielu walutach
                     SettlementRelationDto(
-                        fromUserId = "16",
-                        fromUserName = "Gosia",
-                        toUserId = "10",
-                        toUserName = "Adam",
-                        amount = MoneyValueDto(
-                            valueMainCurrency = 500f,  // 500 PLN
-                            valueOtherCurrencies = listOf(
-                                MoneyValueDetailsDto("EUR", 150f),   // 150 EUR
-                                MoneyValueDetailsDto("USD", -200f),   // 200 USD
-                                MoneyValueDetailsDto("JPY", 5000f)   // 5000 JPY
-                            )
+                        relatedId = "16",
+                        relatedName = "Gosia",
+                        leftForSettled = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 500f),
+                            SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = 150f),
+                            SimpleMoneyValueDto(isMainCurrency = false, currency = "USD", amount = 200f),
+                            SimpleMoneyValueDto(isMainCurrency = false, currency = "JPY", amount = 5000f)
                         ),
-                        isSettled = false
+                        allRelatedAmount = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 500f),
+                            SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = 150f),
+                            SimpleMoneyValueDto(isMainCurrency = false, currency = "USD", amount = 200f),
+                            SimpleMoneyValueDto(isMainCurrency = false, currency = "JPY", amount = 5000f)
+                        ),
+                        prepayment = emptyList(),
+                        leftFromPrepayment = emptyList()
+                    ),
+                    // Hubert (17) - Adam jest winien Hubertowi 300 PLN i 50 EUR
+                    SettlementRelationDto(
+                        relatedId = "17",
+                        relatedName = "Hubert",
+                        leftForSettled = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = -300f),
+                            SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = -50f)
+                        ),
+                        allRelatedAmount = listOf(
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = -300f),
+                            SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = -50f)
+                        ),
+                        prepayment = emptyList(),
+                        leftFromPrepayment = emptyList()
                     )
                 )
             )
@@ -1630,7 +1509,24 @@ object MockData {
         )
     }
 
+    private fun addToMoneyList(
+        list: List<SimpleMoneyValueDto>,
+        isMainCurrency: Boolean,
+        currency: String,
+        amount: Float
+    ): List<SimpleMoneyValueDto> {
+        val mutableList = list.toMutableList()
+        val existingIndex = mutableList.indexOfFirst { it.currency == currency }
 
+        if (existingIndex != -1) {
+            val existing = mutableList[existingIndex]
+            mutableList[existingIndex] = existing.copy(amount = existing.amount + amount)
+        } else {
+            mutableList.add(SimpleMoneyValueDto(isMainCurrency, currency, amount))
+        }
+
+        return mutableList
+    }
 
 
 }

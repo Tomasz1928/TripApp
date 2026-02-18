@@ -56,7 +56,7 @@ data class ShareDto(
     val participantId: String,
     val participantNickname: String,
     val splitValue: MoneyValueDto,
-    val isSettlement : Boolean
+    val isSettlement: Boolean
 )
 
 data class ParticipantDto(
@@ -69,25 +69,28 @@ data class ParticipantDto(
     val isActive: Boolean
 )
 
+// ==========================================
+// SETTLEMENT MODELS (REFACTORED)
+// ==========================================
+
 data class SettlementDto(
-    val balance: Float,
-    val balanceStatus: BalanceStatus,
     val relations: List<SettlementRelationDto>?
 )
 
 data class SettlementRelationDto(
-    val fromUserId: String,
-    val toUserId: String,
-    val fromUserName: String,
-    val toUserName: String,
-    val amount: MoneyValueDto,
-    val isSettled: Boolean
+    val relatedId: String,
+    val relatedName: String,
+    val leftForSettled: List<SimpleMoneyValueDto>,
+    val allRelatedAmount: List<SimpleMoneyValueDto>,
+    val prepayment: List<SimpleMoneyValueDto>,
+    val leftFromPrepayment: List<SimpleMoneyValueDto>
 )
 
-enum class BalanceStatus {
-    PLUS,
-    MINUS
-}
+data class SimpleMoneyValueDto(
+    val isMainCurrency: Boolean,
+    val currency: String,
+    val amount: Float
+)
 
 data class SettlementResultDto(
     val success: SuccessDto,
@@ -134,15 +137,6 @@ data class ParticipantsDto(
     val trip: TripDto? = null
 )
 
-// ==========================================
-// REQUEST MODELS
-// ==========================================
-data class ShareRequest(
-    val participantId: String,
-    val participantNickname: String,
-    val splitValue: MoneyValueDto
-)
-
 data class AddExpenseRequest(
     val tripId: String,
     val name: String,
@@ -169,3 +163,31 @@ data class UpdateExpenseRequest(
     val payerNickname: String,
     val sharedWith: List<ShareRequest>
 )
+
+// ==========================================
+// HELPER EXTENSIONS for SettlementRelationDto
+// ==========================================
+data class ShareRequest(
+    val participantId: String,
+    val participantNickname: String,
+    val splitValue: MoneyValueDto
+)
+
+/**
+ * Czy relacja jest w pełni rozliczona (wszystkie leftForSettled == 0)
+ */
+val SettlementRelationDto.isSettled: Boolean
+    get() = leftForSettled.all { kotlin.math.abs(it.amount) < 0.01f }
+
+/**
+ * Balans w głównej walucie (z leftForSettled)
+ * + = on mi jest winien, - = ja jestem winien
+ */
+val SettlementRelationDto.mainCurrencyBalance: Float
+    get() = leftForSettled.firstOrNull { it.isMainCurrency }?.amount ?: 0f
+
+/**
+ * Czy istnieje jakakolwiek niezerowa kwota do rozliczenia
+ */
+val SettlementRelationDto.hasOutstandingAmount: Boolean
+    get() = leftForSettled.any { kotlin.math.abs(it.amount) > 0.01f }
