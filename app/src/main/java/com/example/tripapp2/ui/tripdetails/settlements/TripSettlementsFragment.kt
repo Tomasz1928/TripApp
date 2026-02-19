@@ -304,36 +304,18 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
      * Po refaktorze: pokazuje pełne info per waluta z leftForSettled + prepayment
      */
     private fun showDetailsModal(participant: SettlementParticipantUiModel) {
-        val lines = mutableListOf<String>()
+        val tripData = viewModel.getTripData() ?: return
+        val currentUserId = viewModel.getCurrentUserId()
 
-        // leftForSettled - ile pozostało per waluta
-        participant.leftForSettled.forEach { money ->
-            val direction = if (money.amount > 0) {
-                "${participant.nickname} jest Ci winien/winna"
-            } else if (money.amount < 0) {
-                "Jesteś winien/winna ${participant.nickname}"
-            } else {
-                "Rozliczone"
-            }
-            lines.add("$direction: ${"%.2f".format(kotlin.math.abs(money.amount))} ${money.currency}")
-        }
+        val detailsModel = createSettlementDetailsModel(
+            participant = participant,
+            tripCurrency = tripData.currency,
+            expenses = tripData.expenses,
+            currentUserId = currentUserId
+        )
 
-        // Zaliczki
-        val prepaymentLines = participant.prepayment
-            .filter { kotlin.math.abs(it.amount) > 0.01f }
-            .map { money ->
-                val dir = if (money.amount > 0) "otrzymano" else "wpłacono"
-                "Zaliczka ($dir): ${"%.2f".format(kotlin.math.abs(money.amount))} ${money.currency}"
-            }
-        lines.addAll(prepaymentLines)
-
-        val message = if (lines.isEmpty()) {
-            "Brak danych rozliczenia"
-        } else {
-            lines.joinToString("\n")
-        }
-
-        showMessage(message)
+        val modal = SettlementDetailsModalFragment.newInstance(detailsModel)
+        modal.show(parentFragmentManager, "settlement_details_modal")
     }
 
     /**
