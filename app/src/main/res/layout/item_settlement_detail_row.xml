@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Item Settlement Detail Row
+    Wiersz kwoty w sekcji podsumowania: waluta (lewa) + kwota (prawa)
+    Używa istniejących styli
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="@dimen/padding_tiny">
+
+    <!-- Waluta (lewa strona) -->
+    <TextView
+        android:id="@+id/settleDetailModalCurrencyLabel"
+        style="@style/Text.Body"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="PLN (główna)"/>
+
+    <!-- Kwota (prawa strona) -->
+    <TextView
+        android:id="@+id/settleDetailModalAmountValue"
+        style="@style/Text.Body.Bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0,00"
+        android:gravity="end"/>
+
+</LinearLayout>

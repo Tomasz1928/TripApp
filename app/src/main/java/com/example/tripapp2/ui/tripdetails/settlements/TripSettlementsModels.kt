@@ -1,6 +1,7 @@
 package com.example.tripapp2.ui.tripdetails.settlements
 
 import com.example.tripapp2.data.model.ParticipantDto
+import com.example.tripapp2.data.model.PrepaymentDetailsDto
 import com.example.tripapp2.data.model.SettlementRelationDto
 import com.example.tripapp2.data.model.SimpleMoneyValueDto
 import com.example.tripapp2.data.model.isSettled
@@ -38,8 +39,7 @@ data class SettlementParticipantUiModel(
     val isSettled: Boolean,                     // Czy rozliczenie jest w pełni zakończone
     val leftForSettled: List<SimpleMoneyValueDto>,       // Ile pozostało do rozliczenia per waluta
     val allRelatedAmount: List<SimpleMoneyValueDto>,     // Całkowita kwota relacji per waluta
-    val prepayment: List<SimpleMoneyValueDto>,           // Zaliczki per waluta
-    val leftFromPrepayment: List<SimpleMoneyValueDto>    // Reszta z zaliczek per waluta
+    val prepayment: PrepaymentDetailsDto                 // Szczegóły zaliczek (amountLeft + history)
 )
 
 /**
@@ -96,6 +96,11 @@ sealed class TripSettlementsState {
 // MAPPERS
 // ==========================================
 
+private val emptyPrepaymentDetails = PrepaymentDetailsDto(
+    amountLeft = emptyList(),
+    history = emptyList()
+)
+
 fun ParticipantDto.toSettlementUiModel(
     allRelations: List<SettlementRelationDto>,
     currency: String
@@ -142,8 +147,7 @@ fun ParticipantDto.toSettlementUiModel(
         isSettled = settled,
         leftForSettled = relationWithMe?.leftForSettled ?: emptyList(),
         allRelatedAmount = relationWithMe?.allRelatedAmount ?: emptyList(),
-        prepayment = relationWithMe?.prepayment ?: emptyList(),
-        leftFromPrepayment = relationWithMe?.leftFromPrepayment ?: emptyList()
+        prepayment = relationWithMe?.prepayment ?: emptyPrepaymentDetails
     )
 }
 
