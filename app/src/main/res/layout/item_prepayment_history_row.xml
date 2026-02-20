@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Item Prepayment History Row
+    [kwota] [waluta] [strzałka kierunku] [data]
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="@dimen/padding_tiny">
+
+    <!-- Kwota -->
+    <TextView
+        android:id="@+id/historyAmount"
+        style="@style/Text.Body.Bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="100,00"/>
+
+    <!-- Waluta -->
+    <TextView
+        android:id="@+id/historyCurrency"
+        style="@style/Text.Body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_tiny"
+        android:text="PLN"/>
+    <!-- Spacer -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <!-- Data -->
+    <TextView
+        android:id="@+id/historyDate"
+        style="@style/Text.Caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="4 paź 2024"
+        android:textColor="@color/text_secondary"/>
+
+</LinearLayout>

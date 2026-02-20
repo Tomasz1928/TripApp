@@ -82,8 +82,17 @@ data class SettlementRelationDto(
     val relatedName: String,
     val leftForSettled: List<SimpleMoneyValueDto>,
     val allRelatedAmount: List<SimpleMoneyValueDto>,
-    val prepayment: List<SimpleMoneyValueDto>,
-    val leftFromPrepayment: List<SimpleMoneyValueDto>
+    val prepayment: PrepaymentDetailsDto
+)
+
+data class PrepaymentDetailsDto(
+    val amountLeft: List<SimpleMoneyValueDto>,
+    val history: List<PrepaymentHistoryDto>
+)
+
+data class PrepaymentHistoryDto(
+    val date: Long,
+    val values: SimpleMoneyValueDto
 )
 
 data class SimpleMoneyValueDto(

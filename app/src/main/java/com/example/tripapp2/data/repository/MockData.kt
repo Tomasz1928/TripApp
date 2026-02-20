@@ -560,11 +560,12 @@ object MockData {
         val isMainCurrency = (currency == tripCurrency)
 
         // Oblicz kwotę zaliczki ze znakiem
-        // TO_ME: participant daje mi pieniądze → zwiększa mój balans → +amount w prepayment
-        // FROM_ME: ja daję participantowi → zmniejsza mój balans → -amount w prepayment
+        // TO_ME: participant daje mi pieniądze → +amount
+        // FROM_ME: ja daję participantowi → -amount
         val signedAmount = if (direction == "TO_ME") amount else -amount
 
-        val currentRelations = trip.settlement?.relations?.toMutableList() ?: mutableListOf()
+        val currentRelations = trip.settlement?.relations?.toMutableList()
+            ?: mutableListOf()
 
         // Znajdź lub utwórz relację
         val existingIndex = currentRelations.indexOfFirst { it.relatedId == participantId }
@@ -572,11 +573,22 @@ object MockData {
         if (existingIndex != -1) {
             val existing = currentRelations[existingIndex]
 
-            // Dodaj do prepayment
-            val updatedPrepayment = addToMoneyList(existing.prepayment, isMainCurrency, currency, signedAmount)
+            // Dodaj do prepayment.amountLeft
+            val updatedAmountLeft = addToMoneyList(existing.prepayment.amountLeft, isMainCurrency, currency, signedAmount)
 
-            // Przelicz leftForSettled: allRelatedAmount - (prepayment - leftFromPrepayment)
-            // Uproszczenie: leftForSettled zmniejszamy o kwotę zaliczki
+            // Dodaj wpis do historii
+            val newHistoryEntry = PrepaymentHistoryDto(
+                date = System.currentTimeMillis(),
+                values = SimpleMoneyValueDto(isMainCurrency, currency, signedAmount)
+            )
+            val updatedHistory = existing.prepayment.history + newHistoryEntry
+
+            val updatedPrepayment = PrepaymentDetailsDto(
+                amountLeft = updatedAmountLeft,
+                history = updatedHistory
+            )
+
+            // Przelicz leftForSettled: zmniejszamy o kwotę zaliczki
             val updatedLeftForSettled = addToMoneyList(existing.leftForSettled, isMainCurrency, currency, -signedAmount)
 
             currentRelations[existingIndex] = existing.copy(
@@ -588,6 +600,11 @@ object MockData {
             val moneyEntry = SimpleMoneyValueDto(isMainCurrency, currency, -signedAmount)
             val prepaymentEntry = SimpleMoneyValueDto(isMainCurrency, currency, signedAmount)
 
+            val newHistoryEntry = PrepaymentHistoryDto(
+                date = System.currentTimeMillis(),
+                values = SimpleMoneyValueDto(isMainCurrency, currency, signedAmount)
+            )
+
             currentRelations.add(
                 SettlementRelationDto(
                     relatedId = participantId,
@@ -596,8 +613,10 @@ object MockData {
                     allRelatedAmount = listOf(
                         SimpleMoneyValueDto(isMainCurrency, currency, 0f)
                     ),
-                    prepayment = listOf(prepaymentEntry),
-                    leftFromPrepayment = emptyList()
+                    prepayment = PrepaymentDetailsDto(
+                        amountLeft = listOf(prepaymentEntry),
+                        history = listOf(newHistoryEntry)
+                    )
                 )
             )
         }
@@ -784,8 +803,10 @@ object MockData {
                         allRelatedAmount = listOf(
                             SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 200f)
                         ),
-                        prepayment = emptyList(),
-                        leftFromPrepayment = emptyList()
+                        prepayment = PrepaymentDetailsDto(
+                            amountLeft = emptyList(),
+                            history = emptyList()
+                        )
                     )
                 )
             )
@@ -918,20 +939,29 @@ object MockData {
             participants = createEurotripParticipants(),
             settlement = SettlementDto(
                 relations = listOf(
-                    // Beata (11) jest winna Adamowi (10) 75 EUR
+                    // Beata (11) jest winna Adamowi (10) — oryginalnie 75 EUR, po zaliczce 50 EUR
                     SettlementRelationDto(
                         relatedId = "11",
                         relatedName = "Beata",
                         leftForSettled = listOf(
-                            SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 75f)
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 50f)
                         ),
                         allRelatedAmount = listOf(
                             SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 75f)
                         ),
-                        prepayment = emptyList(),
-                        leftFromPrepayment = emptyList()
+                        prepayment = PrepaymentDetailsDto(
+                            amountLeft = listOf(
+                                SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 25f)
+                            ),
+                            history = listOf(
+                                PrepaymentHistoryDto(
+                                    date = 1720224000000,  // 6 lip 2024
+                                    values = SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 25f)
+                                )
+                            )
+                        )
                     ),
-                    // Diana (13) jest winna Adamowi (10) 75 EUR
+                    // Diana (13) jest winna Adamowi (10) 75 EUR — bez zaliczek
                     SettlementRelationDto(
                         relatedId = "13",
                         relatedName = "Diana",
@@ -941,8 +971,10 @@ object MockData {
                         allRelatedAmount = listOf(
                             SimpleMoneyValueDto(isMainCurrency = true, currency = "EUR", amount = 75f)
                         ),
-                        prepayment = emptyList(),
-                        leftFromPrepayment = emptyList()
+                        prepayment = PrepaymentDetailsDto(
+                            amountLeft = emptyList(),
+                            history = emptyList()
+                        )
                     )
                 )
             )
@@ -1088,8 +1120,10 @@ object MockData {
                         allRelatedAmount = listOf(
                             SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 166.67f)
                         ),
-                        prepayment = emptyList(),
-                        leftFromPrepayment = emptyList()
+                        prepayment = PrepaymentDetailsDto(
+                            amountLeft = emptyList(),
+                            history = emptyList()
+                        )
                     )
                     // Filip (15) - brak relacji z Adamem = brak wpisu
                 )
@@ -1348,12 +1382,14 @@ object MockData {
             settlement = SettlementDto(
                 relations = listOf(
                     // Gosia (16) jest winna Adamowi w wielu walutach
+                    // Oryginał: 500 PLN, 150 EUR, 200 USD, 5000 JPY
+                    // Po zaliczkach: 400 PLN, 100 EUR, 200 USD, 5000 JPY
                     SettlementRelationDto(
                         relatedId = "16",
                         relatedName = "Gosia",
                         leftForSettled = listOf(
-                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 500f),
-                            SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = 150f),
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 400f),
+                            SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = 100f),
                             SimpleMoneyValueDto(isMainCurrency = false, currency = "USD", amount = 200f),
                             SimpleMoneyValueDto(isMainCurrency = false, currency = "JPY", amount = 5000f)
                         ),
@@ -1363,23 +1399,47 @@ object MockData {
                             SimpleMoneyValueDto(isMainCurrency = false, currency = "USD", amount = 200f),
                             SimpleMoneyValueDto(isMainCurrency = false, currency = "JPY", amount = 5000f)
                         ),
-                        prepayment = emptyList(),
-                        leftFromPrepayment = emptyList()
+                        prepayment = PrepaymentDetailsDto(
+                            amountLeft = listOf(
+                                SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 100f),
+                                SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = 50f)
+                            ),
+                            history = listOf(
+                                PrepaymentHistoryDto(
+                                    date = 1728000000000,  // 4 paź 2024
+                                    values = SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = 100f)
+                                ),
+                                PrepaymentHistoryDto(
+                                    date = 1727740800000,  // 1 paź 2024
+                                    values = SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = 50f)
+                                )
+                            )
+                        )
                     ),
                     // Hubert (17) - Adam jest winien Hubertowi 300 PLN i 50 EUR
+                    // Adam dał Hubertowi zaliczkę 100 PLN → leftForSettled zmniejszone do -200 PLN
                     SettlementRelationDto(
                         relatedId = "17",
                         relatedName = "Hubert",
                         leftForSettled = listOf(
-                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = -300f),
+                            SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = -200f),
                             SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = -50f)
                         ),
                         allRelatedAmount = listOf(
                             SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = -300f),
                             SimpleMoneyValueDto(isMainCurrency = false, currency = "EUR", amount = -50f)
                         ),
-                        prepayment = emptyList(),
-                        leftFromPrepayment = emptyList()
+                        prepayment = PrepaymentDetailsDto(
+                            amountLeft = listOf(
+                                SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = -100f)
+                            ),
+                            history = listOf(
+                                PrepaymentHistoryDto(
+                                    date = 1727913600000,  // 3 paź 2024
+                                    values = SimpleMoneyValueDto(isMainCurrency = true, currency = "PLN", amount = -100f)
+                                )
+                            )
+                        )
                     )
                 )
             )

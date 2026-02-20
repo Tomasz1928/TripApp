@@ -310,7 +310,7 @@
 
     <string name="settlement_details_title">Szczegóły</string>
     <string name="settlement_details_tab_summary">Podsumowanie</string>
-    <string name="settlement_details_tab_costs">Koszty</string>
+    <string name="settlement_details_tab_costs">Wydatki</string>
     <string name="settlement_details_tab_prepayment">Zaliczki</string>
 
     <!-- Sekcje Tab 1 -->
@@ -320,11 +320,16 @@
     <!-- Tab 2 -->
     <string name="settlement_details_no_costs">Brak kosztów powiązanych z tym uczestnikiem</string>
 
-    <!-- Tab 3 -->
-    <string name="settlement_details_prepayment_coming_soon">Zaliczki\nbędą dostępne wkrótce</string>
+    <!-- Tab 3: Zaliczki -->
+    <string name="settlement_details_prepayment_amount_left">POZOSTAŁO Z ZALICZEK</string>
+    <string name="settlement_details_prepayment_history">HISTORIA ZALICZEK</string>
+    <string name="settlement_details_no_prepayments">Brak zaliczek</string>
 
     <!-- Accessibility -->
     <string name="settlement_details_status_icon">Status rozliczenia</string>
+
+
+
 
     <!-- ========================================= -->
     <!-- MODAL -->

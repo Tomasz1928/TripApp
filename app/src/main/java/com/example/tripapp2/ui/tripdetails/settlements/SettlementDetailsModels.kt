@@ -1,7 +1,12 @@
 package com.example.tripapp2.ui.tripdetails.settlements
 
 import com.example.tripapp2.data.model.ExpenseDto
+import com.example.tripapp2.data.model.PrepaymentDetailsDto
+import com.example.tripapp2.data.model.PrepaymentHistoryDto
 import com.example.tripapp2.data.model.SimpleMoneyValueDto
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 // ==========================================
 // UI MODELS - Settlement Details Modal
@@ -26,18 +31,50 @@ data class SettlementDetailAmountRow(
  * Model wiersza kosztu w tab "Koszty" (Tab 2)
  *
  * Kierunek:
- * - isAmountPositive = true → pieniądze do mnie (zielony) — participant płacił, ja w sharedWith
- *   LUB ja płaciłem i participant jest w sharedWith → participant mi jest winien
+ * - isAmountPositive = true → pieniądze do mnie (zielony)
  * - isAmountPositive = false → pieniądze ode mnie (czerwony)
  */
 data class SettlementDetailCostRow(
     val expenseId: String,
     val expenseName: String,
-    val splitAmount: Float,             // Kwota udziału (splitValue.valueMainCurrency)
-    val currency: String,               // Waluta wydatku
+    val splitAmount: Float,
+    val currency: String,
     val formattedAmount: String,        // "150,00 PLN"
-    val isSettled: Boolean,             // Czy rozliczone (ShareDto.isSettlement)
+    val isSettled: Boolean,
     val isAmountPositive: Boolean       // true = do mnie (zielony), false = ode mnie (czerwony)
+)
+
+/**
+ * Kierunek zaliczki w UI
+ */
+enum class PrepaymentAmountDirection {
+    TO_ME,      // Participant dał mi zaliczkę (amount > 0) → strzałka w dół, zielona
+    FROM_ME     // Ja dałem zaliczkę (amount < 0) → strzałka w górę, czerwona
+}
+
+/**
+ * Model wiersza "Pozostało z zaliczek" (Tab 3 - sekcja górna)
+ *
+ * [kwota] [waluta] [strzałka kierunku]
+ */
+data class PrepaymentAmountLeftRow(
+    val currency: String,
+    val amount: Float,
+    val formattedAmount: String,        // "100,00"
+    val direction: PrepaymentAmountDirection
+)
+
+/**
+ * Model wiersza historii zaliczki (Tab 3 - sekcja dolna)
+ *
+ * [kwota] [waluta] [strzałka kierunku] [data]
+ */
+data class PrepaymentHistoryRow(
+    val currency: String,
+    val amount: Float,
+    val formattedAmount: String,        // "100,00"
+    val formattedDate: String,          // "4 paź 2024"
+    val direction: PrepaymentAmountDirection
 )
 
 /**
@@ -51,23 +88,24 @@ data class SettlementDetailsUiModel(
     // Tab 1: Podsumowanie
     val allRelatedRows: List<SettlementDetailAmountRow>,
     val leftForSettledRows: List<SettlementDetailAmountRow>,
-    val prepaymentRows: List<SettlementDetailAmountRow>,
 
     // Tab 2: Koszty
-    val costRows: List<SettlementDetailCostRow>
+    val costRows: List<SettlementDetailCostRow>,
+
+    // Tab 3: Zaliczki
+    val prepaymentAmountLeftRows: List<PrepaymentAmountLeftRow>,
+    val prepaymentHistoryRows: List<PrepaymentHistoryRow>,
+    val hasPrepaymentData: Boolean      // Czy są jakiekolwiek dane o zaliczkach
 )
 
 // ==========================================
 // MAPPER / FACTORY
 // ==========================================
 
+private val dateFormat = SimpleDateFormat("d MMM yyyy", Locale("pl"))
+
 /**
  * Tworzy SettlementDetailsUiModel na podstawie danych z SettlementParticipantUiModel + TripDto
- *
- * @param participant Model UI uczestnika (zawiera allRelatedAmount, leftForSettled, prepayment, leftFromPrepayment)
- * @param tripCurrency Waluta główna wycieczki
- * @param expenses Lista wszystkich wydatków z TripDto
- * @param currentUserId ID aktualnego użytkownika
  */
 fun createSettlementDetailsModel(
     participant: SettlementParticipantUiModel,
@@ -88,11 +126,6 @@ fun createSettlementDetailsModel(
         tripCurrency = tripCurrency
     )
 
-    val prepaymentRows = mapMoneyListToRows(
-        moneyList = participant.leftFromPrepayment,
-        tripCurrency = tripCurrency
-    )
-
     // --- Tab 2: Koszty ---
 
     val costRows = buildCostRows(
@@ -101,14 +134,25 @@ fun createSettlementDetailsModel(
         currentUserId = currentUserId
     )
 
+    // --- Tab 3: Zaliczki ---
+
+    val prepaymentDetails = participant.prepayment
+
+    val amountLeftRows = buildPrepaymentAmountLeftRows(prepaymentDetails)
+    val historyRows = buildPrepaymentHistoryRows(prepaymentDetails)
+
+    val hasPrepaymentData = amountLeftRows.isNotEmpty() || historyRows.isNotEmpty()
+
     return SettlementDetailsUiModel(
         participantId = participant.participantId,
         participantNickname = participant.nickname,
         tripCurrency = tripCurrency,
         allRelatedRows = allRelatedRows,
         leftForSettledRows = leftForSettledRows,
-        prepaymentRows = prepaymentRows,
-        costRows = costRows
+        costRows = costRows,
+        prepaymentAmountLeftRows = amountLeftRows,
+        prepaymentHistoryRows = historyRows,
+        hasPrepaymentData = hasPrepaymentData
     )
 }
 
@@ -155,13 +199,53 @@ private fun mapMoneyListToRows(
 }
 
 /**
- * Buduje listę kosztów dotyczących relacji ja ↔ participant
+ * Buduje wiersze "Pozostało z zaliczek" z PrepaymentDetailsDto.amountLeft
  *
- * Koszt pojawia się gdy:
- * 1. Ja płaciłem (payerId == currentUserId) i participant jest w sharedWith
- *    → splitValue z sharedWith[participantId], isAmountPositive = true (do mnie)
- * 2. Participant płacił (payerId == participantId) i ja jestem w sharedWith
- *    → splitValue z sharedWith[currentUserId], isAmountPositive = false (ode mnie)
+ * Pomija waluty z kwotą ~0
+ */
+private fun buildPrepaymentAmountLeftRows(
+    prepaymentDetails: PrepaymentDetailsDto
+): List<PrepaymentAmountLeftRow> {
+
+    return prepaymentDetails.amountLeft
+        .filter { kotlin.math.abs(it.amount) > 0.01f }
+        .sortedByDescending { it.isMainCurrency }
+        .map { money ->
+            PrepaymentAmountLeftRow(
+                currency = money.currency,
+                amount = money.amount,
+                formattedAmount = "%.2f".format(kotlin.math.abs(money.amount)),
+                direction = if (money.amount > 0) PrepaymentAmountDirection.TO_ME
+                else PrepaymentAmountDirection.FROM_ME
+            )
+        }
+}
+
+/**
+ * Buduje wiersze historii zaliczek z PrepaymentDetailsDto.history
+ *
+ * Sortuje od najnowszej do najstarszej
+ */
+private fun buildPrepaymentHistoryRows(
+    prepaymentDetails: PrepaymentDetailsDto
+): List<PrepaymentHistoryRow> {
+
+    return prepaymentDetails.history
+        .sortedByDescending { it.date }
+        .map { entry ->
+            PrepaymentHistoryRow(
+                currency = entry.values.currency,
+                amount = entry.values.amount,
+                formattedAmount = "%.2f".format(kotlin.math.abs(entry.values.amount)),
+                formattedDate = dateFormat.format(Date(entry.date)),
+                direction = if (entry.values.amount > 0) PrepaymentAmountDirection.TO_ME
+                else PrepaymentAmountDirection.FROM_ME
+            )
+        }
+}
+
+/**
+ * Buduje listę kosztów dotyczących relacji ja ↔ participant
  */
 private fun buildCostRows(
     expenses: List<ExpenseDto>,

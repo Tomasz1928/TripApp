@@ -190,27 +190,73 @@
             </LinearLayout>
 
             <!-- ================================== -->
-            <!-- TAB 3: Zaliczki (placeholder) -->
+            <!-- TAB 3: Zaliczki -->
             <!-- ================================== -->
-            <LinearLayout
+            <ScrollView
                 android:id="@+id/tabPrepayment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/padding_default"
-                android:gravity="center"
+                android:fillViewport="true"
                 android:visibility="gone">
 
-                <TextView
-                    android:id="@+id/prepaymentPlaceholder"
-                    style="@style/Text.Body.Secondary"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/settlement_details_prepayment_coming_soon"
-                    android:gravity="center"
-                    android:paddingVertical="@dimen/spacing_large"/>
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_default">
 
-            </LinearLayout>
+                    <!-- ====== SEKCJA: Pozostało z zaliczek ====== -->
+                    <TextView
+                        android:id="@+id/prepaymentAmountLeftLabel"
+                        style="@style/Text.Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settlement_details_prepayment_amount_left"
+                        android:layout_marginBottom="@dimen/spacing_tiny"/>
+
+                    <LinearLayout
+                        android:id="@+id/prepaymentAmountLeftContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="@dimen/spacing_medium"/>
+
+                    <!-- Separator -->
+                    <View
+                        android:id="@+id/prepaymentSeparator"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/divider"
+                        android:layout_marginBottom="@dimen/spacing_medium"/>
+
+                    <!-- ====== SEKCJA: Historia zaliczek ====== -->
+                    <TextView
+                        android:id="@+id/prepaymentHistoryLabel"
+                        style="@style/Text.Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settlement_details_prepayment_history"
+                        android:layout_marginBottom="@dimen/spacing_tiny"/>
+
+                    <LinearLayout
+                        android:id="@+id/prepaymentHistoryContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"/>
+
+                    <!-- Empty state -->
+                    <TextView
+                        android:id="@+id/prepaymentEmptyState"
+                        style="@style/Text.Body.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settlement_details_no_prepayments"
+                        android:gravity="center"
+                        android:paddingVertical="@dimen/spacing_large"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
+            </ScrollView>
 
         </FrameLayout>
 

@@ -26,24 +26,37 @@ import com.google.android.material.tabs.TabLayout
  *   - Ikona: ic_success zielony (rozliczone) / ic_cross czerwony (nierozliczone)
  *
  * Tab 3 - Zaliczki:
- *   - Placeholder (do implementacji)
+ *   - Pozostało z zaliczek (amountLeft) z kierunkiem
+ *   - Historia zaliczek (history) posortowana od najnowszej
  */
 class SettlementDetailsModalFragment : DialogFragment() {
 
     private var detailsModel: SettlementDetailsUiModel? = null
 
-    // Views
+    // Views - common
     private lateinit var closeButton: ImageView
     private lateinit var participantNickname: TextView
     private lateinit var tabLayout: TabLayout
+
+    // Views - Tab 1: Podsumowanie
     private lateinit var tabSummary: ScrollView
-    private lateinit var tabCosts: LinearLayout
-    private lateinit var tabPrepayment: LinearLayout
     private lateinit var allRelatedContainer: LinearLayout
     private lateinit var leftForSettledContainer: LinearLayout
+
+    // Views - Tab 2: Koszty
+    private lateinit var tabCosts: LinearLayout
     private lateinit var costsScrollView: ScrollView
     private lateinit var costsListContainer: LinearLayout
     private lateinit var costsEmptyState: TextView
+
+    // Views - Tab 3: Zaliczki
+    private lateinit var tabPrepayment: ScrollView
+    private lateinit var prepaymentAmountLeftLabel: TextView
+    private lateinit var prepaymentAmountLeftContainer: LinearLayout
+    private lateinit var prepaymentSeparator: View
+    private lateinit var prepaymentHistoryLabel: TextView
+    private lateinit var prepaymentHistoryContainer: LinearLayout
+    private lateinit var prepaymentEmptyState: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +80,7 @@ class SettlementDetailsModalFragment : DialogFragment() {
         populateHeader(model)
         populateSummaryTab(model)
         populateCostsTab(model)
+        populatePrepaymentTab(model)
     }
 
     override fun onStart() {
@@ -86,14 +100,26 @@ class SettlementDetailsModalFragment : DialogFragment() {
         closeButton = view.findViewById(R.id.closeButton)
         participantNickname = view.findViewById(R.id.participantNickname)
         tabLayout = view.findViewById(R.id.tabLayout)
+
+        // Tab 1
         tabSummary = view.findViewById(R.id.tabSummary)
-        tabCosts = view.findViewById(R.id.tabCosts)
-        tabPrepayment = view.findViewById(R.id.tabPrepayment)
         allRelatedContainer = view.findViewById(R.id.allRelatedContainer)
         leftForSettledContainer = view.findViewById(R.id.leftForSettledContainer)
+
+        // Tab 2
+        tabCosts = view.findViewById(R.id.tabCosts)
         costsScrollView = view.findViewById(R.id.costsScrollView)
         costsListContainer = view.findViewById(R.id.costsListContainer)
         costsEmptyState = view.findViewById(R.id.costsEmptyState)
+
+        // Tab 3
+        tabPrepayment = view.findViewById(R.id.tabPrepayment)
+        prepaymentAmountLeftLabel = view.findViewById(R.id.prepaymentAmountLeftLabel)
+        prepaymentAmountLeftContainer = view.findViewById(R.id.prepaymentAmountLeftContainer)
+        prepaymentSeparator = view.findViewById(R.id.prepaymentSeparator)
+        prepaymentHistoryLabel = view.findViewById(R.id.prepaymentHistoryLabel)
+        prepaymentHistoryContainer = view.findViewById(R.id.prepaymentHistoryContainer)
+        prepaymentEmptyState = view.findViewById(R.id.prepaymentEmptyState)
     }
 
     private fun setupTabLayout() {
@@ -135,12 +161,10 @@ class SettlementDetailsModalFragment : DialogFragment() {
         allRelatedContainer.removeAllViews()
         leftForSettledContainer.removeAllViews()
 
-        // Całkowite rozliczenie
         model.allRelatedRows.forEach { row ->
             allRelatedContainer.addView(createAmountRow(row))
         }
 
-        // Pozostało do rozliczenia
         model.leftForSettledRows.forEach { row ->
             leftForSettledContainer.addView(createAmountRow(row))
         }
@@ -148,11 +172,6 @@ class SettlementDetailsModalFragment : DialogFragment() {
 
     /**
      * Tworzy wiersz kwoty: [waluta]  [kwota]
-     *
-     * Kolory:
-     * - amount > 0 → zielony (success) — participant jest mi winien
-     * - amount < 0 → czerwony (error) — ja jestem winien
-     * - amount == 0 → szary (text_secondary)
      */
     private fun createAmountRow(row: SettlementDetailAmountRow): View {
         val view = LayoutInflater.from(requireContext())
@@ -164,7 +183,6 @@ class SettlementDetailsModalFragment : DialogFragment() {
         currencyLabel.text = row.formattedCurrency
         amountValue.text = row.formattedAmount
 
-        // Kolor kwoty na podstawie znaku
         val colorRes = when {
             row.amount > 0.01f -> R.color.success
             row.amount < -0.01f -> R.color.error
@@ -206,17 +224,6 @@ class SettlementDetailsModalFragment : DialogFragment() {
         }
     }
 
-    /**
-     * Tworzy wiersz kosztu: [tytuł]  [kwota waluta]  [✓/✗]
-     *
-     * Kolor kwoty:
-     * - isAmountPositive = true → zielony (pieniądze do mnie)
-     * - isAmountPositive = false → czerwony (pieniądze ode mnie)
-     *
-     * Ikona rozliczenia:
-     * - isSettled = true → ✓ zielony
-     * - isSettled = false → ✗ czerwony
-     */
     private fun createCostRow(costRow: SettlementDetailCostRow): View {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_settlement_detail_cost, costsListContainer, false)
@@ -228,11 +235,9 @@ class SettlementDetailsModalFragment : DialogFragment() {
         costTitle.text = costRow.expenseName
         costAmount.text = costRow.formattedAmount
 
-        // Kolor kwoty na podstawie kierunku
         val amountColorRes = if (costRow.isAmountPositive) R.color.success else R.color.error
         costAmount.setTextColor(ContextCompat.getColor(requireContext(), amountColorRes))
 
-        // Ikona rozliczenia
         if (costRow.isSettled) {
             settlementStatusIcon.setImageResource(R.drawable.ic_success)
             settlementStatusIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.success))
@@ -240,6 +245,113 @@ class SettlementDetailsModalFragment : DialogFragment() {
             settlementStatusIcon.setImageResource(R.drawable.ic_cross)
             settlementStatusIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.error))
         }
+
+        return view
+    }
+
+    // ==========================================
+    // TAB 3: ZALICZKI
+    // ==========================================
+
+    private fun populatePrepaymentTab(model: SettlementDetailsUiModel) {
+        prepaymentAmountLeftContainer.removeAllViews()
+        prepaymentHistoryContainer.removeAllViews()
+
+        if (!model.hasPrepaymentData) {
+            // Brak danych — pokaż empty state, ukryj resztę
+            prepaymentEmptyState.visibility = View.VISIBLE
+            prepaymentAmountLeftLabel.visibility = View.GONE
+            prepaymentAmountLeftContainer.visibility = View.GONE
+            prepaymentSeparator.visibility = View.GONE
+            prepaymentHistoryLabel.visibility = View.GONE
+            prepaymentHistoryContainer.visibility = View.GONE
+            return
+        }
+
+        prepaymentEmptyState.visibility = View.GONE
+
+        // Sekcja: Pozostało z zaliczek
+        if (model.prepaymentAmountLeftRows.isNotEmpty()) {
+            prepaymentAmountLeftLabel.visibility = View.VISIBLE
+            prepaymentAmountLeftContainer.visibility = View.VISIBLE
+
+            model.prepaymentAmountLeftRows.forEach { row ->
+                prepaymentAmountLeftContainer.addView(createPrepaymentAmountRow(row))
+            }
+        } else {
+            prepaymentAmountLeftLabel.visibility = View.GONE
+            prepaymentAmountLeftContainer.visibility = View.GONE
+        }
+
+        // Separator — widoczny tylko gdy są obie sekcje
+        prepaymentSeparator.visibility =
+            if (model.prepaymentAmountLeftRows.isNotEmpty() && model.prepaymentHistoryRows.isNotEmpty())
+                View.VISIBLE else View.GONE
+
+        // Sekcja: Historia zaliczek
+        if (model.prepaymentHistoryRows.isNotEmpty()) {
+            prepaymentHistoryLabel.visibility = View.VISIBLE
+            prepaymentHistoryContainer.visibility = View.VISIBLE
+
+            model.prepaymentHistoryRows.forEach { row ->
+                prepaymentHistoryContainer.addView(createPrepaymentHistoryRow(row))
+            }
+        } else {
+            prepaymentHistoryLabel.visibility = View.GONE
+            prepaymentHistoryContainer.visibility = View.GONE
+        }
+    }
+
+    /**
+     * Tworzy wiersz "Pozostało z zaliczek": [kwota] [waluta]
+     *
+     * TO_ME → zielony (pieniądze do mnie)
+     * FROM_ME → czerwony (pieniądze ode mnie)
+     */
+    private fun createPrepaymentAmountRow(row: PrepaymentAmountLeftRow): View {
+        val view = LayoutInflater.from(requireContext())
+            .inflate(R.layout.item_prepayment_amount_row, prepaymentAmountLeftContainer, false)
+
+        val amount = view.findViewById<TextView>(R.id.prepaymentAmount)
+        val currency = view.findViewById<TextView>(R.id.prepaymentCurrency)
+
+        amount.text = row.formattedAmount
+        currency.text = row.currency
+
+        val colorRes = when (row.direction) {
+            PrepaymentAmountDirection.TO_ME -> R.color.success
+            PrepaymentAmountDirection.FROM_ME -> R.color.error
+        }
+        amount.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+        currency.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+
+        return view
+    }
+
+    /**
+     * Tworzy wiersz historii: [kwota] [waluta] [data]
+     *
+     * TO_ME → zielony (pieniądze do mnie)
+     * FROM_ME → czerwony (pieniądze ode mnie)
+     */
+    private fun createPrepaymentHistoryRow(row: PrepaymentHistoryRow): View {
+        val view = LayoutInflater.from(requireContext())
+            .inflate(R.layout.item_prepayment_history_row, prepaymentHistoryContainer, false)
+
+        val amount = view.findViewById<TextView>(R.id.historyAmount)
+        val currency = view.findViewById<TextView>(R.id.historyCurrency)
+        val date = view.findViewById<TextView>(R.id.historyDate)
+
+        amount.text = row.formattedAmount
+        currency.text = row.currency
+        date.text = row.formattedDate
+
+        val colorRes = when (row.direction) {
+            PrepaymentAmountDirection.TO_ME -> R.color.success
+            PrepaymentAmountDirection.FROM_ME -> R.color.error
+        }
+        amount.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+        currency.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
 
         return view
     }
