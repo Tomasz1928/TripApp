@@ -97,7 +97,6 @@ object MockData {
             description = description,
             currency = currency,
             totalExpenses = 0f,
-            accessCode = generateAccessCode(),
             ownerId = "10",
             imOwner = true,
             myCost = null,
@@ -130,15 +129,6 @@ object MockData {
      */
     fun joinTripMock(accessCode: String): JoinTripDto {
         initializeIfNeeded()
-
-        val existingTrip = tripsStorage.values.find { it.accessCode == accessCode }
-
-        if (existingTrip != null) {
-            return JoinTripDto(
-                success = SuccessDto(success = true, message = "Successfully joined trip"),
-                trip = existingTrip
-            )
-        }
 
         return JoinTripDto(
             success = SuccessDto(success = false, message = "Trip not found"),
@@ -775,7 +765,6 @@ object MockData {
             description = "Weekend w górach",
             currency = "PLN",
             totalExpenses = 2400f,
-            accessCode = "ZAKO-2024",
             ownerId = "10",
             imOwner = true,
             myCost = MoneyValueDto(
@@ -920,7 +909,6 @@ object MockData {
             description = "Podróż po Europie samochodem",
             currency = "EUR",
             totalExpenses = 4500f,
-            accessCode = "EURO-2024",
             ownerId = "11",
             imOwner = false,
             myCost = MoneyValueDto(
@@ -1097,7 +1085,6 @@ object MockData {
             description = "Tydzień w Sopocie",
             currency = "PLN",
             totalExpenses = 5200f,
-            accessCode = "SOPOT-24",
             ownerId = "10",
             imOwner = true,
             myCost = MoneyValueDto(valueMainCurrency = 1733.33f),
@@ -1235,7 +1222,6 @@ object MockData {
             description = "Weekend w Barcelonie",
             currency = "EUR",
             totalExpenses = 1850f,
-            accessCode = "BCN-2024",
             ownerId = "20",
             imOwner = false,
             myCost = MoneyValueDto(valueMainCurrency = 462.50f),
@@ -1361,7 +1347,6 @@ object MockData {
             description = "Podróż po Azji - Japonia, Tajlandia, Wietnam",
             currency = "PLN",
             totalExpenses = 15000f,
-            accessCode = "AZJA-2024",
             ownerId = "10",
             imOwner = true,
             myCost = MoneyValueDto(

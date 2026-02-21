@@ -15,7 +15,6 @@ data class TripDetailsUiModel(
     val title: String,
     val description: String,
     val dateRange: String,              // "12.08 - 18.08.2024"
-    val accessCode: String,
     val myTotalExpenses: String,        // "450,00 PLN"
     val myExpensesBreakdown: List<CurrencyExpenseUiModel>
 )
@@ -63,7 +62,6 @@ fun TripDto.toDetailsUiModel(): TripDetailsUiModel {
         title = title,
         description = description.toString(),
         dateRange = (dateStart to dateEnd).toDateRange(),
-        accessCode = accessCode,
         myTotalExpenses = "%.2f %s".format(totalInBaseCurrency, currency),
         myExpensesBreakdown = myExpenses.map { expense ->
             CurrencyExpenseUiModel(

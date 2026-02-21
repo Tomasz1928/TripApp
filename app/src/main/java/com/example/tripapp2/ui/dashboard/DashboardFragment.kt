@@ -48,6 +48,12 @@ class DashboardFragment : BaseFragment<DashboardViewModel>(R.layout.fragment_das
             onTripClick = { trip ->
                 viewModel.onTripClicked(trip.id)
             },
+            onCostDetailsClick = { trip ->
+                (activity as? DashboardActivity)?.openTripCosts(trip.id)
+            },
+            onAddCostClick = { trip ->
+                (activity as? DashboardActivity)?.openTripAddExpense(trip.id)
+            },
             onJoinClick = {
                 viewModel.onJoinTripClicked()
             },

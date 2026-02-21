@@ -10,6 +10,8 @@ import com.example.tripapp2.ui.dashboard.TripUiModel
 
 class TripAdapter(
     private val onTripClick: (TripUiModel) -> Unit,
+    private val onCostDetailsClick: (TripUiModel) -> Unit,
+    private val onAddCostClick: (TripUiModel) -> Unit,
     private val onJoinClick: () -> Unit,
     private val onCreateClick: () -> Unit
 ) : ListAdapter<TripAdapterItem, RecyclerView.ViewHolder>(TripDiffCallback()) {
@@ -43,7 +45,7 @@ class TripAdapter(
         return when (viewType) {
             TYPE_TRIP -> {
                 val view = inflater.inflate(R.layout.item_trip_card, parent, false)
-                TripViewHolder(view, onTripClick)
+                TripViewHolder(view, onTripClick, onCostDetailsClick, onAddCostClick)
             }
             TYPE_PLACEHOLDER -> {
                 val view = inflater.inflate(R.layout.item_placeholder_card, parent, false)
