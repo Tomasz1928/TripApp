@@ -10,8 +10,8 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
 import com.example.tripapp2.R
+import com.example.tripapp2.ui.common.baseModals.BaseModalFragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
@@ -19,27 +19,23 @@ import com.google.android.material.textfield.TextInputLayout
 
 /**
  * Modal zaliczki (przedpłaty)
+ * ZMIGOWANY na BaseModalFragment.
  *
- * Przepływ:
- * 1. Fragment wywołuje newInstance() z PrepaymentUiModel i callbackiem
- * 2. User wypełnia formularz (kierunek, kwota, waluta)
- * 3. Po kliknięciu "Dodaj zaliczkę" wywoływany jest callback z PrepaymentRequest
- * 4. Fragment przekazuje request do ViewModel
- * 5. ViewModel zapisuje przez Repository → cache jest aktualizowany
+ * Ten modal ma złożony własny layout (radio buttons, dropdown, karty kierunku)
+ * więc zachowuje własny layout XML i override'uje onCreateView().
+ * Z BaseModalFragment korzysta z: animacji, overlay click, back button.
+ *
+ * Logika biznesowa — BEZ ZMIAN.
  */
-class PrepaymentModalFragment : DialogFragment() {
+class PrepaymentModalFragment : BaseModalFragment() {
 
     private var prepaymentModel: PrepaymentUiModel? = null
     private var onConfirm: ((PrepaymentRequest) -> Unit)? = null
 
-    // Wybrana waluta
     private var selectedCurrency: String = ""
-
-    // Wybrany kierunek zaliczki
     private var selectedDirection: PrepaymentDirection = PrepaymentDirection.TO_ME
 
     // Views
-    private lateinit var closeButton: ImageView
     private lateinit var participantNickname: TextView
     private lateinit var currentBalance: TextView
     private lateinit var directionToMeCard: MaterialCardView
@@ -52,59 +48,60 @@ class PrepaymentModalFragment : DialogFragment() {
     private lateinit var currencyDropdown: AutoCompleteTextView
     private lateinit var confirmButton: MaterialButton
 
-
+    /**
+     * Override onCreateView — ten modal używa własnego layoutu zamiast fragment_base_modal.
+     * BaseModalFragment zapewnia animacje i overlay przez onStart/onCreate.
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.modal_prepayment, container, false)
+        // Używamy własnego layoutu opakowanego w overlay z BaseModal
+        val baseView = super.onCreateView(inflater, container, savedInstanceState)
+        return baseView
+    }
+
+    override fun onCreateBodyView(inflater: LayoutInflater, container: ViewGroup?): View? {
+        // Inflate oryginalny body z modal_prepayment, ale tylko zawartość ScrollView
+        return inflater.inflate(R.layout.modal_prepayment_body, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val model = prepaymentModel ?: run {
-            dismiss()
-            return
-        }
+        val model = prepaymentModel ?: run { dismissAnimated(); return }
+
+        setModalTitle(getString(R.string.settlements_prepayment_title))
 
         initializeViews(view)
         setupData(model)
         setupListeners(model)
     }
 
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.apply {
-            setBackgroundDrawableResource(android.R.color.transparent)
-            setLayout(
-                (resources.displayMetrics.widthPixels * 0.9).toInt(),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-    }
+    // ==========================================
+    // LOGIKA BIZNESOWA — 1:1 Z ORYGINAŁEM
+    // ==========================================
 
     private fun initializeViews(view: View) {
-        closeButton = view.findViewById(R.id.closeButton)
-        participantNickname = view.findViewById(R.id.participantNickname)
-        currentBalance = view.findViewById(R.id.currentBalance)
-        directionToMeCard = view.findViewById(R.id.directionToMeCard)
-        directionFromMeCard = view.findViewById(R.id.directionFromMeCard)
-        directionToMeRadio = view.findViewById(R.id.directionToMeRadio)
-        directionFromMeRadio = view.findViewById(R.id.directionFromMeRadio)
-        amountInputLayout = view.findViewById(R.id.amountInputLayout)
-        amountInput = view.findViewById(R.id.amountInput)
-        currencyInputLayout = view.findViewById(R.id.currencyInputLayout)
-        currencyDropdown = view.findViewById(R.id.currencyDropdown)
-        confirmButton = view.findViewById(R.id.confirmButton)
+        // Szukamy w baseModalBodyContainer (bo body jest wstrzyknięte przez BaseModal)
+        val body = modalBodyContainer ?: return
+        participantNickname = body.findViewById(R.id.participantNickname)
+        currentBalance = body.findViewById(R.id.currentBalance)
+        directionToMeCard = body.findViewById(R.id.directionToMeCard)
+        directionFromMeCard = body.findViewById(R.id.directionFromMeCard)
+        directionToMeRadio = body.findViewById(R.id.directionToMeRadio)
+        directionFromMeRadio = body.findViewById(R.id.directionFromMeRadio)
+        amountInputLayout = body.findViewById(R.id.amountInputLayout)
+        amountInput = body.findViewById(R.id.amountInput)
+        currencyInputLayout = body.findViewById(R.id.currencyInputLayout)
+        currencyDropdown = body.findViewById(R.id.currencyDropdown)
+        confirmButton = body.findViewById(R.id.confirmButton)
     }
 
     private fun setupData(model: PrepaymentUiModel) {
-        // Nazwa uczestnika
         participantNickname.text = model.participantNickname
 
-        // Aktualny balans z kolorem
         currentBalance.text = model.formattedCurrentBalance
         val balanceColor = when (model.balanceStatus) {
             ParticipantBalanceStatus.POSITIVE -> R.color.success
@@ -113,21 +110,18 @@ class PrepaymentModalFragment : DialogFragment() {
         }
         currentBalance.setTextColor(ContextCompat.getColor(requireContext(), balanceColor))
 
-        // Setup dropdown waluty
         setupCurrencyDropdown(model)
 
-        // Ustaw domyślny kierunek na podstawie balansu
         val defaultDirection = when (model.balanceStatus) {
-            ParticipantBalanceStatus.NEGATIVE -> PrepaymentDirection.FROM_ME  // Jestem winien → ja daję
-            ParticipantBalanceStatus.POSITIVE -> PrepaymentDirection.TO_ME    // On mi winien → on daje mi
-            ParticipantBalanceStatus.SETTLED -> PrepaymentDirection.TO_ME     // Neutral → domyślnie TO_ME
+            ParticipantBalanceStatus.NEGATIVE -> PrepaymentDirection.FROM_ME
+            ParticipantBalanceStatus.POSITIVE -> PrepaymentDirection.TO_ME
+            ParticipantBalanceStatus.SETTLED -> PrepaymentDirection.TO_ME
         }
         selectDirection(defaultDirection)
     }
 
     private fun setupCurrencyDropdown(model: PrepaymentUiModel) {
         val currencies = model.availableCurrencies
-
         val adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_dropdown_item_1line,
@@ -135,7 +129,6 @@ class PrepaymentModalFragment : DialogFragment() {
         )
         currencyDropdown.setAdapter(adapter)
 
-        // Ustaw pierwszą walutę jako domyślną
         if (currencies.isNotEmpty()) {
             selectedCurrency = currencies.first()
             currencyDropdown.setText(selectedCurrency, false)
@@ -147,79 +140,30 @@ class PrepaymentModalFragment : DialogFragment() {
     }
 
     private fun setupListeners(model: PrepaymentUiModel) {
-        // Zamknij modal
-        closeButton.setOnClickListener {
-            dismiss()
-        }
-
-        // Wybór kierunku - karta "Pieniądze do mnie"
-        directionToMeCard.setOnClickListener {
-            selectDirection(PrepaymentDirection.TO_ME)
-        }
-        directionToMeRadio.setOnClickListener {
-            selectDirection(PrepaymentDirection.TO_ME)
-        }
-
-        // Wybór kierunku - karta "Ja daję pieniądze"
-        directionFromMeCard.setOnClickListener {
-            selectDirection(PrepaymentDirection.FROM_ME)
-        }
-        directionFromMeRadio.setOnClickListener {
-            selectDirection(PrepaymentDirection.FROM_ME)
-        }
-
-        // Potwierdzenie
-        confirmButton.setOnClickListener {
-            handleConfirm()
-        }
+        directionToMeCard.setOnClickListener { selectDirection(PrepaymentDirection.TO_ME) }
+        directionToMeRadio.setOnClickListener { selectDirection(PrepaymentDirection.TO_ME) }
+        directionFromMeCard.setOnClickListener { selectDirection(PrepaymentDirection.FROM_ME) }
+        directionFromMeRadio.setOnClickListener { selectDirection(PrepaymentDirection.FROM_ME) }
+        confirmButton.setOnClickListener { handleConfirm() }
     }
 
-    /**
-     * Zmienia wybrany kierunek zaliczki i aktualizuje UI
-     */
     private fun selectDirection(direction: PrepaymentDirection) {
         selectedDirection = direction
-
-        // Aktualizuj radio buttons
         directionToMeRadio.isChecked = (direction == PrepaymentDirection.TO_ME)
         directionFromMeRadio.isChecked = (direction == PrepaymentDirection.FROM_ME)
 
-        // Aktualizuj wygląd kart (stroke)
         val selectedStrokeWidth = 4
         val defaultStrokeWidth = 2
         val selectedStrokeColor = resources.getColor(R.color.primary, null)
         val defaultStrokeColor = resources.getColor(R.color.divider, null)
 
-        // Karta TO_ME
-        directionToMeCard.strokeWidth = if (direction == PrepaymentDirection.TO_ME) {
-            selectedStrokeWidth
-        } else {
-            defaultStrokeWidth
-        }
-        directionToMeCard.strokeColor = if (direction == PrepaymentDirection.TO_ME) {
-            selectedStrokeColor
-        } else {
-            defaultStrokeColor
-        }
-
-        // Karta FROM_ME
-        directionFromMeCard.strokeWidth = if (direction == PrepaymentDirection.FROM_ME) {
-            selectedStrokeWidth
-        } else {
-            defaultStrokeWidth
-        }
-        directionFromMeCard.strokeColor = if (direction == PrepaymentDirection.FROM_ME) {
-            selectedStrokeColor
-        } else {
-            defaultStrokeColor
-        }
+        directionToMeCard.strokeWidth = if (direction == PrepaymentDirection.TO_ME) selectedStrokeWidth else defaultStrokeWidth
+        directionToMeCard.strokeColor = if (direction == PrepaymentDirection.TO_ME) selectedStrokeColor else defaultStrokeColor
+        directionFromMeCard.strokeWidth = if (direction == PrepaymentDirection.FROM_ME) selectedStrokeWidth else defaultStrokeWidth
+        directionFromMeCard.strokeColor = if (direction == PrepaymentDirection.FROM_ME) selectedStrokeColor else defaultStrokeColor
     }
 
-    /**
-     * Walidacja i potwierdzenie zaliczki
-     */
     private fun handleConfirm() {
-        // Walidacja kwoty
         val amountText = amountInput.text?.toString()?.trim()
         val amount = amountText?.replace(",", ".")?.toFloatOrNull()
 
@@ -233,37 +177,26 @@ class PrepaymentModalFragment : DialogFragment() {
             return
         }
 
-        // Walidacja waluty
         if (selectedCurrency.isBlank()) {
-            // Wybierz pierwszą dostępną
             selectedCurrency = prepaymentModel?.availableCurrencies?.firstOrNull() ?: "PLN"
         }
 
-        // Wyczyść błąd
         amountInputLayout.error = null
 
-        // Utwórz request i wywołaj callback
         prepaymentModel?.let { model ->
             val request = PrepaymentRequest(
-                tripId = "", // Zostanie uzupełnione w Fragment
+                tripId = "",
                 participantId = model.participantId,
                 amount = amount,
                 currency = selectedCurrency,
                 direction = selectedDirection
             )
-
             onConfirm?.invoke(request)
-            dismiss()
+            dismissAnimated()
         }
     }
 
     companion object {
-        /**
-         * Tworzy nową instancję modala
-         *
-         * @param model Dane do wyświetlenia (uczestnik, balans, waluty)
-         * @param onConfirm Callback wywoływany po potwierdzeniu z PrepaymentRequest
-         */
         fun newInstance(
             model: PrepaymentUiModel,
             onConfirm: (PrepaymentRequest) -> Unit

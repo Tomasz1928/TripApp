@@ -9,47 +9,30 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
 import com.example.tripapp2.R
+import com.example.tripapp2.ui.common.baseModals.BaseModalFragment
 import com.google.android.material.tabs.TabLayout
 
 /**
- * Modal szczegółów rozliczenia z uczestnikiem
+ * Modal szczegółów rozliczenia z uczestnikiem.
+ * ZMIGOWANY na BaseModalFragment.
  *
- * Tab 1 - Podsumowanie:
- *   - Relacja wszystkich kosztów (allRelatedAmount)
- *   - Pozostało do rozliczenia (leftForSettled)
- *
- * Tab 2 - Koszty:
- *   - Lista wydatków dotyczących relacji ja ↔ participant
- *   - Kolor kwoty: zielony (do mnie) / czerwony (ode mnie)
- *   - Ikona: ic_success zielony (rozliczone) / ic_cross czerwony (nierozliczone)
- *
- * Tab 3 - Zaliczki:
- *   - Pozostało z zaliczek (amountLeft) z kierunkiem
- *   - Historia zaliczek (history) posortowana od najnowszej
+ * Body = modal_settlement_details_body.xml (TabLayout + 3 taby)
+ * Logika biznesowa — 1:1 z oryginałem.
  */
-class SettlementDetailsModalFragment : DialogFragment() {
+class SettlementDetailsModalFragment : BaseModalFragment() {
 
     private var detailsModel: SettlementDetailsUiModel? = null
 
-    // Views - common
-    private lateinit var closeButton: ImageView
-    private lateinit var participantNickname: TextView
+    // Views
     private lateinit var tabLayout: TabLayout
-
-    // Views - Tab 1: Podsumowanie
     private lateinit var tabSummary: ScrollView
     private lateinit var allRelatedContainer: LinearLayout
     private lateinit var leftForSettledContainer: LinearLayout
-
-    // Views - Tab 2: Koszty
     private lateinit var tabCosts: LinearLayout
     private lateinit var costsScrollView: ScrollView
     private lateinit var costsListContainer: LinearLayout
     private lateinit var costsEmptyState: TextView
-
-    // Views - Tab 3: Zaliczki
     private lateinit var tabPrepayment: ScrollView
     private lateinit var prepaymentAmountLeftLabel: TextView
     private lateinit var prepaymentAmountLeftContainer: LinearLayout
@@ -58,89 +41,57 @@ class SettlementDetailsModalFragment : DialogFragment() {
     private lateinit var prepaymentHistoryContainer: LinearLayout
     private lateinit var prepaymentEmptyState: TextView
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(STYLE_NO_FRAME, R.style.Theme_TripApp_Dialog)
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.modal_settlement_details, container, false)
+    override fun onCreateBodyView(inflater: LayoutInflater, container: ViewGroup?): View? {
+        return inflater.inflate(R.layout.modal_settlement_details_body, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val model = detailsModel ?: run { dismiss(); return }
+        val model = detailsModel ?: run { dismissAnimated(); return }
 
-        initializeViews(view)
+        setModalTitle(getString(R.string.settlement_details_title))
+        setModalSubtitle(model.participantNickname)
+
+        initializeViews()
         setupTabLayout()
-        populateHeader(model)
         populateSummaryTab(model)
         populateCostsTab(model)
         populatePrepaymentTab(model)
     }
 
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog?.window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.9).toInt(),
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-    }
-
     // ==========================================
-    // INITIALIZATION
+    // INITIALIZATION — 1:1 Z ORYGINAŁEM
     // ==========================================
 
-    private fun initializeViews(view: View) {
-        closeButton = view.findViewById(R.id.closeButton)
-        participantNickname = view.findViewById(R.id.participantNickname)
-        tabLayout = view.findViewById(R.id.tabLayout)
+    private fun initializeViews() {
+        val body = modalBodyContainer ?: return
+        tabLayout = body.findViewById(R.id.tabLayout)
 
-        // Tab 1
-        tabSummary = view.findViewById(R.id.tabSummary)
-        allRelatedContainer = view.findViewById(R.id.allRelatedContainer)
-        leftForSettledContainer = view.findViewById(R.id.leftForSettledContainer)
+        tabSummary = body.findViewById(R.id.tabSummary)
+        allRelatedContainer = body.findViewById(R.id.allRelatedContainer)
+        leftForSettledContainer = body.findViewById(R.id.leftForSettledContainer)
 
-        // Tab 2
-        tabCosts = view.findViewById(R.id.tabCosts)
-        costsScrollView = view.findViewById(R.id.costsScrollView)
-        costsListContainer = view.findViewById(R.id.costsListContainer)
-        costsEmptyState = view.findViewById(R.id.costsEmptyState)
+        tabCosts = body.findViewById(R.id.tabCosts)
+        costsScrollView = body.findViewById(R.id.costsScrollView)
+        costsListContainer = body.findViewById(R.id.costsListContainer)
+        costsEmptyState = body.findViewById(R.id.costsEmptyState)
 
-        // Tab 3
-        tabPrepayment = view.findViewById(R.id.tabPrepayment)
-        prepaymentAmountLeftLabel = view.findViewById(R.id.prepaymentAmountLeftLabel)
-        prepaymentAmountLeftContainer = view.findViewById(R.id.prepaymentAmountLeftContainer)
-        prepaymentSeparator = view.findViewById(R.id.prepaymentSeparator)
-        prepaymentHistoryLabel = view.findViewById(R.id.prepaymentHistoryLabel)
-        prepaymentHistoryContainer = view.findViewById(R.id.prepaymentHistoryContainer)
-        prepaymentEmptyState = view.findViewById(R.id.prepaymentEmptyState)
+        tabPrepayment = body.findViewById(R.id.tabPrepayment)
+        prepaymentAmountLeftLabel = body.findViewById(R.id.prepaymentAmountLeftLabel)
+        prepaymentAmountLeftContainer = body.findViewById(R.id.prepaymentAmountLeftContainer)
+        prepaymentSeparator = body.findViewById(R.id.prepaymentSeparator)
+        prepaymentHistoryLabel = body.findViewById(R.id.prepaymentHistoryLabel)
+        prepaymentHistoryContainer = body.findViewById(R.id.prepaymentHistoryContainer)
+        prepaymentEmptyState = body.findViewById(R.id.prepaymentEmptyState)
     }
 
     private fun setupTabLayout() {
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 when (tab?.position) {
-                    0 -> {
-                        tabSummary.visibility = View.VISIBLE
-                        tabCosts.visibility = View.GONE
-                        tabPrepayment.visibility = View.GONE
-                    }
-                    1 -> {
-                        tabSummary.visibility = View.GONE
-                        tabCosts.visibility = View.VISIBLE
-                        tabPrepayment.visibility = View.GONE
-                    }
-                    2 -> {
-                        tabSummary.visibility = View.GONE
-                        tabCosts.visibility = View.GONE
-                        tabPrepayment.visibility = View.VISIBLE
-                    }
+                    0 -> { tabSummary.visibility = View.VISIBLE; tabCosts.visibility = View.GONE; tabPrepayment.visibility = View.GONE }
+                    1 -> { tabSummary.visibility = View.GONE; tabCosts.visibility = View.VISIBLE; tabPrepayment.visibility = View.GONE }
+                    2 -> { tabSummary.visibility = View.GONE; tabCosts.visibility = View.GONE; tabPrepayment.visibility = View.VISIBLE }
                 }
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
@@ -148,39 +99,24 @@ class SettlementDetailsModalFragment : DialogFragment() {
         })
     }
 
-    private fun populateHeader(model: SettlementDetailsUiModel) {
-        participantNickname.text = model.participantNickname
-        closeButton.setOnClickListener { dismiss() }
-    }
-
     // ==========================================
-    // TAB 1: PODSUMOWANIE
+    // TAB 1: PODSUMOWANIE — 1:1
     // ==========================================
 
     private fun populateSummaryTab(model: SettlementDetailsUiModel) {
         allRelatedContainer.removeAllViews()
         leftForSettledContainer.removeAllViews()
 
-        model.allRelatedRows.forEach { row ->
-            allRelatedContainer.addView(createAmountRow(row))
-        }
-
-        model.leftForSettledRows.forEach { row ->
-            leftForSettledContainer.addView(createAmountRow(row))
-        }
+        model.allRelatedRows.forEach { row -> allRelatedContainer.addView(createAmountRow(row)) }
+        model.leftForSettledRows.forEach { row -> leftForSettledContainer.addView(createAmountRow(row)) }
     }
 
-    /**
-     * Tworzy wiersz kwoty: [waluta]  [kwota]
-     */
     private fun createAmountRow(row: SettlementDetailAmountRow): View {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_settlement_detail_row, allRelatedContainer, false)
 
-        val currencyLabel = view.findViewById<TextView>(R.id.settleDetailModalCurrencyLabel)
+        view.findViewById<TextView>(R.id.settleDetailModalCurrencyLabel).text = row.formattedCurrency
         val amountValue = view.findViewById<TextView>(R.id.settleDetailModalAmountValue)
-
-        currencyLabel.text = row.formattedCurrency
         amountValue.text = row.formattedAmount
 
         val colorRes = when {
@@ -189,12 +125,11 @@ class SettlementDetailsModalFragment : DialogFragment() {
             else -> R.color.text_secondary
         }
         amountValue.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
-
         return view
     }
 
     // ==========================================
-    // TAB 2: KOSZTY
+    // TAB 2: KOSZTY — 1:1
     // ==========================================
 
     private fun populateCostsTab(model: SettlementDetailsUiModel) {
@@ -209,17 +144,12 @@ class SettlementDetailsModalFragment : DialogFragment() {
         costsEmptyState.visibility = View.GONE
         costsScrollView.visibility = View.VISIBLE
 
-        model.costRows.forEach { costRow ->
-            costsListContainer.addView(createCostRow(costRow))
-        }
+        model.costRows.forEach { costRow -> costsListContainer.addView(createCostRow(costRow)) }
 
-        // Ogranicz wysokość scrolla do ~10 wierszy (każdy ~48dp)
         costsScrollView.post {
             val maxHeightPx = (48 * 10 * resources.displayMetrics.density).toInt()
             if (costsListContainer.height > maxHeightPx) {
-                costsScrollView.layoutParams = costsScrollView.layoutParams.apply {
-                    height = maxHeightPx
-                }
+                costsScrollView.layoutParams = costsScrollView.layoutParams.apply { height = maxHeightPx }
             }
         }
     }
@@ -228,29 +158,26 @@ class SettlementDetailsModalFragment : DialogFragment() {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_settlement_detail_cost, costsListContainer, false)
 
-        val costTitle = view.findViewById<TextView>(R.id.costTitle)
+        view.findViewById<TextView>(R.id.costTitle).text = costRow.expenseName
         val costAmount = view.findViewById<TextView>(R.id.costAmount)
-        val settlementStatusIcon = view.findViewById<ImageView>(R.id.settlementStatusIcon)
-
-        costTitle.text = costRow.expenseName
         costAmount.text = costRow.formattedAmount
 
         val amountColorRes = if (costRow.isAmountPositive) R.color.success else R.color.error
         costAmount.setTextColor(ContextCompat.getColor(requireContext(), amountColorRes))
 
+        val icon = view.findViewById<ImageView>(R.id.settlementStatusIcon)
         if (costRow.isSettled) {
-            settlementStatusIcon.setImageResource(R.drawable.ic_success)
-            settlementStatusIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.success))
+            icon.setImageResource(R.drawable.ic_success)
+            icon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.success))
         } else {
-            settlementStatusIcon.setImageResource(R.drawable.ic_cross)
-            settlementStatusIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.error))
+            icon.setImageResource(R.drawable.ic_cross)
+            icon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.error))
         }
-
         return view
     }
 
     // ==========================================
-    // TAB 3: ZALICZKI
+    // TAB 3: ZALICZKI — 1:1
     // ==========================================
 
     private fun populatePrepaymentTab(model: SettlementDetailsUiModel) {
@@ -258,7 +185,6 @@ class SettlementDetailsModalFragment : DialogFragment() {
         prepaymentHistoryContainer.removeAllViews()
 
         if (!model.hasPrepaymentData) {
-            // Brak danych — pokaż empty state, ukryj resztę
             prepaymentEmptyState.visibility = View.VISIBLE
             prepaymentAmountLeftLabel.visibility = View.GONE
             prepaymentAmountLeftContainer.visibility = View.GONE
@@ -269,52 +195,26 @@ class SettlementDetailsModalFragment : DialogFragment() {
         }
 
         prepaymentEmptyState.visibility = View.GONE
+        prepaymentAmountLeftLabel.visibility = View.VISIBLE
+        prepaymentAmountLeftContainer.visibility = View.VISIBLE
+        prepaymentSeparator.visibility = View.VISIBLE
+        prepaymentHistoryLabel.visibility = View.VISIBLE
+        prepaymentHistoryContainer.visibility = View.VISIBLE
 
-        // Sekcja: Pozostało z zaliczek
-        if (model.prepaymentAmountLeftRows.isNotEmpty()) {
-            prepaymentAmountLeftLabel.visibility = View.VISIBLE
-            prepaymentAmountLeftContainer.visibility = View.VISIBLE
-
-            model.prepaymentAmountLeftRows.forEach { row ->
-                prepaymentAmountLeftContainer.addView(createPrepaymentAmountRow(row))
-            }
-        } else {
-            prepaymentAmountLeftLabel.visibility = View.GONE
-            prepaymentAmountLeftContainer.visibility = View.GONE
+        model.prepaymentAmountLeftRows.forEach { row ->
+            prepaymentAmountLeftContainer.addView(createPrepaymentAmountRow(row))
         }
-
-        // Separator — widoczny tylko gdy są obie sekcje
-        prepaymentSeparator.visibility =
-            if (model.prepaymentAmountLeftRows.isNotEmpty() && model.prepaymentHistoryRows.isNotEmpty())
-                View.VISIBLE else View.GONE
-
-        // Sekcja: Historia zaliczek
-        if (model.prepaymentHistoryRows.isNotEmpty()) {
-            prepaymentHistoryLabel.visibility = View.VISIBLE
-            prepaymentHistoryContainer.visibility = View.VISIBLE
-
-            model.prepaymentHistoryRows.forEach { row ->
-                prepaymentHistoryContainer.addView(createPrepaymentHistoryRow(row))
-            }
-        } else {
-            prepaymentHistoryLabel.visibility = View.GONE
-            prepaymentHistoryContainer.visibility = View.GONE
+        model.prepaymentHistoryRows.forEach { row ->
+            prepaymentHistoryContainer.addView(createPrepaymentHistoryRow(row))
         }
     }
 
-    /**
-     * Tworzy wiersz "Pozostało z zaliczek": [kwota] [waluta]
-     *
-     * TO_ME → zielony (pieniądze do mnie)
-     * FROM_ME → czerwony (pieniądze ode mnie)
-     */
     private fun createPrepaymentAmountRow(row: PrepaymentAmountLeftRow): View {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_prepayment_amount_row, prepaymentAmountLeftContainer, false)
 
         val amount = view.findViewById<TextView>(R.id.prepaymentAmount)
         val currency = view.findViewById<TextView>(R.id.prepaymentCurrency)
-
         amount.text = row.formattedAmount
         currency.text = row.currency
 
@@ -324,47 +224,36 @@ class SettlementDetailsModalFragment : DialogFragment() {
         }
         amount.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
         currency.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
-
         return view
     }
 
-    /**
-     * Tworzy wiersz historii: [kwota] [waluta] [data]
-     *
-     * TO_ME → zielony (pieniądze do mnie)
-     * FROM_ME → czerwony (pieniądze ode mnie)
-     */
     private fun createPrepaymentHistoryRow(row: PrepaymentHistoryRow): View {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_prepayment_history_row, prepaymentHistoryContainer, false)
 
-        val amount = view.findViewById<TextView>(R.id.historyAmount)
-        val currency = view.findViewById<TextView>(R.id.historyCurrency)
-        val date = view.findViewById<TextView>(R.id.historyDate)
-
-        amount.text = row.formattedAmount
-        currency.text = row.currency
-        date.text = row.formattedDate
-
-        val colorRes = when (row.direction) {
-            PrepaymentAmountDirection.TO_ME -> R.color.success
-            PrepaymentAmountDirection.FROM_ME -> R.color.error
+        view.findViewById<TextView>(R.id.historyAmount).apply {
+            text = row.formattedAmount
+            val colorRes = when (row.direction) {
+                PrepaymentAmountDirection.TO_ME -> R.color.success
+                PrepaymentAmountDirection.FROM_ME -> R.color.error
+            }
+            setTextColor(ContextCompat.getColor(requireContext(), colorRes))
         }
-        amount.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
-        currency.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
-
+        view.findViewById<TextView>(R.id.historyCurrency).apply {
+            text = row.currency
+            val colorRes = when (row.direction) {
+                PrepaymentAmountDirection.TO_ME -> R.color.success
+                PrepaymentAmountDirection.FROM_ME -> R.color.error
+            }
+            setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+        }
+        view.findViewById<TextView>(R.id.historyDate).text = row.formattedDate
         return view
     }
 
-    // ==========================================
-    // COMPANION
-    // ==========================================
-
     companion object {
         fun newInstance(model: SettlementDetailsUiModel): SettlementDetailsModalFragment {
-            return SettlementDetailsModalFragment().apply {
-                this.detailsModel = model
-            }
+            return SettlementDetailsModalFragment().apply { detailsModel = model }
         }
     }
 }
