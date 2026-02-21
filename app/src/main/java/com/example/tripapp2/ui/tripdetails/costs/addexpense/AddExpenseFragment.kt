@@ -18,6 +18,7 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.tripapp2.ui.common.baseModals.ListPickerModalFragment
 
 class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.fragment_add_expense) {
 
@@ -283,7 +284,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         }
 
         payerButton.setOnClickListener {
-            showPayerDialog()
+            showPayerModal()
         }
 
         splitButton.setOnClickListener {
@@ -299,10 +300,9 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
     }
 
     private fun showCategoryPicker() {
-        val dialog = CategoryPickerDialog(requireContext()) { category ->
+        CategoryPickerModalFragment.newInstance { category ->
             viewModel.onCategorySelected(category)
-        }
-        dialog.show()
+        }.show(parentFragmentManager, "category_picker")
     }
 
     private fun showDatePicker() {
@@ -347,23 +347,21 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         modal.show(parentFragmentManager, "SPLIT_MODAL")
     }
 
-    private fun showPayerDialog() {
+    private fun showPayerModal() {
         val participants = viewModel.participants.value ?: emptyList()
         if (participants.isEmpty()) {
             showMessage(getString(R.string.error_no_participants))
             return
         }
 
-        val names = participants.map { it.name }.toTypedArray()
-
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.add_expense_payer_hint))
-            .setItems(names) { _, which ->
-                val selected = participants[which]
+        ListPickerModalFragment.newInstance(
+            title = getString(R.string.add_expense_payer_hint),
+            items = participants.map { it.name },
+            onItemSelected = { index ->
+                val selected = participants[index]
                 viewModel.onPayerSelected(selected.id)
             }
-            .setNegativeButton(R.string.dialog_button_cancel, null)
-            .show()
+        ).show(parentFragmentManager, "payer_picker")
     }
 
     private fun getTripId(): String {

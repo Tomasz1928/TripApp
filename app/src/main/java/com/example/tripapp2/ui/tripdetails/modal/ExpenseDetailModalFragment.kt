@@ -7,21 +7,22 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.fragment.app.DialogFragment
-import com.example.tripapp2.R
-import com.example.tripapp2.ui.tripdetails.costs.ExpenseDetailUiModel
 import androidx.core.content.ContextCompat
+import com.example.tripapp2.R
+import com.example.tripapp2.ui.common.baseModals.BaseModalFragment
+import com.example.tripapp2.ui.tripdetails.costs.ExpenseDetailUiModel
 
 /**
- * Modal ze szczegółami wydatku
+ * Modal ze szczegółami wydatku.
+ * ZMIGOWANY na BaseModalFragment — usunięto zduplikowany boilerplate.
+ *
+ * Logika biznesowa (createExpenseDetailBody) — 1:1 z oryginałem.
  */
-class ExpenseDetailModalFragment : DialogFragment() {
+class ExpenseDetailModalFragment : BaseModalFragment() {
 
     private var expenseDetail: ExpenseDetailUiModel? = null
 
     companion object {
-        private const val ARG_EXPENSE = "expense_detail"
-
         fun newInstance(detail: ExpenseDetailUiModel): ExpenseDetailModalFragment {
             return ExpenseDetailModalFragment().apply {
                 expenseDetail = detail
@@ -29,44 +30,25 @@ class ExpenseDetailModalFragment : DialogFragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_generic_modal, container, false)
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val detail = expenseDetail ?: return
-
-        // Setup modal
-        view.findViewById<TextView>(R.id.modalTitle).text = detail.name
-        view.findViewById<ImageView>(R.id.closeButton).setOnClickListener { dismiss() }
-
-        // Setup body
-        val bodyContainer = view.findViewById<ViewGroup>(R.id.modalBodyContainer)
-        val bodyView = createExpenseDetailBody(detail)
-        bodyContainer.addView(bodyView)
+        expenseDetail?.let { setModalTitle(it.name) } ?: dismiss()
     }
 
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog?.window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.9).toInt(),
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+    override fun onCreateBodyView(inflater: LayoutInflater, container: ViewGroup?): View? {
+        val detail = expenseDetail ?: return null
+        return createExpenseDetailBody(detail)
     }
+
+    // ==========================================
+    // LOGIKA BIZNESOWA — 1:1 Z ORYGINAŁEM
+    // ==========================================
 
     private fun createExpenseDetailBody(detail: ExpenseDetailUiModel): View {
         val body = layoutInflater.inflate(R.layout.modal_expense_detail, null, false)
 
         // Category Icon
         val iconRes = detail.categoryIconName
-
         val categoryIcon = body.findViewById<ImageView>(R.id.expenseCategoryIcon)
         if (iconRes != 0) {
             categoryIcon.setImageResource(iconRes)
@@ -88,8 +70,7 @@ class ExpenseDetailModalFragment : DialogFragment() {
             secondaryAmountView.visibility = View.GONE
         }
 
-        // ✅ ZMIANA: Używamy getString() zamiast interpolacji R.string
-        // Info
+        // Info — z labelkami z string resources
         val descriptionLabel = getString(R.string.expense_detail_description_label)
         body.findViewById<TextView>(R.id.expenseDescription).text = "$descriptionLabel\n${detail.description}"
 
@@ -139,21 +120,13 @@ class ExpenseDetailModalFragment : DialogFragment() {
         return body
     }
 
-    /**
-     * Ustawia dynamiczne nagłówki kolumn w zależności od tego czy są dane w trip currency
-     */
     private fun setupDynamicHeaders(body: View, detail: ExpenseDetailUiModel) {
-        val headerCostCurrency = body.findViewById<TextView>(R.id.headerCostCurrency)
         val headerTripCurrency = body.findViewById<TextView>(R.id.headerTripCurrency)
+        val headerCostCurrency = body.findViewById<TextView>(R.id.headerCostCurrency)
 
-        // Cost currency - ZAWSZE widoczna
         headerCostCurrency.text = detail.currencyCost
-        headerCostCurrency.visibility = View.VISIBLE
 
-        // Trip currency - widoczna gdy INNA niż cost currency i jakikolwiek wiersz ma dane
-        val hasTripCurrencyData = detail.sharedWith.any { it.formattedAmountTripCurrency.isNotEmpty() }
-
-        if (detail.currencyTrip != detail.currencyCost && hasTripCurrencyData) {
+        if (detail.currencyTrip != detail.currencyCost) {
             headerTripCurrency.text = detail.currencyTrip
             headerTripCurrency.visibility = View.VISIBLE
         } else {

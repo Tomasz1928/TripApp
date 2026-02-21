@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Base Modal Layout
+    Uniwersalny layout dla wszystkich modali w aplikacji.
+    Struktura: Header (tytuł + subtitle opcjonalny + close X) → Separator → Body → Footer (opcjonalny)
+    Padding globalny: @dimen/padding_default (16dp)
+-->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/baseModalOverlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/overlay_dark"
+    android:clickable="true"
+    android:focusable="true">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/baseModalCard"
+        style="@style/Card.Modal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/modal_margin">
+
+        <LinearLayout
+            android:id="@+id/baseModalRoot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_default">
+
+            <!-- ================================== -->
+            <!-- HEADER -->
+            <!-- ================================== -->
+            <LinearLayout
+                android:id="@+id/baseModalHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Title area (vertical: title + optional subtitle) -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/baseModalTitle"
+                        style="@style/Text.Title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""/>
+
+                    <TextView
+                        android:id="@+id/baseModalSubtitle"
+                        style="@style/Text.Body.Secondary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_tiny"
+                        android:visibility="gone"
+                        android:text=""/>
+
+                </LinearLayout>
+
+                <!-- Close button -->
+                <ImageView
+                    android:id="@+id/baseModalCloseButton"
+                    android:layout_width="@dimen/modal_close_button_size"
+                    android:layout_height="@dimen/modal_close_button_size"
+                    android:src="@drawable/ic_back_arrow"
+                    android:contentDescription="@string/cd_close_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="@dimen/padding_tiny"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
+            </LinearLayout>
+
+            <!-- ================================== -->
+            <!-- SEPARATOR -->
+            <!-- ================================== -->
+            <View
+                android:id="@+id/baseModalSeparator"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginBottom="@dimen/spacing_small"/>
+
+            <!-- ================================== -->
+            <!-- BODY (dynamic content injected here) -->
+            <!-- ================================== -->
+            <FrameLayout
+                android:id="@+id/baseModalBodyContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <!-- ================================== -->
+            <!-- FOOTER (optional, hidden by default) -->
+            <!-- ================================== -->
+            <LinearLayout
+                android:id="@+id/baseModalFooter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</FrameLayout>
