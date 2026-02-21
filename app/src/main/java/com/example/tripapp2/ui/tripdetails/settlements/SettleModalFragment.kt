@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import com.example.tripapp2.R
 import com.example.tripapp2.data.model.ExpenseDto
 import com.example.tripapp2.data.model.TripDto
+import com.example.tripapp2.data.model.mainCurrencyAmount
 import com.example.tripapp2.ui.common.baseModals.BaseModalFragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -359,8 +360,8 @@ class SettleModalFragment : BaseModalFragment() {
                 if (share != null) {
                     result.add(SettleCostItemUiModel(
                         expenseId = expense.id, expenseName = expense.name,
-                        amount = share.splitValue.valueMainCurrency, currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.valueMainCurrency, expense.currency),
+                        amount = share.splitValue.mainCurrencyAmount(), currency = expense.currency,
+                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
                         payerDirection = CostPayerDirection.I_PAID, payerId = currentUserId, participantId = participantId
                     ))
                 }
@@ -369,8 +370,8 @@ class SettleModalFragment : BaseModalFragment() {
                 if (share != null) {
                     result.add(SettleCostItemUiModel(
                         expenseId = expense.id, expenseName = expense.name,
-                        amount = share.splitValue.valueMainCurrency, currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.valueMainCurrency, expense.currency),
+                        amount = share.splitValue.mainCurrencyAmount(), currency = expense.currency,
+                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
                         payerDirection = CostPayerDirection.PARTICIPANT_PAID, payerId = participantId, participantId = currentUserId
                     ))
                 }

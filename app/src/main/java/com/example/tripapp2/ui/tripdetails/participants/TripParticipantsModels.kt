@@ -1,6 +1,7 @@
 package com.example.tripapp2.ui.tripdetails.participants
 
 import com.example.tripapp2.data.model.ParticipantDto
+import com.example.tripapp2.data.model.mainCurrencyAmount
 
 /**
  * UI Models dla Trip Participants
@@ -82,8 +83,8 @@ fun ParticipantDto.toUiModel(
         isPlaceholder = isPlaceholder,
         accessCode = accessCode,
         isOwner = id == ownerId,
-        totalExpenses = totalExpenses?.valueMainCurrency ?: 0f,
-        formattedExpenses = "%.2f %s".format(totalExpenses?.valueMainCurrency ?: 0f, currency)
+        totalExpenses = totalExpenses.mainCurrencyAmount(),
+        formattedExpenses = "%.2f %s".format(totalExpenses.mainCurrencyAmount(), currency)
     )
 }
 

@@ -5,8 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.tripapp2.R
 import com.example.tripapp2.data.model.AddExpenseRequest
-import com.example.tripapp2.data.model.MoneyValueDto
 import com.example.tripapp2.data.model.ShareRequest
+import com.example.tripapp2.data.model.SimpleMoneyValueDto
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -220,9 +220,12 @@ class AddExpenseViewModel(
             ShareRequest(
                 participantId = participant.id,
                 participantNickname = participant.name,
-                splitValue = MoneyValueDto(
-                    valueMainCurrency = participant.amount,
-                    valueOtherCurrencies = emptyList()
+                splitValue = listOf(
+                    SimpleMoneyValueDto(
+                        isMainCurrency = true,
+                        currency = _currency.value ?: "",
+                        amount = participant.amount
+                    )
                 )
             )
         }

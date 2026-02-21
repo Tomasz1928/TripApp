@@ -4,9 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.tripapp2.R
-import com.example.tripapp2.data.model.MoneyValueDto
 import com.example.tripapp2.data.model.ShareRequest
+import com.example.tripapp2.data.model.SimpleMoneyValueDto
 import com.example.tripapp2.data.model.UpdateExpenseRequest
+import com.example.tripapp2.data.model.mainCurrencyAmount
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.ExpenseCategories
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitParticipant
@@ -134,7 +135,7 @@ class EditExpenseViewModel(
                     id = participant.id,
                     name = participant.nickname,
                     isSelected = share != null,
-                    amount = share?.splitValue?.valueMainCurrency ?: 0f
+                    amount = share?.splitValue?.mainCurrencyAmount() ?: 0f
                 )
             }
             _participants.value = splitParticipants
@@ -282,9 +283,12 @@ class EditExpenseViewModel(
             ShareRequest(
                 participantId = participant.id,
                 participantNickname = participant.name,
-                splitValue = MoneyValueDto(
-                    valueMainCurrency = participant.amount,
-                    valueOtherCurrencies = emptyList()
+                splitValue = listOf(
+                    SimpleMoneyValueDto(
+                        isMainCurrency = true,
+                        currency = _currency.value ?: "",
+                        amount = participant.amount
+                    )
                 )
             )
         }

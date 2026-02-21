@@ -75,21 +75,27 @@ fun TripDto.toDetailsUiModel(): TripDetailsUiModel {
 
 /**
  * Oblicza wydatki użytkownika z danej wycieczki
+ * myCost jest teraz List<SimpleMoneyValueDto>
  */
 private fun TripDto.calculateUserExpenses(): List<CurrencyExpenseUiModel> {
-    val expensesByCurrency = mutableMapOf<String, Float>()
-
-    expensesByCurrency[currency] = myCost?.valueMainCurrency ?: 0f
-
-    myCost?.valueOtherCurrencies?.forEach { expense ->
-        expensesByCurrency[expense.currency] = expense.value
-    }
-
-    return expensesByCurrency.map { (currency, amount) ->
-        CurrencyExpenseUiModel(
-            currency = currency,
-            amount = amount,
-            formattedAmount = "%.2f %s".format(amount, currency)
+    if (myCost.isEmpty()) {
+        return listOf(
+            CurrencyExpenseUiModel(
+                currency = currency,
+                amount = 0f,
+                formattedAmount = "0,00 %s".format(currency)
+            )
         )
     }
+
+    // Sortuj: główna waluta pierwsza
+    return myCost
+        .sortedByDescending { it.isMainCurrency }
+        .map { money ->
+            CurrencyExpenseUiModel(
+                currency = money.currency,
+                amount = money.amount,
+                formattedAmount = "%.2f %s".format(money.amount, money.currency)
+            )
+        }
 }

@@ -16,20 +16,10 @@ data class TripDto(
     val categories: List<CategoryDto>,
     val ownerId: String,
     val imOwner: Boolean,
-    val myCost: MoneyValueDto?,
+    val myCost: List<SimpleMoneyValueDto>,
     val expenses: List<ExpenseDto>,
     val participants: List<ParticipantDto>,
     val settlement: SettlementDto?
-)
-
-data class MoneyValueDto(
-    val valueMainCurrency: Float,
-    val valueOtherCurrencies: List<MoneyValueDetailsDto> = emptyList()
-)
-
-data class MoneyValueDetailsDto(
-    val currency: String,
-    val value: Float
 )
 
 data class CategoryDto(
@@ -41,7 +31,7 @@ data class ExpenseDto(
     val id: String,
     val name: String,
     val description: String? = null,
-    val totalExpense: MoneyValueDto,
+    val totalExpense: List<SimpleMoneyValueDto>,
     val amount: Float,
     val currency: String,
     val date: Long,
@@ -54,14 +44,14 @@ data class ExpenseDto(
 data class ShareDto(
     val participantId: String,
     val participantNickname: String,
-    val splitValue: MoneyValueDto,
+    val splitValue: List<SimpleMoneyValueDto>,
     val isSettlement: Boolean
 )
 
 data class ParticipantDto(
     val id: String,
     val nickname: String,
-    val totalExpenses: MoneyValueDto?,
+    val totalExpenses: List<SimpleMoneyValueDto>,
     val isOwner: Boolean,
     val isPlaceholder: Boolean,
     val accessCode: String?,
@@ -178,7 +168,7 @@ data class UpdateExpenseRequest(
 data class ShareRequest(
     val participantId: String,
     val participantNickname: String,
-    val splitValue: MoneyValueDto
+    val splitValue: List<SimpleMoneyValueDto>
 )
 
 /**
@@ -199,3 +189,14 @@ val SettlementRelationDto.mainCurrencyBalance: Float
  */
 val SettlementRelationDto.hasOutstandingAmount: Boolean
     get() = leftForSettled.any { kotlin.math.abs(it.amount) > 0.01f }
+
+// ==========================================
+// HELPER EXTENSIONS for List<SimpleMoneyValueDto>
+// ==========================================
+
+
+fun List<SimpleMoneyValueDto>.mainCurrencyAmount(): Float =
+    firstOrNull { it.isMainCurrency }?.amount ?: 0f
+
+fun List<SimpleMoneyValueDto>.amountFor(currency: String): Float =
+    firstOrNull { it.currency == currency }?.amount ?: 0f
