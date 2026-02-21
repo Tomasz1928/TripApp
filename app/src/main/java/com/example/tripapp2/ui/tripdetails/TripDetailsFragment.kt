@@ -29,7 +29,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
     private lateinit var tripTitle: TextView
     private lateinit var tripSubtitle: TextView
     private lateinit var tripDate: TextView
-    private lateinit var tripAccessCode: TextView
     private lateinit var totalExpenses: TextView
     private lateinit var backButton: ImageView
     private lateinit var settlementsCard: MaterialCardView
@@ -44,14 +43,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         viewModel.tripDetailsState.observe(viewLifecycleOwner) { state ->
             handleTripDetailsState(state)
         }
-
-        // Event kopiowania kodu
-        viewModel.copyCodeEvent.observe(viewLifecycleOwner) { event ->
-            event.getContentIfNotHandled()?.let { copyEvent ->
-                copyToClipboard(copyEvent.code)
-                showMessage(copyEvent.message)
-            }
-        }
     }
 
     private fun initializeViews() {
@@ -60,7 +51,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         tripTitle = view.findViewById(R.id.tripTitle)
         tripSubtitle = view.findViewById(R.id.tripSubtitle)
         tripDate = view.findViewById(R.id.tripDate)
-        tripAccessCode = view.findViewById(R.id.tripAccessCode)
         totalExpenses = view.findViewById(R.id.totalExpenses)
         backButton = view.findViewById(R.id.backButton)
         settlementsCard = view.findViewById(R.id.settlementsCard)
@@ -71,9 +61,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
             viewModel.onBackClicked()
         }
 
-        tripAccessCode.setOnClickListener {
-            viewModel.copyAccessCode(tripAccessCode.text.toString())
-        }
 
         totalExpenses.setOnClickListener {
             showExpensesModal()
@@ -109,7 +96,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         tripTitle.text = details.title
         tripSubtitle.text = details.description
         tripDate.text = details.dateRange
-        tripAccessCode.text = details.accessCode
         totalExpenses.text = details.myTotalExpenses
     }
 
@@ -131,15 +117,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
      */
     private fun navigateToSettlements() {
         (activity as? DashboardActivity)?.showSettlements(getTripId())
-    }
-
-    /**
-     * Kopiuje tekst do schowka
-     */
-    private fun copyToClipboard(text: String) {
-        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText(getString(R.string.trip_details_access_code), text)
-        clipboard.setPrimaryClip(clip)
     }
 
     /**

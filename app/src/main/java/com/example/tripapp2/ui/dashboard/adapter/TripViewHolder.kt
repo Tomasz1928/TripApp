@@ -19,7 +19,9 @@ import com.example.tripapp2.ui.dashboard.TripUiModel
  */
 class TripViewHolder(
     itemView: View,
-    private val onTripClick: (TripUiModel) -> Unit
+    private val onTripClick: (TripUiModel) -> Unit,
+    private val onCostDetailsClick: (TripUiModel) -> Unit,
+    private val onAddCostClick: (TripUiModel) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
     private val title: TextView = itemView.findViewById(R.id.tripTitle)
@@ -28,6 +30,9 @@ class TripViewHolder(
     private val chart: PieChartView = itemView.findViewById(R.id.pieChart)
     private val legendContainer: LinearLayout = itemView.findViewById(R.id.legendContainer)
     private val detailsBtn: Button = itemView.findViewById(R.id.detailsBtn)
+    private val costDetailsBtn: Button = itemView.findViewById(R.id.costDetailsBtn)
+    private val addCostBtn: Button = itemView.findViewById(R.id.addCostBtn)
+
 
     companion object {
         private const val CARD_WIDTH_RATIO = 0.85f
@@ -58,10 +63,9 @@ class TripViewHolder(
         // Legenda
         setupLegend(trip)
 
-        // Click listener
-        detailsBtn.setOnClickListener {
-            onTripClick(trip)
-        }
+        detailsBtn.setOnClickListener { onTripClick(trip) }
+        costDetailsBtn.setOnClickListener { onCostDetailsClick(trip) }
+        addCostBtn.setOnClickListener { onAddCostClick(trip) }
     }
 
     private fun setCardWidth() {

@@ -309,7 +309,7 @@
     <!-- ========================================= -->
 
     <string name="settlement_details_title">Szczegóły</string>
-    <string name="settlement_details_tab_summary">Podsumowanie</string>
+    <string name="settlement_details_tab_summary">Ogólne</string>
     <string name="settlement_details_tab_costs">Wydatki</string>
     <string name="settlement_details_tab_prepayment">Zaliczki</string>
 

@@ -6,7 +6,7 @@ import android.widget.*
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import com.example.tripapp2.R
-import com.example.tripapp2.ui.tripdetails.costs.addexpense.CategoryPickerDialog
+import com.example.tripapp2.ui.tripdetails.costs.addexpense.CategoryPickerModalFragment
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.ExpenseSplit
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitExpenseModalFragment
 import com.example.tripapp2.ui.common.KeyboardAwareFragment
@@ -318,10 +318,11 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
     }
 
     private fun showCategoryPicker() {
-        CategoryPickerDialog(requireContext()) { category ->
+        CategoryPickerModalFragment.newInstance { category ->
             viewModel.onCategorySelected(category)
-        }.show()
+        }.show(parentFragmentManager, "category_picker")
     }
+
 
     private fun showDatePicker() {
         val currentDate = viewModel.dateTime.value?.first ?: System.currentTimeMillis()

@@ -6,11 +6,13 @@ import android.widget.ScrollView
 import androidx.fragment.app.viewModels
 import com.example.tripapp2.R
 import com.example.tripapp2.ui.common.base.BaseFragment
+import com.example.tripapp2.ui.common.baseModals.ConfirmModalFragment
 import com.example.tripapp2.ui.common.extension.hide
 import com.example.tripapp2.ui.common.extension.show
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.example.tripapp2.ui.tripdetails.costs.adapter.ExpenseAdapter
 import com.example.tripapp2.ui.tripdetails.modal.ExpenseDetailModalFragment
+import com.example.tripapp2.ui.tripdetails.participants.ParticipantUiModel
 import com.google.android.material.button.MaterialButton
 
 /**
@@ -229,14 +231,13 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
      * Pokazuje dialog potwierdzenia usunięcia wydatku
      */
     private fun showDeleteConfirmationDialog(expense: ExpenseDetailUiModel) {
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Usuń wydatek")
-            .setMessage("Czy na pewno chcesz usunąć wydatek \"${expense.name}\"?\n\nKwota: ${expense.formattedAmountCostCurrency}")
-            .setPositiveButton("Usuń") { _, _ ->
-                viewModel.confirmDeleteExpense(expense.id)
-            }
-            .setNegativeButton("Anuluj", null)
-            .show()
+        ConfirmModalFragment.newInstance(
+            title = "Usuń wydatek",
+            message = "Czy na pewno chcesz usunąć wydatek \"${expense.name}\"?\n\nKwota: ${expense.formattedAmountCostCurrency}",
+            confirmText = getString(R.string.dialog_button_delete),
+            confirmStyle = ConfirmModalFragment.ConfirmStyle.DANGER,
+            onConfirm = { viewModel.confirmDeleteExpense(expense.id) }
+        ).show(parentFragmentManager, "delete_expense")
     }
 
     /**

@@ -14,7 +14,6 @@ data class TripDto(
     val description: String? = null,
     val totalExpenses: Float,
     val categories: List<CategoryDto>,
-    val accessCode: String,
     val ownerId: String,
     val imOwner: Boolean,
     val myCost: MoneyValueDto?,

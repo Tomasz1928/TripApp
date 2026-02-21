@@ -4,21 +4,19 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import com.example.tripapp2.R
 import com.example.tripapp2.ui.common.base.BaseFragment
+import com.example.tripapp2.ui.common.baseModals.ConfirmModalFragment
 import com.example.tripapp2.ui.common.extension.hide
 import com.example.tripapp2.ui.common.extension.show
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.textfield.TextInputEditText
+import com.example.tripapp2.ui.common.baseModals.InputModalFragment
 
 /**
  * Fragment listy uczestników wycieczki
@@ -78,7 +76,7 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
         // Event pokazania dialogu dodawania
         viewModel.showAddPlaceholderDialogEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let {
-                showAddPlaceholderDialog()
+                showAddPlaceholderModal()
             }
         }
     }
@@ -258,7 +256,7 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
                         actionsContainer.visibility = View.VISIBLE
                         detachButton.visibility = View.VISIBLE
                         detachButton.setOnClickListener {
-                            showDetachUserDialog(participant)
+                            showDetachUserModal(participant)
                         }
                     }
                 }
@@ -268,7 +266,7 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
                         actionsContainer.visibility = View.VISIBLE
                         deleteButton.visibility = View.VISIBLE
                         deleteButton.setOnClickListener {
-                            showDeletePlaceholderDialog(participant)
+                            showDeletePlaceholderModal(participant)
                         }
                     }
                 }
@@ -284,51 +282,41 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
     /**
      * Pokazuje dialog dodawania placeholdera
      */
-    private fun showAddPlaceholderDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_add_placeholder, null)
-        val nicknameInput = dialogView.findViewById<TextInputEditText>(R.id.nicknameInput)
-
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.participants_dialog_add_title)
-            .setView(dialogView)
-            .setPositiveButton(R.string.dialog_button_add) { _, _ ->
-                val nickname = nicknameInput.text.toString()
+    private fun showAddPlaceholderModal() {
+        InputModalFragment.newInstance(
+            title = getString(R.string.participants_dialog_add_title),
+            hint = getString(R.string.dialog_add_placeholder_hint),
+            confirmText = getString(R.string.dialog_button_add),
+            onConfirm = { nickname ->
                 viewModel.addPlaceholder(nickname)
             }
-            .setNegativeButton(R.string.dialog_button_cancel, null)
-            .show()
+        ).show(parentFragmentManager, "add_placeholder")
     }
 
     /**
      * Pokazuje dialog potwierdzenia odłączenia użytkownika
      */
-    private fun showDetachUserDialog(participant: ParticipantUiModel) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.participants_dialog_detach_title)
-            .setMessage(
-                getString(R.string.participants_dialog_detach_message, participant.nickname)
-            )
-            .setPositiveButton(R.string.dialog_button_detach) { _, _ ->
-                viewModel.detachUser(participant.id)
-            }
-            .setNegativeButton(R.string.dialog_button_cancel, null)
-            .show()
+    private fun showDetachUserModal(participant: ParticipantUiModel) {
+        ConfirmModalFragment.newInstance(
+            title = getString(R.string.participants_dialog_detach_title),
+            message = getString(R.string.participants_dialog_detach_message, participant.nickname),
+            confirmText = getString(R.string.dialog_button_detach),
+            confirmStyle = ConfirmModalFragment.ConfirmStyle.DANGER,
+            onConfirm = { viewModel.detachUser(participant.id) }
+        ).show(parentFragmentManager, "detach_user")
     }
 
     /**
      * Pokazuje dialog potwierdzenia usunięcia placeholdera
      */
-    private fun showDeletePlaceholderDialog(participant: ParticipantUiModel) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.participants_dialog_delete_title)
-            .setMessage(
-                getString(R.string.participants_dialog_delete_message, participant.nickname)
-            )
-            .setPositiveButton(R.string.dialog_button_delete) { _, _ ->
-                viewModel.removePlaceholder(participant.id)
-            }
-            .setNegativeButton(R.string.dialog_button_cancel, null)
-            .show()
+    private fun showDeletePlaceholderModal(participant: ParticipantUiModel) {
+        ConfirmModalFragment.newInstance(
+            title = getString(R.string.participants_dialog_delete_title),
+            message = getString(R.string.participants_dialog_delete_message, participant.nickname),
+            confirmText = getString(R.string.dialog_button_delete),
+            confirmStyle = ConfirmModalFragment.ConfirmStyle.DANGER,
+            onConfirm = { viewModel.removePlaceholder(participant.id) }
+        ).show(parentFragmentManager, "delete_placeholder")
     }
 
     /**

@@ -116,6 +116,38 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     // =====================================================
+// OTWÓRZ TRIP COSTS (lista kosztów) z dashboardu
+// =====================================================
+    fun openTripCosts(tripId: String) {
+        currentTripId = tripId
+
+        // Pokaż trip container i ukryj dashboard
+        findViewById<View>(R.id.dashboardContainer).visibility = View.GONE
+        findViewById<View>(R.id.tripContainer).visibility = View.VISIBLE
+        dashboardBottomNav.visibility = View.GONE
+        tripBottomNav.visibility = View.VISIBLE
+
+        // Otwórz od razu zakładkę kosztów
+        showTripFragment(R.id.menu_costs, tripId)
+        tripBottomNav.selectedItemId = R.id.menu_costs
+    }
+
+    // =====================================================
+// OTWÓRZ ADD EXPENSE (formularz dodawania) z dashboardu
+// =====================================================
+    fun openTripAddExpense(tripId: String) {
+        currentTripId = tripId
+
+        // Pokaż trip container i ukryj dashboard
+        findViewById<View>(R.id.dashboardContainer).visibility = View.GONE
+        findViewById<View>(R.id.tripContainer).visibility = View.VISIBLE
+        dashboardBottomNav.visibility = View.GONE
+
+        // Użyj istniejącej metody — ukrywa trip bottom nav i otwiera AddExpenseFragment
+        showAddExpenseFromCosts(tripId)
+    }
+
+    // =====================================================
     // TRIP BOTTOM NAVIGATION FLOW
     // =====================================================
     private fun showTripFragment(itemId: Int, tripId: String) {
