@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.example.tripapp2.data.model.CategoryRegistry
 import com.example.tripapp2.data.model.ExpenseDto
+import com.example.tripapp2.data.model.mainCurrencyAmount
 import com.example.tripapp2.ui.common.extension.toShortDateString
 
 /**
@@ -69,11 +70,16 @@ sealed class TripCostsState {
 
 /**
  * Konwertuje ExpenseDto na ExpenseDetailUiModel
+ *
+ * totalExpense i splitValue są teraz List<SimpleMoneyValueDto>
  */
 fun ExpenseDto.toDetailUiModel(
     currentUserId: String,
     mainCurrency: String,
 ): ExpenseDetailUiModel {
+
+    // totalExpense: główna waluta = trip currency
+    val totalExpenseMainAmount = totalExpense.mainCurrencyAmount()
 
     return ExpenseDetailUiModel(
         id = id,
@@ -92,28 +98,31 @@ fun ExpenseDto.toDetailUiModel(
 
         // Trip currency (główna waluta wycieczki)
         currencyTrip = mainCurrency,
-        amountTripCurrency = totalExpense.valueMainCurrency, // valueMainCurrency to wartość w trip currency!
-        formattedAmountTripCurrency = "%.2f %s".format(totalExpense.valueMainCurrency, mainCurrency),
+        amountTripCurrency = totalExpenseMainAmount,
+        formattedAmountTripCurrency = "%.2f %s".format(totalExpenseMainAmount, mainCurrency),
 
         isMine = sharedWith.any { it.participantId == currentUserId },
         sharedWith = sharedWith.map { share ->
-            // shareValue.valueMainCurrency = kwota w COST currency (waluta wydatku)
-            // shareValue.valueOtherCurrencies = lista z TRIP currency (waluta wycieczki)
+            // splitValue jest teraz List<SimpleMoneyValueDto>
+            // Główna waluta (isMainCurrency=true) = kwota w cost currency
+            // Dodatkowe waluty = przeliczenia (np. trip currency)
 
-            val shareTripCurrencyValue = share.splitValue.valueOtherCurrencies
-                .firstOrNull { it.currency == mainCurrency }
+            val shareCostCurrencyAmount = share.splitValue.mainCurrencyAmount()
+            val shareTripCurrencyValue = share.splitValue.firstOrNull {
+                !it.isMainCurrency && it.currency == mainCurrency
+            }
 
             ShareItemUiModel(
                 isSettlement = share.isSettlement,
                 personName = share.participantNickname,
 
-                // Kwota w cost currency - ZAWSZE dostępna jako valueMainCurrency
-                amountCostCurrency = share.splitValue.valueMainCurrency,
-                formattedAmountCostCurrency = "%.2f".format(share.splitValue.valueMainCurrency),
+                // Kwota w cost currency - z isMainCurrency=true
+                amountCostCurrency = shareCostCurrencyAmount,
+                formattedAmountCostCurrency = "%.2f".format(shareCostCurrencyAmount),
 
-                amountTripCurrency = shareTripCurrencyValue?.value ?: 0f,
+                amountTripCurrency = shareTripCurrencyValue?.amount ?: 0f,
                 formattedAmountTripCurrency = if (shareTripCurrencyValue != null) {
-                    "%.2f".format(shareTripCurrencyValue.value)
+                    "%.2f".format(shareTripCurrencyValue.amount)
                 } else {
                     ""
                 }

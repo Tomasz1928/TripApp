@@ -44,6 +44,29 @@ object MockData {
     }
 
     // ==========================================
+    // HELPER: Skrót do tworzenia List<SimpleMoneyValueDto>
+    // ==========================================
+
+    /** Tworzy listę z jedną walutą (główną) */
+    private fun money(mainCurrency: String, amount: Float): List<SimpleMoneyValueDto> =
+        listOf(SimpleMoneyValueDto(isMainCurrency = true, currency = mainCurrency, amount = amount))
+
+    /** Tworzy listę z główną walutą + innymi walutami */
+    private fun money(
+        mainCurrency: String,
+        mainAmount: Float,
+        vararg others: Pair<String, Float>
+    ): List<SimpleMoneyValueDto> {
+        val list = mutableListOf(
+            SimpleMoneyValueDto(isMainCurrency = true, currency = mainCurrency, amount = mainAmount)
+        )
+        others.forEach { (cur, amt) ->
+            list.add(SimpleMoneyValueDto(isMainCurrency = false, currency = cur, amount = amt))
+        }
+        return list
+    }
+
+    // ==========================================
     // PUBLIC API - USER INFO
     // ==========================================
 
@@ -99,14 +122,14 @@ object MockData {
             totalExpenses = 0f,
             ownerId = "10",
             imOwner = true,
-            myCost = null,
+            myCost = emptyList(),
             categories = emptyList(),
             expenses = emptyList(),
             participants = listOf(
                 ParticipantDto(
                     id = "10",
                     nickname = "Adam",
-                    totalExpenses = null,
+                    totalExpenses = emptyList(),
                     isOwner = true,
                     isPlaceholder = false,
                     accessCode = null,
@@ -154,22 +177,20 @@ object MockData {
 
         val newExpenseId = "${request.tripId}${(100..999).random()}"
 
-        val sharedWith = request.sharedWith.map {share -> ShareDto(
-            participantNickname = share.participantNickname,
-            participantId = share.participantId,
-            splitValue = share.splitValue,
-            isSettlement = request.payerId == share.participantId
-        )  }
-
+        val sharedWith = request.sharedWith.map { share ->
+            ShareDto(
+                participantNickname = share.participantNickname,
+                participantId = share.participantId,
+                splitValue = share.splitValue,
+                isSettlement = request.payerId == share.participantId
+            )
+        }
 
         val newExpense = ExpenseDto(
             id = newExpenseId,
             name = request.name,
             description = request.description,
-            totalExpense = MoneyValueDto(
-                valueMainCurrency = request.amount,
-                valueOtherCurrencies = emptyList()
-            ),
+            totalExpense = money(request.currency, request.amount),
             amount = request.amount,
             currency = request.currency,
             date = request.date,
@@ -220,21 +241,20 @@ object MockData {
 
         val oldExpense = trip.expenses[expenseIndex]
 
-        val sharedWith = request.sharedWith.map {share -> ShareDto(
-            participantNickname = share.participantNickname,
-            participantId = share.participantId,
-            splitValue = share.splitValue,
-            isSettlement = request.payerId == share.participantId
-        )  }
+        val sharedWith = request.sharedWith.map { share ->
+            ShareDto(
+                participantNickname = share.participantNickname,
+                participantId = share.participantId,
+                splitValue = share.splitValue,
+                isSettlement = request.payerId == share.participantId
+            )
+        }
 
         val updatedExpense = ExpenseDto(
             id = request.expenseId,
             name = request.name,
             description = request.description,
-            totalExpense = MoneyValueDto(
-                valueMainCurrency = request.amount,
-                valueOtherCurrencies = emptyList()
-            ),
+            totalExpense = money(request.currency, request.amount),
             amount = request.amount,
             currency = request.currency,
             date = request.date,
@@ -335,7 +355,7 @@ object MockData {
         val newParticipant = ParticipantDto(
             id = newParticipantId,
             nickname = nickname,
-            totalExpenses = MoneyValueDto(valueMainCurrency = 0f, valueOtherCurrencies = emptyList()),
+            totalExpenses = emptyList(),
             isOwner = false,
             isPlaceholder = true,
             accessCode = accessCode,
@@ -373,26 +393,20 @@ object MockData {
 
         if (participant.isOwner) {
             return ParticipantsDto(
-                success = SuccessDto(success = false, message = "Cannot detach trip owner"),
+                success = SuccessDto(success = false, message = "Cannot detach owner"),
                 trip = null
             )
         }
 
-        if (participant.isPlaceholder) {
-            return ParticipantsDto(
-                success = SuccessDto(success = false, message = "Participant is already a placeholder"),
-                trip = null
-            )
-        }
-
+        val accessCode = generateAccessCode()
         val updatedParticipant = participant.copy(
             isPlaceholder = true,
-            accessCode = generateAccessCode(),
+            accessCode = accessCode,
             isActive = false
         )
 
-        val updatedParticipants = trip.participants.map { p ->
-            if (p.id == participantId) updatedParticipant else p
+        val updatedParticipants = trip.participants.map {
+            if (it.id == participantId) updatedParticipant else it
         }
 
         val updatedTrip = trip.copy(participants = updatedParticipants)
@@ -405,7 +419,7 @@ object MockData {
     }
 
     /**
-     * Usuwa placeholder uczestnika z tripu
+     * Usuwa placeholder uczestnika
      */
     fun removePlaceholder(tripId: String, participantId: String): ParticipantsDto {
         initializeIfNeeded()
@@ -424,14 +438,13 @@ object MockData {
 
         if (!participant.isPlaceholder) {
             return ParticipantsDto(
-                success = SuccessDto(success = false, message = "Can only remove placeholder participants"),
+                success = SuccessDto(success = false, message = "Cannot remove active participant"),
                 trip = null
             )
         }
 
         val updatedParticipants = trip.participants.filter { it.id != participantId }
         val updatedTrip = trip.copy(participants = updatedParticipants)
-
         tripsStorage[tripId] = updatedTrip
 
         return ParticipantsDto(
@@ -440,19 +453,17 @@ object MockData {
         )
     }
 
-    // Import potrzebny na górze pliku:
-    // import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsItem
+    // ==========================================
+    // PUBLIC API - SETTLEMENTS: settleByCosts
+    // ==========================================
 
     /**
-     * Rozlicza wybrane koszty - oznacza odpowiednie sharedWith jako isSettlement = true
+     * Rozlicza wybrane koszty
      *
-     * Dla każdego elementu:
+     * Logika:
      * 1. Znajdź wydatek po expenseId
      * 2. Znajdź wpis sharedWith po participantId
      * 3. Ustaw isSettlement = true
-     *
-     * @param tripId ID wycieczki
-     * @param items Lista kosztów do rozliczenia (expenseId + payerId + participantId)
      */
     fun settleByCosts(
         tripId: String,
@@ -471,7 +482,6 @@ object MockData {
         for (item in items) {
             updatedExpenses = updatedExpenses.map { expense ->
                 if (expense.id == item.expenseId) {
-                    // Znajdź wpis sharedWith dla participanta (osoba która NIE płaciła)
                     val targetParticipantId = if (expense.payerId == item.participantId) {
                         item.participantId
                     } else {
@@ -501,29 +511,12 @@ object MockData {
         )
     }
 
-
     // ==========================================
-    // PUBLIC API - SETTLEMENTS
+    // PUBLIC API - SETTLEMENTS: addPrepayment
     // ==========================================
 
     /**
      * Dodaje zaliczkę między użytkownikami
-     *
-     * Logika:
-     * 1. Znajdź relację między mną a uczestnikiem (lub utwórz nową)
-     * 2. Kierunek:
-     *    - TO_ME = uczestnik daje mi pieniądze → relacja: participant -> me
-     *    - FROM_ME = ja daję uczestnikowi → relacja: me -> participant
-     * 3. Waluta:
-     *    - Jeśli currency = trip.currency → dodaj do valueMainCurrency
-     *    - Jeśli currency ≠ trip.currency → dodaj do valueOtherCurrencies
-     * 4. Aktualizuj SettlementDto.balance
-     *
-     * @param tripId ID wycieczki
-     * @param participantId ID uczestnika (nie aktualny user)
-     * @param amount Kwota zaliczki
-     * @param currency Waluta zaliczki
-     * @param direction "TO_ME" (uczestnik daje mi) lub "FROM_ME" (ja daję uczestnikowi)
      */
     fun addPrepayment(
         tripId: String,
@@ -549,7 +542,6 @@ object MockData {
         val tripCurrency = trip.currency
         val isMainCurrency = (currency == tripCurrency)
 
-        // Oblicz kwotę zaliczki ze znakiem
         // TO_ME: participant daje mi pieniądze → +amount
         // FROM_ME: ja daję participantowi → -amount
         val signedAmount = if (direction == "TO_ME") amount else -amount
@@ -557,16 +549,13 @@ object MockData {
         val currentRelations = trip.settlement?.relations?.toMutableList()
             ?: mutableListOf()
 
-        // Znajdź lub utwórz relację
         val existingIndex = currentRelations.indexOfFirst { it.relatedId == participantId }
 
         if (existingIndex != -1) {
             val existing = currentRelations[existingIndex]
 
-            // Dodaj do prepayment.amountLeft
             val updatedAmountLeft = addToMoneyList(existing.prepayment.amountLeft, isMainCurrency, currency, signedAmount)
 
-            // Dodaj wpis do historii
             val newHistoryEntry = PrepaymentHistoryDto(
                 date = System.currentTimeMillis(),
                 values = SimpleMoneyValueDto(isMainCurrency, currency, signedAmount)
@@ -578,7 +567,6 @@ object MockData {
                 history = updatedHistory
             )
 
-            // Przelicz leftForSettled: zmniejszamy o kwotę zaliczki
             val updatedLeftForSettled = addToMoneyList(existing.leftForSettled, isMainCurrency, currency, -signedAmount)
 
             currentRelations[existingIndex] = existing.copy(
@@ -586,7 +574,6 @@ object MockData {
                 leftForSettled = updatedLeftForSettled
             )
         } else {
-            // Nowa relacja
             val moneyEntry = SimpleMoneyValueDto(isMainCurrency, currency, -signedAmount)
             val prepaymentEntry = SimpleMoneyValueDto(isMainCurrency, currency, signedAmount)
 
@@ -621,16 +608,12 @@ object MockData {
         )
     }
 
-
+    // ==========================================
+    // PUBLIC API - SETTLEMENTS: markSettlementAsPaid
+    // ==========================================
 
     /**
      * Oznacza rozliczenie jako spłacone
-     *
-     * @param tripId ID wycieczki
-     * @param fromUserId ID dłużnika
-     * @param toUserId ID wierzyciela
-     * @param amount Kwota do rozliczenia
-     * @param currency Waluta
      */
     fun markSettlementAsPaid(
         tripId: String,
@@ -654,8 +637,6 @@ object MockData {
                 trip = null
             )
 
-        // Znajdź relację - relatedId to ten "drugi" uczestnik
-        // fromUserId lub toUserId — jeden z nich to "ja", drugi to related
         val currentUserId = getUsrInfo().id
         val relatedUserId = if (fromUserId == currentUserId) toUserId else fromUserId
         val relationIndex = currentRelations.indexOfFirst { it.relatedId == relatedUserId }
@@ -669,20 +650,16 @@ object MockData {
 
         val relation = currentRelations[relationIndex]
 
-        // Znajdź walutę w leftForSettled
         val currencyEntry = relation.leftForSettled.find { it.currency == currency }
             ?: return SettlementResultDto(
                 success = SuccessDto(success = false, message = "Currency not found in relation"),
                 trip = null
             )
 
-        // Zmniejsz leftForSettled o rozliczoną kwotę (zachowując znak)
         val currentAmount = currencyEntry.amount
         val newAmount = if (currentAmount > 0) {
-            // On mi jest winien → zmniejszam kwotę
             maxOf(0f, currentAmount - amount)
         } else {
-            // Ja jestem winien → zwiększam (w kierunku 0)
             minOf(0f, currentAmount + amount)
         }
 
@@ -750,6 +727,25 @@ object MockData {
         }
     }
 
+    private fun addToMoneyList(
+        list: List<SimpleMoneyValueDto>,
+        isMainCurrency: Boolean,
+        currency: String,
+        amount: Float
+    ): List<SimpleMoneyValueDto> {
+        val mutableList = list.toMutableList()
+        val existingIndex = mutableList.indexOfFirst { it.currency == currency }
+
+        if (existingIndex != -1) {
+            val existing = mutableList[existingIndex]
+            mutableList[existingIndex] = existing.copy(amount = existing.amount + amount)
+        } else {
+            mutableList.add(SimpleMoneyValueDto(isMainCurrency, currency, amount))
+        }
+
+        return mutableList
+    }
+
     // ==========================================
     // TRIP 1: Weekend w Zakopanem (PLN)
     // Uczestnicy: Adam (10, owner), Beata (11)
@@ -767,13 +763,7 @@ object MockData {
             totalExpenses = 2400f,
             ownerId = "10",
             imOwner = true,
-            myCost = MoneyValueDto(
-                valueMainCurrency = 800f,
-                valueOtherCurrencies = listOf(
-                    MoneyValueDetailsDto("EUR", 180f),
-                    MoneyValueDetailsDto("USD", 200f)
-                )
-            ),
+            myCost = money("PLN", 800f, "EUR" to 180f, "USD" to 200f),
             categories = listOf(
                 CategoryDto("1", 1200f),
                 CategoryDto("2", 800f),
@@ -808,7 +798,7 @@ object MockData {
                 id = "11",
                 name = "Nocleg - Pensjonat Górski",
                 description = "2 noce dla 2 osób",
-                totalExpense = MoneyValueDto(valueMainCurrency = 1200f),
+                totalExpense = money("EUR", 900f, "PLN" to 1200f),
                 amount = 900f,
                 currency = "EUR",
                 date = 1711929600000,
@@ -816,15 +806,15 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 300f,valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 200f))),true),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 600f,valueOtherCurrencies = listOf(MoneyValueDetailsDto("PLN", 200f))),false)
+                    ShareDto("10", "Adam", money("EUR", 300f, "PLN" to 200f), true),
+                    ShareDto("11", "Beata", money("EUR", 600f, "PLN" to 200f), false)
                 )
             ),
             ExpenseDto(
                 id = "12",
                 name = "Kolacja w Karczmie",
                 description = "Tradycyjna kuchnia góralska",
-                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                totalExpense = money("PLN", 400f),
                 amount = 400f,
                 currency = "PLN",
                 date = 1711969200000,
@@ -832,15 +822,15 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f),false)
+                    ShareDto("10", "Adam", money("PLN", 200f), false),
+                    ShareDto("11", "Beata", money("PLN", 200f), false)
                 )
             ),
             ExpenseDto(
                 id = "13",
                 name = "Paliwo",
                 description = "Dojazd do Zakopanego",
-                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                totalExpense = money("PLN", 400f),
                 amount = 400f,
                 currency = "PLN",
                 date = 1711922400000,
@@ -848,15 +838,15 @@ object MockData {
                 payerId = "11",
                 payerNickname = "Beata",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f),false)
+                    ShareDto("10", "Adam", money("PLN", 200f), false),
+                    ShareDto("11", "Beata", money("PLN", 200f), false)
                 )
             ),
             ExpenseDto(
                 id = "14",
                 name = "Śniadanie w górach",
                 description = "Schronisko",
-                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                totalExpense = money("PLN", 400f),
                 amount = 400f,
                 currency = "PLN",
                 date = 1712012400000,
@@ -864,8 +854,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 200f),false)
+                    ShareDto("10", "Adam", money("PLN", 200f), false),
+                    ShareDto("11", "Beata", money("PLN", 200f), false)
                 )
             )
         )
@@ -876,7 +866,7 @@ object MockData {
             ParticipantDto(
                 id = "10",
                 nickname = "Adam",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 2000f),
+                totalExpenses = money("PLN", 2000f),
                 isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
@@ -885,7 +875,7 @@ object MockData {
             ParticipantDto(
                 id = "11",
                 nickname = "Beata",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 400f),
+                totalExpenses = money("PLN", 400f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -911,13 +901,7 @@ object MockData {
             totalExpenses = 4500f,
             ownerId = "11",
             imOwner = false,
-            myCost = MoneyValueDto(
-                valueMainCurrency = 2325f,
-                valueOtherCurrencies = listOf(
-                    MoneyValueDetailsDto("PLN", 10400f),
-                    MoneyValueDetailsDto("USD", 2555f)
-                )
-            ),
+            myCost = money("EUR", 2325f, "PLN" to 10400f, "USD" to 2555f),
             categories = listOf(
                 CategoryDto("1", 1500f),
                 CategoryDto("2", 1200f),
@@ -975,7 +959,7 @@ object MockData {
                 id = "21",
                 name = "Hotel Berlin",
                 description = "3 noce dla 4 osób",
-                totalExpense = MoneyValueDto(valueMainCurrency = 900f),
+                totalExpense = money("EUR", 900f),
                 amount = 900f,
                 currency = "EUR",
                 date = 1720137600000,
@@ -983,17 +967,17 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 225f),false),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 225f),false),
-                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 225f),false),
-                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 225f),false)
+                    ShareDto("10", "Adam", money("EUR", 225f), false),
+                    ShareDto("11", "Beata", money("EUR", 225f), false),
+                    ShareDto("12", "Cezary", money("EUR", 225f), false),
+                    ShareDto("13", "Diana", money("EUR", 225f), false)
                 )
             ),
             ExpenseDto(
                 id = "22",
                 name = "Wynajem samochodu",
                 description = "VW Passat na 2 tygodnie",
-                totalExpense = MoneyValueDto(valueMainCurrency = 1800f),
+                totalExpense = money("EUR", 1800f),
                 amount = 1800f,
                 currency = "EUR",
                 date = 1720137600000,
@@ -1001,17 +985,17 @@ object MockData {
                 payerId = "11",
                 payerNickname = "Beata",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 450f),false),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 450f),false),
-                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 450f),false),
-                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 450f),false)
+                    ShareDto("10", "Adam", money("EUR", 450f), false),
+                    ShareDto("11", "Beata", money("EUR", 450f), false),
+                    ShareDto("12", "Cezary", money("EUR", 450f), false),
+                    ShareDto("13", "Diana", money("EUR", 450f), false)
                 )
             ),
             ExpenseDto(
                 id = "23",
                 name = "Restauracja Amsterdam",
                 description = "Wspólna kolacja",
-                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                totalExpense = money("EUR", 400f),
                 amount = 400f,
                 currency = "EUR",
                 date = 1720483200000,
@@ -1019,10 +1003,10 @@ object MockData {
                 payerId = "12",
                 payerNickname = "Cezary",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 100f),false),
-                    ShareDto("11", "Beata", MoneyValueDto(valueMainCurrency = 100f),false),
-                    ShareDto("12", "Cezary", MoneyValueDto(valueMainCurrency = 100f),false),
-                    ShareDto("13", "Diana", MoneyValueDto(valueMainCurrency = 100f),false)
+                    ShareDto("10", "Adam", money("EUR", 100f), false),
+                    ShareDto("11", "Beata", money("EUR", 100f), false),
+                    ShareDto("12", "Cezary", money("EUR", 100f), false),
+                    ShareDto("13", "Diana", money("EUR", 100f), false)
                 )
             )
         )
@@ -1033,7 +1017,7 @@ object MockData {
             ParticipantDto(
                 id = "10",
                 nickname = "Adam",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 900f),
+                totalExpenses = money("EUR", 900f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1042,7 +1026,7 @@ object MockData {
             ParticipantDto(
                 id = "11",
                 nickname = "Beata",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 1800f),
+                totalExpenses = money("EUR", 1800f),
                 isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1051,7 +1035,7 @@ object MockData {
             ParticipantDto(
                 id = "12",
                 nickname = "Cezary",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 400f),
+                totalExpenses = money("EUR", 400f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1060,7 +1044,7 @@ object MockData {
             ParticipantDto(
                 id = "13",
                 nickname = "Diana",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 0f),
+                totalExpenses = money("EUR", 0f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1087,7 +1071,7 @@ object MockData {
             totalExpenses = 5200f,
             ownerId = "10",
             imOwner = true,
-            myCost = MoneyValueDto(valueMainCurrency = 1733.33f),
+            myCost = money("PLN", 1733.33f),
             categories = listOf(
                 CategoryDto("1", 3500f),
                 CategoryDto("2", 1200f),
@@ -1124,7 +1108,7 @@ object MockData {
                 id = "31",
                 name = "Apartament Sopot",
                 description = "7 nocy z widokiem na morze",
-                totalExpense = MoneyValueDto(valueMainCurrency = 3500f),
+                totalExpense = money("PLN", 3500f),
                 amount = 3500f,
                 currency = "PLN",
                 date = 1723161600000,
@@ -1132,16 +1116,16 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 1166.67f),false),
-                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 1166.67f),false),
-                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 1166.66f),false)
+                    ShareDto("10", "Adam", money("PLN", 1166.67f), false),
+                    ShareDto("14", "Ewa", money("PLN", 1166.67f), false),
+                    ShareDto("15", "Filip", money("PLN", 1166.66f), false)
                 )
             ),
             ExpenseDto(
                 id = "32",
                 name = "Restauracja nad morzem",
                 description = "Kolacja z owocami morza",
-                totalExpense = MoneyValueDto(valueMainCurrency = 600f),
+                totalExpense = money("PLN", 600f),
                 amount = 600f,
                 currency = "PLN",
                 date = 1723248000000,
@@ -1149,16 +1133,16 @@ object MockData {
                 payerId = "14",
                 payerNickname = "Ewa",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
-                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 200f),false),
-                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 200f),false)
+                    ShareDto("10", "Adam", money("PLN", 200f), false),
+                    ShareDto("14", "Ewa", money("PLN", 200f), false),
+                    ShareDto("15", "Filip", money("PLN", 200f), false)
                 )
             ),
             ExpenseDto(
                 id = "33",
                 name = "Rejs statkiem",
                 description = "Wycieczka po Zatoce Gdańskiej",
-                totalExpense = MoneyValueDto(valueMainCurrency = 500f),
+                totalExpense = money("PLN", 500f),
                 amount = 500f,
                 currency = "PLN",
                 date = 1723420800000,
@@ -1166,9 +1150,9 @@ object MockData {
                 payerId = "15",
                 payerNickname = "Filip",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 166.67f),false),
-                    ShareDto("14", "Ewa", MoneyValueDto(valueMainCurrency = 166.67f),false),
-                    ShareDto("15", "Filip", MoneyValueDto(valueMainCurrency = 166.66f),false)
+                    ShareDto("10", "Adam", money("PLN", 166.67f), false),
+                    ShareDto("14", "Ewa", money("PLN", 166.67f), false),
+                    ShareDto("15", "Filip", money("PLN", 166.66f), false)
                 )
             )
         )
@@ -1179,7 +1163,7 @@ object MockData {
             ParticipantDto(
                 id = "10",
                 nickname = "Adam",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 3500f),
+                totalExpenses = money("PLN", 3500f),
                 isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1188,7 +1172,7 @@ object MockData {
             ParticipantDto(
                 id = "14",
                 nickname = "Ewa",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 600f),
+                totalExpenses = money("PLN", 600f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1197,7 +1181,7 @@ object MockData {
             ParticipantDto(
                 id = "15",
                 nickname = "Filip",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 500f),
+                totalExpenses = money("PLN", 500f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1224,7 +1208,7 @@ object MockData {
             totalExpenses = 1850f,
             ownerId = "20",
             imOwner = false,
-            myCost = MoneyValueDto(valueMainCurrency = 462.50f),
+            myCost = money("EUR", 462.50f),
             categories = listOf(
                 CategoryDto("1", 800f),
                 CategoryDto("2", 650f),
@@ -1244,7 +1228,7 @@ object MockData {
                 id = "41",
                 name = "Hostel Barcelona",
                 description = "2 noce w centrum",
-                totalExpense = MoneyValueDto(valueMainCurrency = 800f),
+                totalExpense = money("EUR", 800f),
                 amount = 800f,
                 currency = "EUR",
                 date = 1725148800000,
@@ -1252,17 +1236,17 @@ object MockData {
                 payerId = "20",
                 payerNickname = "Kasia",
                 sharedWith = listOf(
-                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 200f),false),
-                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 200f),false),
-                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 200f),false),
-                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 200f),false)
+                    ShareDto("20", "Kasia", money("EUR", 200f), false),
+                    ShareDto("21", "Michał", money("EUR", 200f), false),
+                    ShareDto("22", "Ola", money("EUR", 200f), false),
+                    ShareDto("23", "Tomek", money("EUR", 200f), false)
                 )
             ),
             ExpenseDto(
                 id = "42",
                 name = "Tapas Bar",
                 description = "Wieczór z tapas",
-                totalExpense = MoneyValueDto(valueMainCurrency = 650f),
+                totalExpense = money("EUR", 650f),
                 amount = 650f,
                 currency = "EUR",
                 date = 1725235200000,
@@ -1270,17 +1254,17 @@ object MockData {
                 payerId = "21",
                 payerNickname = "Michał",
                 sharedWith = listOf(
-                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 162.50f),false),
-                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 162.50f),false),
-                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 162.50f),false),
-                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 162.50f),false)
+                    ShareDto("20", "Kasia", money("EUR", 162.50f), false),
+                    ShareDto("21", "Michał", money("EUR", 162.50f), false),
+                    ShareDto("22", "Ola", money("EUR", 162.50f), false),
+                    ShareDto("23", "Tomek", money("EUR", 162.50f), false)
                 )
             ),
             ExpenseDto(
                 id = "43",
                 name = "Transfer z lotniska",
                 description = "Taxi dla grupy",
-                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                totalExpense = money("EUR", 400f),
                 amount = 400f,
                 currency = "EUR",
                 date = 1725148800000,
@@ -1288,10 +1272,10 @@ object MockData {
                 payerId = "22",
                 payerNickname = "Ola",
                 sharedWith = listOf(
-                    ShareDto("20", "Kasia", MoneyValueDto(valueMainCurrency = 100f),false),
-                    ShareDto("21", "Michał", MoneyValueDto(valueMainCurrency = 100f),false),
-                    ShareDto("22", "Ola", MoneyValueDto(valueMainCurrency = 100f),false),
-                    ShareDto("23", "Tomek", MoneyValueDto(valueMainCurrency = 100f),false)
+                    ShareDto("20", "Kasia", money("EUR", 100f), false),
+                    ShareDto("21", "Michał", money("EUR", 100f), false),
+                    ShareDto("22", "Ola", money("EUR", 100f), false),
+                    ShareDto("23", "Tomek", money("EUR", 100f), false)
                 )
             )
         )
@@ -1302,7 +1286,7 @@ object MockData {
             ParticipantDto(
                 id = "20",
                 nickname = "Kasia",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 800f),
+                totalExpenses = money("EUR", 800f),
                 isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1311,7 +1295,7 @@ object MockData {
             ParticipantDto(
                 id = "21",
                 nickname = "Michał",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 650f),
+                totalExpenses = money("EUR", 650f),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1320,7 +1304,7 @@ object MockData {
             ParticipantDto(
                 id = "22",
                 nickname = "Ola",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 400f),
+                totalExpenses = money("EUR", 400f),
                 isOwner = false,
                 isPlaceholder = true,
                 accessCode = "BCN-2024",
@@ -1329,7 +1313,7 @@ object MockData {
             ParticipantDto(
                 id = "23",
                 nickname = "Tomek",
-                totalExpenses = MoneyValueDto(valueMainCurrency = 0f),
+                totalExpenses = money("EUR", 0f),
                 isOwner = false,
                 isPlaceholder = true,
                 accessCode = "BCN-2024",
@@ -1337,6 +1321,12 @@ object MockData {
             )
         )
     }
+
+    // ==========================================
+    // TRIP 5: Azja 2024 (PLN) - Multi Currency
+    // Uczestnicy: Adam (10-owner), Gosia (16)
+    // Settlement: Gosia winna Adamowi w wielu walutach + Hubert (17)
+    // ==========================================
 
     private fun createTripMultiCurrency(): TripDto {
         return TripDto(
@@ -1349,14 +1339,7 @@ object MockData {
             totalExpenses = 15000f,
             ownerId = "10",
             imOwner = true,
-            myCost = MoneyValueDto(
-                valueMainCurrency = 7500f,
-                valueOtherCurrencies = listOf(
-                    MoneyValueDetailsDto("EUR", 300f),
-                    MoneyValueDetailsDto("USD", 400f),
-                    MoneyValueDetailsDto("JPY", 10000f)
-                )
-            ),
+            myCost = money("PLN", 7500f, "EUR" to 300f, "USD" to 400f, "JPY" to 10000f),
             categories = listOf(
                 CategoryDto("1", 8000f),   // Noclegi
                 CategoryDto("2", 4000f),   // Jedzenie
@@ -1438,7 +1421,7 @@ object MockData {
                 id = "51",
                 name = "Loty międzynarodowe",
                 description = "Warszawa - Tokio - Warszawa",
-                totalExpense = MoneyValueDto(valueMainCurrency = 6000f),
+                totalExpense = money("PLN", 6000f),
                 amount = 6000f,
                 currency = "PLN",
                 date = 1727740800000,
@@ -1446,8 +1429,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 3000f),false),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 3000f),false)
+                    ShareDto("10", "Adam", money("PLN", 3000f), false),
+                    ShareDto("16", "Gosia", money("PLN", 3000f), false)
                 )
             ),
             // Wydatek w EUR
@@ -1455,7 +1438,7 @@ object MockData {
                 id = "52",
                 name = "Hotel Tokio",
                 description = "5 nocy w Shinjuku",
-                totalExpense = MoneyValueDto(valueMainCurrency = 600f),
+                totalExpense = money("EUR", 600f),
                 amount = 600f,
                 currency = "EUR",
                 date = 1727827200000,
@@ -1463,8 +1446,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 300f),false),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 300f),false)
+                    ShareDto("10", "Adam", money("EUR", 300f), false),
+                    ShareDto("16", "Gosia", money("EUR", 300f), false)
                 )
             ),
             // Wydatek w USD
@@ -1472,7 +1455,7 @@ object MockData {
                 id = "53",
                 name = "Wycieczka Mount Fuji",
                 description = "Całodniowa wycieczka z przewodnikiem",
-                totalExpense = MoneyValueDto(valueMainCurrency = 400f),
+                totalExpense = money("USD", 400f),
                 amount = 400f,
                 currency = "USD",
                 date = 1728086400000,
@@ -1480,8 +1463,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 200f),false),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 200f),false)
+                    ShareDto("10", "Adam", money("USD", 200f), false),
+                    ShareDto("16", "Gosia", money("USD", 200f), false)
                 )
             ),
             // Wydatek w JPY
@@ -1489,7 +1472,7 @@ object MockData {
                 id = "54",
                 name = "Kolacja Omakase",
                 description = "Ekskluzywna kolacja sushi",
-                totalExpense = MoneyValueDto(valueMainCurrency = 10000f),
+                totalExpense = money("JPY", 10000f),
                 amount = 10000f,
                 currency = "JPY",
                 date = 1728172800000,
@@ -1497,8 +1480,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 5000f),false),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 5000f),false)
+                    ShareDto("10", "Adam", money("JPY", 5000f), false),
+                    ShareDto("16", "Gosia", money("JPY", 5000f), false)
                 )
             ),
             // Kolejny wydatek w PLN
@@ -1506,7 +1489,7 @@ object MockData {
                 id = "55",
                 name = "Ubezpieczenie podróżne",
                 description = "Pełne ubezpieczenie na 3 tygodnie",
-                totalExpense = MoneyValueDto(valueMainCurrency = 1000f),
+                totalExpense = money("PLN", 1000f),
                 amount = 1000f,
                 currency = "PLN",
                 date = 1727654400000,
@@ -1514,8 +1497,8 @@ object MockData {
                 payerId = "10",
                 payerNickname = "Adam",
                 sharedWith = listOf(
-                    ShareDto("10", "Adam", MoneyValueDto(valueMainCurrency = 500f),false),
-                    ShareDto("16", "Gosia", MoneyValueDto(valueMainCurrency = 500f),false)
+                    ShareDto("10", "Adam", money("PLN", 500f), false),
+                    ShareDto("16", "Gosia", money("PLN", 500f), false)
                 )
             )
         )
@@ -1526,14 +1509,7 @@ object MockData {
             ParticipantDto(
                 id = "10",
                 nickname = "Adam",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 7000f,
-                    valueOtherCurrencies = listOf(
-                        MoneyValueDetailsDto("EUR", 600f),
-                        MoneyValueDetailsDto("USD", -400f),
-                        MoneyValueDetailsDto("JPY", 10000f)
-                    )
-                ),
+                totalExpenses = money("PLN", 7000f, "EUR" to 600f, "USD" to -400f, "JPY" to 10000f),
                 isOwner = true,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1542,10 +1518,7 @@ object MockData {
             ParticipantDto(
                 id = "16",
                 nickname = "Gosia",
-                totalExpenses = MoneyValueDto(
-                    valueMainCurrency = 0f,
-                    valueOtherCurrencies = emptyList()
-                ),
+                totalExpenses = emptyList(),
                 isOwner = false,
                 isPlaceholder = false,
                 accessCode = null,
@@ -1553,25 +1526,4 @@ object MockData {
             )
         )
     }
-
-    private fun addToMoneyList(
-        list: List<SimpleMoneyValueDto>,
-        isMainCurrency: Boolean,
-        currency: String,
-        amount: Float
-    ): List<SimpleMoneyValueDto> {
-        val mutableList = list.toMutableList()
-        val existingIndex = mutableList.indexOfFirst { it.currency == currency }
-
-        if (existingIndex != -1) {
-            val existing = mutableList[existingIndex]
-            mutableList[existingIndex] = existing.copy(amount = existing.amount + amount)
-        } else {
-            mutableList.add(SimpleMoneyValueDto(isMainCurrency, currency, amount))
-        }
-
-        return mutableList
-    }
-
-
 }

@@ -4,6 +4,7 @@ import com.example.tripapp2.data.model.ExpenseDto
 import com.example.tripapp2.data.model.PrepaymentDetailsDto
 import com.example.tripapp2.data.model.PrepaymentHistoryDto
 import com.example.tripapp2.data.model.SimpleMoneyValueDto
+import com.example.tripapp2.data.model.mainCurrencyAmount
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -264,9 +265,9 @@ private fun buildCostRows(
                     SettlementDetailCostRow(
                         expenseId = expense.id,
                         expenseName = expense.name,
-                        splitAmount = share.splitValue.valueMainCurrency,
+                        splitAmount = share.splitValue.mainCurrencyAmount(),
                         currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.valueMainCurrency, expense.currency),
+                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
                         isSettled = share.isSettlement,
                         isAmountPositive = true  // Participant mi jest winien
                     )
@@ -282,9 +283,9 @@ private fun buildCostRows(
                     SettlementDetailCostRow(
                         expenseId = expense.id,
                         expenseName = expense.name,
-                        splitAmount = share.splitValue.valueMainCurrency,
+                        splitAmount = share.splitValue.mainCurrencyAmount(),
                         currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.valueMainCurrency, expense.currency),
+                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
                         isSettled = share.isSettlement,
                         isAmountPositive = false  // Ja jestem winien participantowi
                     )
