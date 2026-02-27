@@ -1,0 +1,9 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/DetachUser.graphql
+# ============================================================
+mutation DetachUserMutation($tripId: Int!, $participantId: Int!) {
+    detachUser(tripId: $tripId, participantId: $participantId) {
+        success
+        message
+    }
+}

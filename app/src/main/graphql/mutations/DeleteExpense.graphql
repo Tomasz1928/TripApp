@@ -1,0 +1,9 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/DeleteExpense.graphql
+# ============================================================
+mutation DeleteExpenseMutation($tripId: Int!, $expenseId: Int!) {
+    deleteExpense(tripId: $tripId, expenseId: $expenseId) {
+        success
+        message
+    }
+}

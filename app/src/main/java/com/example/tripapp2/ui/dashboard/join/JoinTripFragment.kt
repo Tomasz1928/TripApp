@@ -30,14 +30,13 @@ class JoinTripFragment : KeyboardAwareFragment<JoinTripViewModel>(R.layout.fragm
     }
 
     override fun setupCustomObservers() {
-        // ✅ ZMIANA: Konwertuj Int? na String?
         viewModel.accessCodeError.observe(viewLifecycleOwner) { errorResId ->
             tripJoinLayout.error = errorResId?.let { getString(it) }
         }
 
         viewModel.tripJoinedEvent.observe(viewLifecycleOwner) { event ->
-            event.getContentIfNotHandled()?.let { message ->
-                showMessage(message)
+            event.getContentIfNotHandled()?.let {
+                NavigationCommand.ToDashboard
             }
         }
     }
@@ -85,4 +84,6 @@ class JoinTripFragment : KeyboardAwareFragment<JoinTripViewModel>(R.layout.fragm
             getString(R.string.join_trip_button)
         }
     }
+
+
 }

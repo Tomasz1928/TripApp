@@ -4,9 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.tripapp2.R
+import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
  * - Logowanie użytkownika
  */
 class LoginViewModel : BaseViewModel() {
+    private val tripRepository = TripRepository.getInstance()
 
     // Pola formularza
     private val _username = MutableLiveData<String>()
@@ -55,26 +56,23 @@ class LoginViewModel : BaseViewModel() {
      * Logowanie
      */
     fun onLoginClicked() {
-        if (!validateForm()) {
-            return
-        }
-
+        if (!validateForm()) { return }
         viewModelScope.launch {
             setLoading(true)
 
-            // Symulacja API call
-            delay(1000)
-
-            // Mock - zawsze sukces
-            val success = true
-
+            val result = tripRepository.login(
+                username = _username.value!!,
+                password = _password.value!!
+            )
+            result
+                .onSuccess { auth ->
+                    if (auth.success) { _loginSuccessEvent.value = Event(Unit) }
+                    else { showError(auth.message) }
+                }
+                .onFailure { exception ->
+                    showError(exception.message ?: "Network error")
+                }
             setLoading(false)
-
-            if (success) {
-                _loginSuccessEvent.value = Event(Unit)
-            } else {
-                showError("Nieprawidłowa nazwa użytkownika lub hasło")
-            }
         }
     }
 

@@ -1,0 +1,21 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/AddPrepayment.graphql
+# ============================================================
+mutation AddPrepaymentMutation(
+    $tripId: Int!
+    $participantId: Int!
+    $amount: Float!
+    $currency: String!
+    $direction: String!
+) {
+    addPrepayment(
+        tripId: $tripId
+        participantId: $participantId
+        amount: $amount
+        currency: $currency
+        direction: $direction
+    ) {
+        success
+        message
+    }
+}

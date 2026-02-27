@@ -1,0 +1,95 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/queries/TripDetails.graphql
+# ============================================================
+query TripDetailsQuery($tripId: Int!) {
+    tripDetails(tripId: $tripId) {
+        id
+        title
+        dateStart
+        dateEnd
+        currency
+        description
+        totalExpenses
+        categories {
+            categoryId
+            totalAmount
+        }
+        ownerId
+        imOwner
+        myCost {
+            isMainCurrency
+            currency
+            amount
+        }
+        expenses {
+            id
+            name
+            description
+            totalExpense {
+                isMainCurrency
+                currency
+                amount
+            }
+            amount
+            currency
+            date
+            categoryId
+            payerId
+            payerNickname
+            sharedWith {
+                participantId
+                participantNickname
+                splitValue {
+                    isMainCurrency
+                    currency
+                    amount
+                }
+                isSettlement
+            }
+        }
+        participants {
+            id
+            nickname
+            totalExpenses {
+                isMainCurrency
+                currency
+                amount
+            }
+            isOwner
+            isPlaceholder
+            accessCode
+            isActive
+        }
+        settlement {
+            relations {
+                relatedId
+                relatedName
+                leftForSettled {
+                    isMainCurrency
+                    currency
+                    amount
+                }
+                allRelatedAmount {
+                    isMainCurrency
+                    currency
+                    amount
+                }
+                prepayment {
+                    amountLeft {
+                        isMainCurrency
+                        currency
+                        amount
+                    }
+                    history {
+                        date
+                        values {
+                            isMainCurrency
+                            currency
+                            amount
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

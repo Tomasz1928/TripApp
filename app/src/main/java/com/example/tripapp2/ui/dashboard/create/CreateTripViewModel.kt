@@ -98,13 +98,10 @@ class CreateTripViewModel(
             setLoading(false)
 
             result.onSuccess { createTripDto ->
-                _tripCreatedEvent.value = Event(createTripDto.success.message ?: "")
-                createTripDto.trip?.let { trip ->
-                    navigate(NavigationCommand.ToTripDetails(trip.id))
+                _tripCreatedEvent.value = Event(createTripDto.message ?: "")
+                if (createTripDto.success && createTripDto.trip != null){
+                    navigate(NavigationCommand.ToTripDetails(createTripDto.trip.toString()))
                 }
-            }
-            result.onFailure { error ->
-                _tripCreatedEvent.value = Event(error.message ?: "")
             }
         }
     }

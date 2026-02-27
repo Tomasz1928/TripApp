@@ -1,0 +1,13 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/LogoutUser.graphql
+# ============================================================
+mutation LogoutUserMutation {
+    logoutUser {
+        success
+        message
+        user {
+            id
+            username
+        }
+    }
+}

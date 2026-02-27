@@ -236,7 +236,7 @@ class TripSettlementsViewModel(
             try {
                 setLoading(true)
 
-                val result = tripRepository.markSettlementAsPaid(
+                val result = tripRepository.settleByAmount(
                     tripId = request.tripId,
                     fromUserId = request.fromUserId,
                     toUserId = request.toUserId,
@@ -271,7 +271,7 @@ class TripSettlementsViewModel(
             try {
                 setLoading(true)
 
-                val result = tripRepository.settleByCosts(request)
+                val result = tripRepository.settleByCosts(request.tripId, request.items)
 
                 result.onSuccess {
                     _actionConfirmedEvent.value = Event(

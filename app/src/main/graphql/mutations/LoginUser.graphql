@@ -1,0 +1,13 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/LoginUser.graphql
+# ============================================================
+mutation LoginUserMutation($username: String!, $password: String!) {
+    loginUser(username: $username, password: $password) {
+        success
+        message
+        user {
+            id
+            username
+        }
+    }
+}

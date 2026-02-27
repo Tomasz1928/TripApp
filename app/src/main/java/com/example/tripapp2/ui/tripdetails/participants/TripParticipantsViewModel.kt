@@ -77,9 +77,7 @@ class TripParticipantsViewModel(
             _participantsState.value = TripParticipantsState.Loading
 
             try {
-                // Pobierz trip z repository
                 val trip = tripRepository.getTripDetails(tripId)
-
                 if (trip == null) {
                     _participantsState.value = TripParticipantsState.Error(
                         "Nie znaleziono wycieczki"
@@ -94,7 +92,6 @@ class TripParticipantsViewModel(
                 if (trip.participants.isEmpty()) {
                     _participantsState.value = TripParticipantsState.Empty
                 } else {
-                    // Konwertuj na UI modele
                     allParticipants = trip.participants.map { participant ->
                         participant.toUiModel(
                             ownerId = tripOwnerId,
@@ -104,8 +101,6 @@ class TripParticipantsViewModel(
                             accessCode = participant.accessCode
                         )
                     }.sortByType()
-
-                    // Zastosuj aktualny filtr
                     applyViewMode(_currentViewMode.value ?: ParticipantViewMode.ALL)
                 }
 

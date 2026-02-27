@@ -1,0 +1,17 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/queries/TripList.graphql
+# ============================================================
+query TripListQuery {
+    tripList {
+        trips {
+            id
+            title
+            dateStart
+            dateEnd
+            currency
+            description
+            totalExpenses
+            imOwner
+        }
+    }
+}

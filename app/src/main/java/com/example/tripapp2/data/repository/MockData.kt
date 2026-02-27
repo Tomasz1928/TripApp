@@ -142,8 +142,9 @@ object MockData {
         tripsStorage[newId] = newTrip
 
         return CreateTripDto(
-            success = SuccessDto(success = true, message = "Trip created successfully"),
-            trip = newTrip
+            success = true,
+            message = "Trip created successfully",
+            trip = newTrip.id.toInt()
         )
     }
 

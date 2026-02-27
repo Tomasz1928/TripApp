@@ -1,0 +1,9 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/AddPlaceholder.graphql
+# ============================================================
+mutation AddPlaceholderMutation($tripId: Int!, $nickname: String!) {
+    addPlaceholder(tripId: $tripId, nickname: $nickname) {
+        success
+        message
+    }
+}
