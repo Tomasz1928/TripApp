@@ -186,7 +186,7 @@ class TripParticipantsViewModel(
             setLoading(false)
 
             result.onSuccess { addPlaceholderDto ->
-                _participantsEvent.value = Event(addPlaceholderDto.success.message ?: "")
+                _participantsEvent.value = Event(addPlaceholderDto.message ?: "")
             }.onFailure {
                 _participantsEvent.value = Event(it.message ?: "")
             }
@@ -205,7 +205,7 @@ class TripParticipantsViewModel(
             setLoading(false)
 
             result.onSuccess { addPlaceholderDto ->
-                _participantsEvent.value = Event(addPlaceholderDto.success.message ?: "")
+                _participantsEvent.value = Event(addPlaceholderDto.message ?: "")
             }.onFailure {
                 _participantsEvent.value = Event(it.message ?: "")
             }
@@ -225,7 +225,7 @@ class TripParticipantsViewModel(
             setLoading(false)
 
             result.onSuccess { addPlaceholderDto ->
-                _participantsEvent.value = Event(addPlaceholderDto.success.message ?: "")
+                _participantsEvent.value = Event(addPlaceholderDto.message ?: "")
             }.onFailure {
                 _participantsEvent.value = Event(it.message ?: "")
             }

@@ -11,8 +11,8 @@ import com.example.tripapp2.graphql.type.AddExpenseInput
 import com.example.tripapp2.graphql.type.UpdateExpenseInput
 import com.example.tripapp2.graphql.type.ShareInput
 import com.example.tripapp2.graphql.type.SimpleMoneyValueInput
-import com.example.tripapp2.graphql.type.SettleByCostsItemInput
-import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsItem
+import com.example.tripapp2.graphql.type.SettleByCostsItem
+import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsItemInput
 import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -127,22 +127,7 @@ class GraphQLDataSource(context: Context) {
                 ?: return Result.failure(Exception(response.errors?.firstOrNull()?.message ?: "Failed to load trips"))
 
             val trips = data.trips.map { t ->
-                TripDto(
-                    id = t.id.toString(),
-                    title = t.title,
-                    dateStart = t.dateStart.toLong(),
-                    dateEnd = t.dateEnd.toLong(),
-                    currency = t.currency,
-                    description = t.description,
-                    totalExpenses = t.totalExpenses.toFloat(),
-                    categories = emptyList(), // Not available in list view
-                    ownerId = "", // Not available in list view
-                    imOwner = t.imOwner,
-                    myCost = emptyList(), // Not available in list view
-                    expenses = emptyList(),
-                    participants = emptyList(),
-                    settlement = null
-                )
+                TripIdDto(id = t.id.toString())
             }
 
             Result.success(TripListDto(trips = trips))
@@ -428,11 +413,11 @@ class GraphQLDataSource(context: Context) {
 
     suspend fun settleByCosts(
         tripId: String,
-        items: List<SettleByCostsItem>
+        items: List<SettleByCostsItemInput>
     ): Result<SuccessDto> {
         return try {
             val inputItems = items.map { item ->
-                SettleByCostsItemInput(
+                SettleByCostsItem(
                     expenseId = item.expenseId.toInt(),
                     payerId = item.payerId.toInt(),
                     participantId = item.participantId.toInt()

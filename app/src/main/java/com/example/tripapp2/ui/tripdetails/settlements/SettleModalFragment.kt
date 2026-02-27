@@ -449,7 +449,7 @@ class SettleModalFragment : BaseModalFragment() {
 
         onConfirmByCosts?.invoke(SettleByCostsRequest(
             tripId = tripId,
-            items = checkedItems.map { SettleByCostsItem(it.expenseId, it.participantId, it.payerId) }
+            items = checkedItems.map { SettleByCostsItemInput(it.expenseId, it.participantId, it.payerId) }
         ))
         dismissAnimated()
     }

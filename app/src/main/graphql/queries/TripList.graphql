@@ -5,13 +5,6 @@ query TripListQuery {
     tripList {
         trips {
             id
-            title
-            dateStart
-            dateEnd
-            currency
-            description
-            totalExpenses
-            imOwner
         }
     }
 }

@@ -42,13 +42,13 @@ data class SettleCostItemUiModel(
  */
 data class SettleByCostsRequest(
     val tripId: String,
-    val items: List<SettleByCostsItem>
+    val items: List<SettleByCostsItemInput>
 )
 
 /**
  * Pojedynczy koszt do rozliczenia
  */
-data class SettleByCostsItem(
+data class SettleByCostsItemInput(
     val expenseId: String,
     val payerId: String,
     val participantId: String
