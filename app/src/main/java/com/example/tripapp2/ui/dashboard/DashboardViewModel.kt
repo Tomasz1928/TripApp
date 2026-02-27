@@ -10,17 +10,18 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel dla Dashboard
- * Odpowiedzialny za:
- * - Ładowanie listy wycieczek
- * - Zarządzanie stanem ekranu (loading/success/empty/error)
- * - Nawigację do szczegółów wycieczki
- * - Nawigację do tworzenia/dołączania do wycieczki
+ *
+ * Po loadInitialData():
+ * 1. Pobiera listę ID tripów
+ * 2. Dla każdego ID pobiera pełne detale (równolegle)
+ * 3. Cache w repo zawiera pełne TripDto
+ * 4. Startuje subskrypcje WebSocket na wszystkie tripy
+ * 5. Dashboard wyświetla tripy z cache
  */
 class DashboardViewModel(
     private val tripRepository: TripRepository = TripRepository.getInstance()
 ) : BaseViewModel() {
 
-    // Stan ekranu Dashboard
     private val _dashboardState = MutableLiveData<DashboardState>()
     val dashboardState: LiveData<DashboardState> = _dashboardState
 
@@ -29,17 +30,20 @@ class DashboardViewModel(
     }
 
     /**
-     * Ładuje listę wycieczek
+     * Ładuje tripy: loadInitialData() pobiera ID + pełne detale + startuje subskrypcje.
+     * Po sukcesie bierze pełne TripDto z cache.
      */
     fun loadTrips() {
         viewModelScope.launch {
             setLoading(true)
             _dashboardState.value = DashboardState.Loading
+
             val result = tripRepository.loadInitialData()
             setLoading(false)
 
-            result.onSuccess { tripListDto ->
-                val trips = tripListDto.trips ?: emptyList()
+            result.onSuccess {
+                // Po loadInitialData cache ma pełne TripDto
+                val trips = tripRepository.getAllTripsFromCache()
                 if (trips.isEmpty()) {
                     _dashboardState.value = DashboardState.Empty
                 } else {
@@ -48,7 +52,6 @@ class DashboardViewModel(
             }.onFailure { error ->
                 _dashboardState.value = DashboardState.Error(error.message ?: "Błąd")
             }
-
         }
     }
 
@@ -61,31 +64,18 @@ class DashboardViewModel(
         }
     }
 
-
-    /**
-     * Obsługa kliknięcia w kartę wycieczki
-     */
     fun onTripClicked(tripId: String) {
         navigate(NavigationCommand.ToTripDetails(tripId))
     }
 
-    /**
-     * Nawigacja do tworzenia wycieczki
-     */
     fun onCreateTripClicked() {
         navigate(NavigationCommand.ToCreateTrip)
     }
 
-    /**
-     * Nawigacja do dołączania do wycieczki
-     */
     fun onJoinTripClicked() {
         navigate(NavigationCommand.ToJoinTrip)
     }
 
-    /**
-     * Odświeżanie listy (pull-to-refresh)
-     */
     fun refresh() {
         loadTrips()
     }

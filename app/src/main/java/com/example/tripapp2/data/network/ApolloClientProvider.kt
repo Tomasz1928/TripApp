@@ -17,7 +17,7 @@ object ApolloClientProvider {
         "http://10.0.2.2:8000/graphql/"
     private const val WS_URL =
 //        "wss://tripbe.onrender.com/graphql/"
-    "wss://10.0.2.2:8000/graphql/"
+    "ws://10.0.2.2:8000/graphql/"
 
 
 

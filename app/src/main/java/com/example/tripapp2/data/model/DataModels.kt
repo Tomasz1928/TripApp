@@ -20,7 +20,11 @@ data class TripListItemDto(
 // ==========================================
 
 data class TripListDto(
-    val trips: List<TripDto>? = null
+    val trips: List<TripIdDto>? = null
+)
+
+data class TripIdDto(
+    val id: String
 )
 
 data class TripDto(

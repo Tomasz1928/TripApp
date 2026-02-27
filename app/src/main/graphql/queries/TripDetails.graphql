@@ -3,93 +3,93 @@
 # ============================================================
 query TripDetailsQuery($tripId: Int!) {
     tripDetails(tripId: $tripId) {
-        id
-        title
-        dateStart
-        dateEnd
-        currency
-        description
-        totalExpenses
         categories {
             categoryId
             totalAmount
         }
-        ownerId
-        imOwner
-        myCost {
-            isMainCurrency
-            currency
-            amount
-        }
+        currency
+        dateEnd
+        dateStart
+        description
         expenses {
-            id
-            name
-            description
-            totalExpense {
-                isMainCurrency
-                currency
-                amount
-            }
             amount
+            categoryId
             currency
             date
-            categoryId
-            payerId
+            description
+            id
             payerNickname
+            name
+            payerId
             sharedWith {
+                isSettlement
                 participantId
                 participantNickname
                 splitValue {
-                    isMainCurrency
-                    currency
                     amount
+                    currency
+                    isMainCurrency
                 }
-                isSettlement
+            }
+            totalExpense {
+                amount
+                currency
+                isMainCurrency
             }
         }
+        id
+        imOwner
+        myCost {
+            amount
+            currency
+            isMainCurrency
+        }
+        ownerId
         participants {
+            accessCode
             id
-            nickname
-            totalExpenses {
-                isMainCurrency
-                currency
-                amount
-            }
+            isActive
             isOwner
             isPlaceholder
-            accessCode
-            isActive
+            nickname
+            totalExpenses {
+                amount
+                currency
+                isMainCurrency
+            }
         }
         settlement {
             relations {
                 relatedId
                 relatedName
-                leftForSettled {
-                    isMainCurrency
-                    currency
-                    amount
-                }
                 allRelatedAmount {
-                    isMainCurrency
-                    currency
                     amount
+                    currency
+                    isMainCurrency
+                }
+                leftForSettled {
+                    amount
+                    currency
+                    isMainCurrency
                 }
                 prepayment {
                     amountLeft {
-                        isMainCurrency
-                        currency
                         amount
+                        currency
+                        isMainCurrency
                     }
                     history {
                         date
                         values {
-                            isMainCurrency
-                            currency
                             amount
+                            currency
+                            isMainCurrency
                         }
                     }
                 }
             }
         }
+        title
+        totalExpenses
     }
 }

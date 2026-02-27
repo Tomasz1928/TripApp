@@ -1,77 +1,13 @@
-# ============================================================
-# Schema — typy z backendu Strawberry GraphQL
-# Plik: app/src/main/graphql/com/example/tripapp2/schema.graphqls
-# ============================================================
-
-type Query {
-    session: SessionInfo!
-    tripList: TripListType!
-    tripDetails(tripId: Int!): TripDetailType!
-    tripSettlements(tripId: Int!): TripSettlementsType!
-}
-
-type Mutation {
-    # Auth
-    registerUser(username: String!, password: String!): AuthPayload!
-    loginUser(username: String!, password: String!): AuthPayload!
-    logoutUser: AuthPayload!
-
-    # Trip
-    createTrip(
-        title: String!
-        dateStart: Float!
-        dateEnd: Float!
-        description: String
-        currency: String
-    ): CreateTripPayload!
-
-    # Participant
-    addPlaceholder(tripId: Int!, nickname: String!): MutationPayload!
-    detachUser(tripId: Int!, participantId: Int!): MutationPayload!
-    removePlaceholder(tripId: Int!, participantId: Int!): MutationPayload!
-    joinTrip(accessCode: String!): MutationPayload!
-
-    # Expense
-    addExpense(data: AddExpenseInput!): MutationPayload!
-    updateExpense(data: UpdateExpenseInput!): MutationPayload!
-    deleteExpense(tripId: Int!, expenseId: Int!): MutationPayload!
-
-    # Prepayment
-    addPrepayment(
-        tripId: Int!
-        participantId: Int!
-        amount: Float!
-        currency: String!
-        direction: String!
-    ): MutationPayload!
-
-    # Settlement
-    settleByAmount(
-        tripId: Int!
-        fromUserId: Int!
-        toUserId: Int!
-        amount: Float!
-        currency: String!
-        isMainCurrency: Boolean!
-    ): MutationPayload!
-
-    settleByCosts(
-        tripId: Int!
-        items: [SettleByCostsItemInput!]!
-    ): MutationPayload!
-}
-
-type Subscription {
-    tripUpdates(tripId: Int!): TripDelta!
-}
-
-# ============================================================
-# Auth types
-# ============================================================
-
-type UserType {
-    id: Int!
-    username: String!
+input AddExpenseInput {
+    tripId: Int!
+    name: String!
+    description: String! = ""
+    amount: Float!
+    currency: String!
+    categoryId: Int!
+    date: Float!
+    payerId: Int!
+    sharedWith: [ShareInput!]!
 }
 
 type AuthPayload {
@@ -80,55 +16,15 @@ type AuthPayload {
     user: UserType
 }
 
-type SessionInfo {
-    isAuthenticated: Boolean!
-    user: UserType
-}
-
-# ============================================================
-# Shared types
-# ============================================================
-
-type MutationPayload {
-    success: Boolean!
-    message: String!
-}
-
-type SimpleMoneyValueType {
-    isMainCurrency: Boolean!
-    currency: String!
-    amount: Float!
-}
-
-# ============================================================
-# Trip types
-# ============================================================
-
-type TripListType {
-    trips: [TripListItemType!]!
-}
-
-type TripListItemType {
-    id: Int!
-    title: String!
-    dateStart: Float!
-    dateEnd: Float!
-    currency: String!
-    description: String!
-    totalExpenses: Float!
-    imOwner: Boolean!
-}
-
 type CategoryType {
     categoryId: Int!
     totalAmount: Float!
 }
 
-type ShareType {
-    participantId: Int!
-    participantNickname: String!
-    splitValue: [SimpleMoneyValueType!]!
-    isSettlement: Boolean!
+type CreateTripPayload {
+    success: Boolean!
+    message: String!
+    tripId: Int
 }
 
 type ExpenseDetailType {
@@ -145,6 +41,28 @@ type ExpenseDetailType {
     sharedWith: [ShareType!]!
 }
 
+type Mutation {
+    registerUser(username: String!, password: String!): AuthPayload!
+    loginUser(username: String!, password: String!): AuthPayload!
+    logoutUser: AuthPayload!
+    createTrip(title: String!, dateStart: Float!, dateEnd: Float!, description: String! = "", currency: String! = "PLN"): CreateTripPayload!
+    addExpense(data: AddExpenseInput!): MutationPayload!
+    updateExpense(data: UpdateExpenseInput!): MutationPayload!
+    deleteExpense(tripId: Int!, expenseId: Int!): MutationPayload!
+    addPlaceholder(tripId: Int!, nickname: String!): MutationPayload!
+    detachUser(tripId: Int!, participantId: Int!): MutationPayload!
+    removePlaceholder(tripId: Int!, participantId: Int!): MutationPayload!
+    joinTrip(accessCode: String!): MutationPayload!
+    addPrepayment(tripId: Int!, participantId: Int!, amount: Float!, currency: String!, direction: String!): MutationPayload!
+    settleByAmount(tripId: Int!, fromUserId: Int!, toUserId: Int!, amount: Float!, currency: String!, isMainCurrency: Boolean!): MutationPayload!
+    settleByCosts(tripId: Int!, items: [SettleByCostsItem!]!): MutationPayload!
+}
+
+type MutationPayload {
+    success: Boolean!
+    message: String!
+}
+
 type ParticipantDetailType {
     id: Int!
     nickname: String!
@@ -155,14 +73,41 @@ type ParticipantDetailType {
     isActive: Boolean!
 }
 
+type PrepaymentDetailsType {
+    amountLeft: [SimpleMoneyValueType!]!
+    history: [PrepaymentHistoryType!]!
+}
+
 type PrepaymentHistoryType {
     date: Float!
     values: SimpleMoneyValueType!
 }
 
-type PrepaymentDetailsType {
-    amountLeft: [SimpleMoneyValueType!]!
-    history: [PrepaymentHistoryType!]!
+type Query {
+    session: SessionInfo!
+    tripList: TripListType!
+    tripDetails(tripId: Int!): TripDetailType!
+    tripSettlements(tripId: Int!): TripSettlementsType!
+}
+
+type SessionInfo {
+    isAuthenticated: Boolean!
+    user: UserType
+}
+
+input SettleByCostsItem {
+    expenseId: Int!
+    payerId: Int!
+    participantId: Int!
+}
+
+type SettlementOtherCurrencyType {
+    fromParticipantId: Int!
+    fromNickname: String!
+    toParticipantId: Int!
+    toNickname: String!
+    amount: Float!
+    currency: String!
 }
 
 type SettlementRelationType {
@@ -173,8 +118,57 @@ type SettlementRelationType {
     prepayment: PrepaymentDetailsType!
 }
 
+type SettlementTripCurrencyType {
+    fromParticipantId: Int!
+    fromNickname: String!
+    toParticipantId: Int!
+    toNickname: String!
+    amount: Float!
+    currency: String!
+}
+
 type SettlementType {
     relations: [SettlementRelationType!]!
+}
+
+input ShareInput {
+    participantId: Int!
+    splitValue: [SimpleMoneyValueInput!]!
+}
+
+type ShareType {
+    participantId: Int!
+    participantNickname: String!
+    splitValue: [SimpleMoneyValueType!]!
+    isSettlement: Boolean!
+}
+
+input SimpleMoneyValueInput {
+    currency: String!
+    amount: Float!
+}
+
+type SimpleMoneyValueType {
+    isMainCurrency: Boolean!
+    currency: String!
+    amount: Float!
+}
+
+type Subscription {
+    tripUpdates(tripId: Int!): TripDelta!
+}
+
+type TripDelta {
+    tripId: Int!
+    eventType: TripEventType!
+    expenses: [ExpenseDetailType!]
+    participants: [ParticipantDetailType!]
+    categories: [CategoryType!]
+    settlement: SettlementType
+    removedExpenseIds: [Int!]
+    removedParticipantIds: [Int!]
+    totalExpenses: Float
+    myCost: [SimpleMoneyValueType!]
 }
 
 type TripDetailType {
@@ -194,88 +188,6 @@ type TripDetailType {
     settlement: SettlementType
 }
 
-type CreateTripPayload {
-    success: Boolean!
-    message: String!
-    tripId: Int
-}
-
-# ============================================================
-# Settlement query types
-# ============================================================
-
-type SettlementTripCurrencyType {
-    fromParticipantId: Int!
-    fromNickname: String!
-    toParticipantId: Int!
-    toNickname: String!
-    amount: Float!
-    currency: String!
-}
-
-type SettlementOtherCurrencyType {
-    fromParticipantId: Int!
-    fromNickname: String!
-    toParticipantId: Int!
-    toNickname: String!
-    amount: Float!
-    currency: String!
-}
-
-type TripSettlementsType {
-    tripCurrencySettlements: [SettlementTripCurrencyType!]!
-    otherCurrencySettlements: [SettlementOtherCurrencyType!]!
-}
-
-# ============================================================
-# Input types
-# ============================================================
-
-input SimpleMoneyValueInput {
-    currency: String!
-    amount: Float!
-}
-
-input ShareInput {
-    participantId: Int!
-    splitValue: [SimpleMoneyValueInput!]!
-}
-
-input AddExpenseInput {
-    tripId: Int!
-    name: String!
-    description: String
-    amount: Float!
-    currency: String!
-    categoryId: Int!
-    date: Float!
-    payerId: Int!
-    sharedWith: [ShareInput!]!
-}
-
-input UpdateExpenseInput {
-    expenseId: Int!
-    tripId: Int!
-    name: String!
-    description: String
-    amount: Float!
-    currency: String!
-    categoryId: Int!
-    date: Float!
-    payerId: Int!
-    sharedWith: [ShareInput!]!
-}
-
-input SettleByCostsItemInput {
-    expenseId: Int!
-    payerId: Int!
-    participantId: Int!
-}
-
-# ============================================================
-# Subscription types
-# ============================================================
-
 enum TripEventType {
     EXPENSE_ADDED
     EXPENSE_UPDATED
@@ -287,15 +199,40 @@ enum TripEventType {
     PARTICIPANT_REMOVED
 }
 
-type TripDelta {
+type TripListItemType {
+    id: Int!
+    title: String!
+    dateStart: Float!
+    dateEnd: Float!
+    currency: String!
+    description: String!
+    totalExpenses: Float!
+    imOwner: Boolean!
+}
+
+type TripListType {
+    trips: [TripListItemType!]!
+}
+
+type TripSettlementsType {
+    tripCurrencySettlements: [SettlementTripCurrencyType!]!
+    otherCurrencySettlements: [SettlementOtherCurrencyType!]!
+}
+
+input UpdateExpenseInput {
+    expenseId: Int!
     tripId: Int!
-    eventType: TripEventType!
-    expenses: [ExpenseDetailType!]
-    participants: [ParticipantDetailType!]
-    categories: [CategoryType!]
-    settlement: SettlementType
-    removedExpenseIds: [Int!]
-    removedParticipantIds: [Int!]
-    totalExpenses: Float
-    myCost: [SimpleMoneyValueType!]
+    name: String!
+    description: String! = ""
+    amount: Float!
+    currency: String!
+    categoryId: Int!
+    date: Float!
+    payerId: Int!
+    sharedWith: [ShareInput!]!
+}
+
+type UserType {
+    id: Int!
+    username: String!
 }

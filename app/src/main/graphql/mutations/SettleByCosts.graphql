@@ -1,7 +1,7 @@
 # ============================================================
 # Plik: app/src/main/graphql/com/example/tripapp2/mutations/SettleByCosts.graphql
 # ============================================================
-mutation SettleByCostsMutation($tripId: Int!, $items: [SettleByCostsItemInput!]!) {
+mutation SettleByCostsMutation($tripId: Int!, $items: [SettleByCostsItem!]!) {
     settleByCosts(tripId: $tripId, items: $items) {
         success
         message
