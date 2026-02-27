@@ -8,6 +8,7 @@ import androidx.core.widget.addTextChangedListener
 import com.example.tripapp2.R
 import com.example.tripapp2.databinding.ActivityRegisterBinding
 import com.example.tripapp2.ui.auth.login.LoginActivity
+import com.example.tripapp2.ui.dashboard.DashboardActivity
 
 /**
  * Activity rejestracji
@@ -62,7 +63,6 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
-        // ✅ ZMIANA: Błędy walidacji - konwertuj Int? na String?
         viewModel.usernameError.observe(this) { errorResId ->
             binding.usernameLayout.error = errorResId?.let { getString(it) }
         }
@@ -71,17 +71,9 @@ class RegisterActivity : AppCompatActivity() {
             binding.passwordLayout.error = errorResId?.let { getString(it) }
         }
 
-        // ✅ ZMIANA: Sukces rejestracji - parsuj message i konwertuj jeśli potrzeba
         viewModel.registerSuccessEvent.observe(this) { event ->
-            event.getContentIfNotHandled()?.let { message ->
-                // Sprawdź czy message zawiera resource ID
-                val displayMessage = if (message.startsWith("RES_ID:")) {
-                    val resId = message.substringAfter(":").toIntOrNull()
-                    resId?.let { getString(it) } ?: message
-                } else {
-                    message
-                }
-                android.widget.Toast.makeText(this, displayMessage, android.widget.Toast.LENGTH_SHORT).show()
+            event.getContentIfNotHandled()?.let {
+                navigateToDashboard()
             }
         }
 
@@ -98,6 +90,11 @@ class RegisterActivity : AppCompatActivity() {
                 android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_LONG).show()
             }
         }
+    }
+    private fun navigateToDashboard() {
+        val intent = Intent(this, DashboardActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun navigateToLogin() {

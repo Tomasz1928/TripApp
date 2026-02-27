@@ -1,0 +1,9 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/UpdateExpense.graphql
+# ============================================================
+mutation UpdateExpenseMutation($data: UpdateExpenseInput!) {
+    updateExpense(data: $data) {
+        success
+        message
+    }
+}

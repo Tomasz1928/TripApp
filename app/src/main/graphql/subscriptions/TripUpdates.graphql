@@ -1,0 +1,91 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/subscriptions/TripUpdates.graphql
+# ============================================================
+subscription TripUpdatesSubscription($tripId: Int!) {
+    tripUpdates(tripId: $tripId) {
+        tripId
+        eventType
+        expenses {
+            id
+            name
+            description
+            totalExpense {
+                isMainCurrency
+                currency
+                amount
+            }
+            amount
+            currency
+            date
+            categoryId
+            payerId
+            payerNickname
+            sharedWith {
+                participantId
+                participantNickname
+                splitValue {
+                    isMainCurrency
+                    currency
+                    amount
+                }
+                isSettlement
+            }
+        }
+        participants {
+            id
+            nickname
+            totalExpenses {
+                isMainCurrency
+                currency
+                amount
+            }
+            isOwner
+            isPlaceholder
+            accessCode
+            isActive
+        }
+        categories {
+            categoryId
+            totalAmount
+        }
+        settlement {
+            relations {
+                relatedId
+                relatedName
+                leftForSettled {
+                    isMainCurrency
+                    currency
+                    amount
+                }
+                allRelatedAmount {
+                    isMainCurrency
+                    currency
+                    amount
+                }
+                prepayment {
+                    amountLeft {
+                        isMainCurrency
+                        currency
+                        amount
+                    }
+                    history {
+                        date
+                        values {
+                            isMainCurrency
+                            currency
+                            amount
+                        }
+                    }
+                }
+            }
+        }
+        removedExpenseIds
+        removedParticipantIds
+        totalExpenses
+        myCost {
+            isMainCurrency
+            currency
+            amount
+        }
+    }
+}

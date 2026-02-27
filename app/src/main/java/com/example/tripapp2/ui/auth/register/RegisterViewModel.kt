@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.tripapp2.R
+import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
 import kotlinx.coroutines.delay
@@ -16,6 +17,7 @@ import kotlinx.coroutines.launch
  * - Rejestrację użytkownika
  */
 class RegisterViewModel : BaseViewModel() {
+    private val tripRepository = TripRepository.getInstance()
 
     // Pola formularza
     private val _username = MutableLiveData<String>()
@@ -32,8 +34,8 @@ class RegisterViewModel : BaseViewModel() {
     val passwordError: LiveData<Int?> = _passwordError
 
     // ✅ ZMIANA: Pozostawiam String (message do wyświetlenia)
-    private val _registerSuccessEvent = MutableLiveData<Event<String>>()
-    val registerSuccessEvent: LiveData<Event<String>> = _registerSuccessEvent
+    private val _registerSuccessEvent = MutableLiveData<Event<Unit>>()
+    val registerSuccessEvent: LiveData<Event<Unit>> = _registerSuccessEvent
 
     // Event przejścia do logowania
     private val _navigateToLoginEvent = MutableLiveData<Event<Unit>>()
@@ -56,31 +58,20 @@ class RegisterViewModel : BaseViewModel() {
      * Rejestracja
      */
     fun onRegisterClicked() {
-        if (!validateForm()) {
-            return
-        }
+        if (!validateForm()) { return }
 
         viewModelScope.launch {
             setLoading(true)
-
-            // Symulacja API call
-            delay(1000)
-
-            // Mock - zawsze sukces
-            val success = true
-
+                val result = tripRepository.register(
+                    username = _username.value!!,
+                    password = _password.value!!
+                )
+                result.onSuccess{ auth ->
+                    val success = auth.success
+                    if (success) { _registerSuccessEvent.value = Event(Unit) }
+                    else { showError(auth.message) }
+                }
             setLoading(false)
-
-            if (success) {
-                // ✅ ZMIANA: Przekazujemy specjalny marker, który będzie parsowany w Activity
-                _registerSuccessEvent.value = Event("RES_ID:${R.string.register_success}")
-                // Automatyczne przejście do logowania po 1s
-                delay(1000)
-                _navigateToLoginEvent.value = Event(Unit)
-            } else {
-                // ✅ ZMIANA: showError przyjmuje String, więc używamy hardcoded stringa
-                showError("Nie udało się utworzyć konta")
-            }
         }
     }
 
@@ -98,7 +89,6 @@ class RegisterViewModel : BaseViewModel() {
         var isValid = true
 
         val username = _username.value
-        // ✅ ZMIANA: Bez .toString(), przekazujemy resource ID
         if (username.isNullOrBlank()) {
             _usernameError.value = R.string.error_username_required
             isValid = false

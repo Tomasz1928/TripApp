@@ -29,8 +29,8 @@ class JoinTripViewModel(
     val accessCodeError: LiveData<Int?> = _accessCodeError
 
     // Event sukcesu dołączenia - pozostaje String (message do wyświetlenia)
-    private val _tripJoinedEvent = MutableLiveData<Event<String>>()
-    val tripJoinedEvent: LiveData<Event<String>> = _tripJoinedEvent
+    private val _tripJoinedEvent= MutableLiveData<Event<Unit>>()
+    val tripJoinedEvent: LiveData<Event<Unit>> = _tripJoinedEvent
 
     /**
      * Aktualizacja kodu dostępu
@@ -60,15 +60,10 @@ class JoinTripViewModel(
             val result = tripRepository.joinTrip(code)
             setLoading(false)
 
-            result.onSuccess { joinTripDto ->
-                _tripJoinedEvent.value = Event(joinTripDto.success.message ?: "")
-                joinTripDto.trip?.let { trip ->
-                    navigate(NavigationCommand.ToTripDetails(trip.id))
-                }
-
-                result.onFailure { error ->
-                    _tripJoinedEvent.value = Event(error.message ?: "")
-                }
+            result.onSuccess { joinTrip ->
+                val success = joinTrip.success
+                if (success) {_tripJoinedEvent.value = Event(Unit)}
+                else(showError(joinTrip.message ?: ""))
             }
         }
     }

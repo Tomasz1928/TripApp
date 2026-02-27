@@ -1,0 +1,23 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/SettleByAmount.graphql
+# ============================================================
+mutation SettleByAmountMutation(
+    $tripId: Int!
+    $fromUserId: Int!
+    $toUserId: Int!
+    $amount: Float!
+    $currency: String!
+    $isMainCurrency: Boolean!
+) {
+    settleByAmount(
+        tripId: $tripId
+        fromUserId: $fromUserId
+        toUserId: $toUserId
+        amount: $amount
+        currency: $currency
+        isMainCurrency: $isMainCurrency
+    ) {
+        success
+        message
+    }
+}

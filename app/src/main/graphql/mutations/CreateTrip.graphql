@@ -1,0 +1,22 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/CreateTrip.graphql
+# ============================================================
+mutation CreateTripMutation(
+    $title: String!
+    $dateStart: Float!
+    $dateEnd: Float!
+    $description: String
+    $currency: String
+) {
+    createTrip(
+        title: $title
+        dateStart: $dateStart
+        dateEnd: $dateEnd
+        description: $description
+        currency: $currency
+    ) {
+        success
+        message
+        tripId
+    }
+}

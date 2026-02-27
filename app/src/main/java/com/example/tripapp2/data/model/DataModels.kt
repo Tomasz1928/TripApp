@@ -1,5 +1,23 @@
 package com.example.tripapp2.data.model
 
+// ==========================================
+// TRIP LIST (lightweight, z query tripList)
+// ==========================================
+
+data class TripListItemDto(
+    val id: String,
+    val title: String,
+    val dateStart: Long,
+    val dateEnd: Long,
+    val currency: String,
+    val description: String? = null,
+    val totalExpenses: Float,
+    val imOwner: Boolean,
+)
+
+// ==========================================
+// TRIP DETAIL (full)
+// ==========================================
 
 data class TripListDto(
     val trips: List<TripDto>? = null
@@ -20,6 +38,16 @@ data class TripDto(
     val expenses: List<ExpenseDto>,
     val participants: List<ParticipantDto>,
     val settlement: SettlementDto?
+)
+
+data class MoneyValueDto(
+    val valueMainCurrency: Float,
+    val valueOtherCurrencies: List<MoneyValueDetailsDto> = emptyList()
+)
+
+data class MoneyValueDetailsDto(
+    val currency: String,
+    val value: Float
 )
 
 data class CategoryDto(
@@ -59,7 +87,7 @@ data class ParticipantDto(
 )
 
 // ==========================================
-// SETTLEMENT MODELS (REFACTORED)
+// SETTLEMENT MODELS
 // ==========================================
 
 data class SettlementDto(
@@ -90,6 +118,10 @@ data class SimpleMoneyValueDto(
     val amount: Float
 )
 
+// ==========================================
+// RESPONSE DTOs
+// ==========================================
+
 data class SettlementResultDto(
     val success: SuccessDto,
     val trip: TripDto? = null
@@ -106,8 +138,9 @@ data class SuccessDto(
 )
 
 data class CreateTripDto(
-    val success: SuccessDto,
-    val trip: TripDto? = null
+    val success: Boolean,
+    val message: String? = null,
+    val trip: Int? = null
 )
 
 data class JoinTripDto(
@@ -134,6 +167,10 @@ data class ParticipantsDto(
     val success: SuccessDto,
     val trip: TripDto? = null
 )
+
+// ==========================================
+// REQUEST DTOs
+// ==========================================
 
 data class AddExpenseRequest(
     val tripId: String,
@@ -162,31 +199,32 @@ data class UpdateExpenseRequest(
     val sharedWith: List<ShareRequest>
 )
 
-// ==========================================
-// HELPER EXTENSIONS for SettlementRelationDto
-// ==========================================
 data class ShareRequest(
     val participantId: String,
     val participantNickname: String,
     val splitValue: List<SimpleMoneyValueDto>
 )
 
+
 /**
- * Czy relacja jest w pełni rozliczona (wszystkie leftForSettled == 0)
+ * Request do settle by costs — używany przez TripSettlementsViewModel
  */
+data class SettleByCostsRequest(
+    val expenseId: String,
+    val payerId: String,
+    val participantId: String
+)
+
+// ==========================================
+// HELPER EXTENSIONS for SettlementRelationDto
+// ==========================================
+
 val SettlementRelationDto.isSettled: Boolean
     get() = leftForSettled.all { kotlin.math.abs(it.amount) < 0.01f }
 
-/**
- * Balans w głównej walucie (z leftForSettled)
- * + = on mi jest winien, - = ja jestem winien
- */
 val SettlementRelationDto.mainCurrencyBalance: Float
     get() = leftForSettled.firstOrNull { it.isMainCurrency }?.amount ?: 0f
 
-/**
- * Czy istnieje jakakolwiek niezerowa kwota do rozliczenia
- */
 val SettlementRelationDto.hasOutstandingAmount: Boolean
     get() = leftForSettled.any { kotlin.math.abs(it.amount) > 0.01f }
 

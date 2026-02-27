@@ -1,0 +1,9 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/JoinTrip.graphql
+# ============================================================
+mutation JoinTripMutation($accessCode: String!) {
+    joinTrip(accessCode: $accessCode) {
+        success
+        message
+    }
+}

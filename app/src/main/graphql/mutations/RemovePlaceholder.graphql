@@ -1,0 +1,9 @@
+# ============================================================
+# Plik: app/src/main/graphql/com/example/tripapp2/mutations/RemovePlaceholder.graphql
+# ============================================================
+mutation RemovePlaceholderMutation($tripId: Int!, $participantId: Int!) {
+    removePlaceholder(tripId: $tripId, participantId: $participantId) {
+        success
+        message
+    }
+}
