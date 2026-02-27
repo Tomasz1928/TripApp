@@ -480,7 +480,8 @@ class GraphQLDataSource(context: Context) {
             myCost = data.myCost.map { mapMoney(it) },
             expenses = data.expenses.map { mapExpense(it) },
             participants = data.participants.map { mapParticipant(it) },
-            settlement = data.settlement?.let { mapSettlement(it) }
+            settlement = data.settlement?.let { mapSettlement(it) },
+            myParticipantId = data.myParticipantId
         )
     }
 

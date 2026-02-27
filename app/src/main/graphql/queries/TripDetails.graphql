@@ -39,6 +39,7 @@ query TripDetailsQuery($tripId: Int!) {
         }
         id
         imOwner
+        myParticipantId
         myCost {
             amount
             currency

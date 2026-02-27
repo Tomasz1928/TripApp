@@ -38,6 +38,7 @@ data class TripDto(
     val categories: List<CategoryDto>,
     val ownerId: String,
     val imOwner: Boolean,
+    val myParticipantId: Int,
     val myCost: List<SimpleMoneyValueDto>,
     val expenses: List<ExpenseDto>,
     val participants: List<ParticipantDto>,

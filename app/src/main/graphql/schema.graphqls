@@ -182,6 +182,7 @@ type TripDetailType {
     categories: [CategoryType!]!
     ownerId: Int!
     imOwner: Boolean!
+    myParticipantId: Int!
     myCost: [SimpleMoneyValueType!]!
     expenses: [ExpenseDetailType!]!
     participants: [ParticipantDetailType!]!
