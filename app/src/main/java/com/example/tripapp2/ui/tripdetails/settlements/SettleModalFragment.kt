@@ -360,8 +360,8 @@ class SettleModalFragment : BaseModalFragment() {
                 if (share != null) {
                     result.add(SettleCostItemUiModel(
                         expenseId = expense.id, expenseName = expense.name,
-                        amount = share.splitValue.mainCurrencyAmount(), currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
+                        amount = share.leftForSettled.mainCurrencyAmount(), currency = expense.currency,
+                        formattedAmount = "%.2f %s".format(share.leftForSettled.mainCurrencyAmount(), expense.currency),
                         payerDirection = CostPayerDirection.I_PAID, payerId = currentUserId, participantId = participantId
                     ))
                 }
@@ -370,8 +370,8 @@ class SettleModalFragment : BaseModalFragment() {
                 if (share != null) {
                     result.add(SettleCostItemUiModel(
                         expenseId = expense.id, expenseName = expense.name,
-                        amount = share.splitValue.mainCurrencyAmount(), currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
+                        amount = share.leftForSettled.mainCurrencyAmount(), currency = expense.currency,
+                        formattedAmount = "%.2f %s".format(share.leftForSettled.mainCurrencyAmount(), expense.currency),
                         payerDirection = CostPayerDirection.PARTICIPANT_PAID, payerId = participantId, participantId = currentUserId
                     ))
                 }
@@ -389,7 +389,7 @@ class SettleModalFragment : BaseModalFragment() {
         nameView.text = item.expenseName
         amountView.text = "%.2f %s".format(item.amount, item.currency)
 
-        val colorRes = if (item.payerId == currentUserId) R.color.error else R.color.success
+        val colorRes = if (item.payerId == currentUserId) R.color.success else R.color.error
         amountView.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
 
         checkbox.isChecked = item.isChecked
@@ -418,7 +418,7 @@ class SettleModalFragment : BaseModalFragment() {
 
         val netPerCurrency = mutableMapOf<String, Float>()
         checkedItems.forEach { item ->
-            val sign = if (item.payerId == currentUserId) -1f else 1f
+            val sign = if (item.payerId == currentUserId) 1f else -1f
             netPerCurrency[item.currency] = (netPerCurrency[item.currency] ?: 0f) + (item.amount * sign)
         }
 
@@ -449,7 +449,7 @@ class SettleModalFragment : BaseModalFragment() {
 
         onConfirmByCosts?.invoke(SettleByCostsRequest(
             tripId = tripId,
-            items = checkedItems.map { SettleByCostsItemInput(it.expenseId, it.participantId, it.payerId) }
+            items = checkedItems.map { SettleByCostsItemInput(it.expenseId, it.participantId) }
         ))
         dismissAnimated()
     }

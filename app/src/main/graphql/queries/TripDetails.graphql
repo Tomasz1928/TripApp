@@ -26,9 +26,14 @@ query TripDetailsQuery($tripId: Int!) {
                 participantId
                 participantNickname
                 splitValue {
-                    amount
-                    currency
                     isMainCurrency
+                    currency
+                    amount
+                }
+                leftForSettlement {
+                    isMainCurrency
+                    currency
+                    amount
                 }
             }
             totalExpense {

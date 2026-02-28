@@ -97,7 +97,6 @@ type SessionInfo {
 
 input SettleByCostsItem {
     expenseId: Int!
-    payerId: Int!
     participantId: Int!
 }
 
@@ -140,6 +139,7 @@ type ShareType {
     participantId: Int!
     participantNickname: String!
     splitValue: [SimpleMoneyValueType!]!
+    leftForSettlement: [SimpleMoneyValueType!]!
     isSettlement: Boolean!
 }
 

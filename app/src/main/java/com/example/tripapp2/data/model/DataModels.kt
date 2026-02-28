@@ -78,6 +78,7 @@ data class ShareDto(
     val participantId: String,
     val participantNickname: String,
     val splitValue: List<SimpleMoneyValueDto>,
+    val leftForSettled: List<SimpleMoneyValueDto>,
     val isSettlement: Boolean
 )
 

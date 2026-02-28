@@ -419,7 +419,6 @@ class GraphQLDataSource(context: Context) {
             val inputItems = items.map { item ->
                 SettleByCostsItem(
                     expenseId = item.expenseId.toInt(),
-                    payerId = item.payerId.toInt(),
                     participantId = item.participantId.toInt()
                 )
             }
@@ -502,7 +501,11 @@ class GraphQLDataSource(context: Context) {
                     participantId = s.participantId.toString(),
                     participantNickname = s.participantNickname,
                     splitValue = s.splitValue.map { mapMoney(it) },
-                    isSettlement = s.isSettlement
+                    isSettlement = s.isSettlement,
+                    leftForSettled = s.leftForSettlement.map {
+                        SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
+                    }
+
                 )
             }
         )
@@ -657,7 +660,10 @@ class GraphQLDataSource(context: Context) {
                     splitValue = s.splitValue.map {
                         SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
                     },
-                    isSettlement = s.isSettlement
+                    isSettlement = s.isSettlement,
+                    leftForSettled = s.leftForSettlement.map {
+                        SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
+                    }
                 )
             }
         )
