@@ -24,7 +24,7 @@ class TripSettlementsViewModel(
 ) : BaseViewModel() {
 
     private val tripRepository = TripRepository.getInstance()
-    private var currentUserId: String = ""
+    private var currencyParticipantId: String = ""
 
     private val _settlementsState = MutableLiveData<TripSettlementsState>()
     val settlementsState: LiveData<TripSettlementsState> = _settlementsState
@@ -58,7 +58,7 @@ class TripSettlementsViewModel(
             tripRepository.observeTrip(tripId)
                 .filterNotNull()
                 .collect { trip ->
-                    if (currentUserId.isNotEmpty()) {
+                    if (currencyParticipantId.isNotEmpty()) {
                         Log.d(TAG, "Trip updated via StateFlow, refreshing settlements")
                         updateSettlementsFromTrip(trip)
                     }
@@ -68,7 +68,7 @@ class TripSettlementsViewModel(
 
     private fun updateSettlementsFromTrip(trip: TripDto) {
         try {
-            val otherParticipants = trip.participants.filter { it.id != currentUserId }
+            val otherParticipants = trip.participants.filter { it.id != currencyParticipantId }
 
             if (otherParticipants.isEmpty()) {
                 _settlementsState.value = TripSettlementsState.Empty
@@ -102,8 +102,6 @@ class TripSettlementsViewModel(
     private fun loadCurrentUserAndSettlements() {
         viewModelScope.launch {
             try {
-                val userInfo = tripRepository.getCurrentUserInfo()
-                currentUserId = userInfo.id
                 loadSettlements()
             } catch (e: Exception) {
                 _settlementsState.value = TripSettlementsState.Error(
@@ -113,7 +111,7 @@ class TripSettlementsViewModel(
         }
     }
 
-    fun getCurrentUserId(): String = currentUserId
+    fun getCurrentUserId(): String = currencyParticipantId
 
     fun getTripData(): TripDto? {
         return tripRepository.getTripDetails(tripId)
@@ -122,9 +120,9 @@ class TripSettlementsViewModel(
     fun loadSettlements() {
         viewModelScope.launch {
             try {
-                if (currentUserId.isEmpty()) {
-                    val userInfo = tripRepository.getCurrentUserInfo()
-                    currentUserId = userInfo.id
+                if (currencyParticipantId.isEmpty()) {
+                    val userInfo = tripRepository.getTripDetails(tripId)?.myParticipantId
+                    currencyParticipantId = userInfo.toString()
                 }
 
                 _settlementsState.value = TripSettlementsState.Loading
@@ -136,7 +134,7 @@ class TripSettlementsViewModel(
                     return@launch
                 }
 
-                val otherParticipants = trip.participants.filter { it.id != currentUserId }
+                val otherParticipants = trip.participants.filter { it.id != currencyParticipantId }
 
                 if (otherParticipants.isEmpty()) {
                     _settlementsState.value = TripSettlementsState.Empty

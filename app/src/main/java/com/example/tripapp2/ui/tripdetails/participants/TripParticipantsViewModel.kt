@@ -43,7 +43,7 @@ class TripParticipantsViewModel(
     val showAddPlaceholderDialogEvent: LiveData<Event<Unit>> = _showAddPlaceholderDialogEvent
 
     // Cache
-    private var currentUserId: String = ""
+    private var currencyParticipantId: String = ""
     private var tripOwnerId: String = ""
     private var tripCurrency: String = "PLN"
     private var allParticipants: List<ParticipantUiModel> = emptyList()
@@ -58,8 +58,8 @@ class TripParticipantsViewModel(
     private fun loadUserInfo() {
         viewModelScope.launch {
             try {
-                val userInfo = tripRepository.getCurrentUserInfo()
-                currentUserId = userInfo.id
+                val userInfo = tripRepository.getTripDetails(tripId)?.myParticipantId
+                currencyParticipantId = userInfo.toString()
 
                 // Po załadowaniu user info, załaduj uczestników
                 loadParticipants()
@@ -95,7 +95,7 @@ class TripParticipantsViewModel(
                     allParticipants = trip.participants.map { participant ->
                         participant.toUiModel(
                             ownerId = tripOwnerId,
-                            currentUserId = currentUserId,
+                            currentUserId = currencyParticipantId,
                             currency = trip.currency,
                             isPlaceholder = participant.isPlaceholder,
                             accessCode = participant.accessCode
@@ -130,9 +130,9 @@ class TripParticipantsViewModel(
      * Aplikuje filtr według trybu
      */
     private fun applyViewMode(mode: ParticipantViewMode) {
-        val filteredParticipants = allParticipants.filterByMode(mode, currentUserId)
+        val filteredParticipants = allParticipants.filterByMode(mode, currencyParticipantId)
 
-        val isOwner = currentUserId == tripOwnerId
+        val isOwner = currencyParticipantId == tripOwnerId
 
         if (filteredParticipants.isEmpty() && mode != ParticipantViewMode.ALL) {
             // Dla trybów DETACH i DELETE pokaż komunikat jeśli lista jest pusta

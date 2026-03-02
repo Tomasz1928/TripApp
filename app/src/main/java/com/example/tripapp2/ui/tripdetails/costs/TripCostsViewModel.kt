@@ -32,7 +32,7 @@ class TripCostsViewModel(
     val showExpenseDetailEvent: LiveData<Event<ExpenseDetailUiModel>> = _showExpenseDetailEvent
 
     private var allExpenses: List<ExpenseDetailUiModel> = emptyList()
-    private var currentUserId: String = ""
+    private var currencyParticipantId: String = ""
 
     private val _navigateToEditExpenseEvent = MutableLiveData<Event<Pair<String, String>>>()
     val navigateToEditExpenseEvent: LiveData<Event<Pair<String, String>>> = _navigateToEditExpenseEvent
@@ -57,7 +57,7 @@ class TripCostsViewModel(
             tripRepository.observeTrip(tripId)
                 .filterNotNull()
                 .collect { trip ->
-                    if (currentUserId.isNotEmpty()) {
+                    if (currencyParticipantId.isNotEmpty()) {
                         Log.d(TAG, "Trip updated via StateFlow, refreshing expenses")
                         updateExpensesFromTrip(trip)
                     }
@@ -71,7 +71,7 @@ class TripCostsViewModel(
             allExpenses = emptyList()
             _costsState.value = TripCostsState.Empty
         } else {
-            allExpenses = expenses.map { it.toDetailUiModel(currentUserId, trip.currency) }
+            allExpenses = expenses.map { it.toDetailUiModel(currencyParticipantId, trip.currency) }
             applyFilter(_currentFilter.value ?: ExpenseFilter.ALL)
         }
     }
@@ -83,7 +83,7 @@ class TripCostsViewModel(
     fun loadExpenses() {
         viewModelScope.launch {
             _costsState.value = TripCostsState.Loading
-            currentUserId = tripRepository.getCurrentUserInfo().id
+
             val result = execute(showLoading = false) {
                 tripRepository.getTripDetails(tripId)
             }
@@ -93,12 +93,12 @@ class TripCostsViewModel(
                     _costsState.value = TripCostsState.Error("Nie znaleziono wycieczki")
                     return@launch
                 }
-
+                currencyParticipantId = trip.myParticipantId.toString()
                 val expenses = trip.expenses
                 if (expenses.isEmpty()) {
                     _costsState.value = TripCostsState.Empty
                 } else {
-                    allExpenses = expenses.map { it.toDetailUiModel(currentUserId, trip.currency) }
+                    allExpenses = expenses.map { it.toDetailUiModel(currencyParticipantId, trip.currency) }
                     applyFilter(_currentFilter.value ?: ExpenseFilter.ALL)
                 }
             }.onFailure { error ->
@@ -118,8 +118,8 @@ class TripCostsViewModel(
         val filteredExpenses = when (filter) {
             ExpenseFilter.ALL -> allExpenses
             ExpenseFilter.MINE -> allExpenses.filter { it.isMine }
-            ExpenseFilter.PAID_BY_ME -> allExpenses.filter { it.payerId == currentUserId }
-            ExpenseFilter.PAID_BY_OTHERS -> allExpenses.filter { it.payerId != currentUserId }
+            ExpenseFilter.PAID_BY_ME -> allExpenses.filter { it.payerId == currencyParticipantId }
+            ExpenseFilter.PAID_BY_OTHERS -> allExpenses.filter { it.payerId != currencyParticipantId }
         }
 
         if (filteredExpenses.isEmpty()) {
@@ -164,8 +164,9 @@ class TripCostsViewModel(
                     return@launch
                 }
                 val expense = trip.expenses.find { it.id == expenseId }
+
                 expense?.let {
-                    _showExpenseDetailEvent.value = Event(it.toDetailUiModel(currentUserId, trip.currency))
+                    _showExpenseDetailEvent.value = Event(it.toDetailUiModel(currencyParticipantId, trip.currency))
                 }
             }
         }

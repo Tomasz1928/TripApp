@@ -38,6 +38,7 @@ data class TripDto(
     val categories: List<CategoryDto>,
     val ownerId: String,
     val imOwner: Boolean,
+    val myParticipantId: Int,
     val myCost: List<SimpleMoneyValueDto>,
     val expenses: List<ExpenseDto>,
     val participants: List<ParticipantDto>,
@@ -77,6 +78,7 @@ data class ShareDto(
     val participantId: String,
     val participantNickname: String,
     val splitValue: List<SimpleMoneyValueDto>,
+    val leftForSettled: List<SimpleMoneyValueDto>,
     val isSettlement: Boolean
 )
 

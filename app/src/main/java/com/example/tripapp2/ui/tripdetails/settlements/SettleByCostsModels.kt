@@ -50,6 +50,5 @@ data class SettleByCostsRequest(
  */
 data class SettleByCostsItemInput(
     val expenseId: String,
-    val payerId: String,
     val participantId: String
 )

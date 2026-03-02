@@ -74,7 +74,7 @@ sealed class TripCostsState {
  * totalExpense i splitValue są teraz List<SimpleMoneyValueDto>
  */
 fun ExpenseDto.toDetailUiModel(
-    currentUserId: String,
+    currencyParticipantId: String,
     mainCurrency: String,
 ): ExpenseDetailUiModel {
 
@@ -101,7 +101,8 @@ fun ExpenseDto.toDetailUiModel(
         amountTripCurrency = totalExpenseMainAmount,
         formattedAmountTripCurrency = "%.2f %s".format(totalExpenseMainAmount, mainCurrency),
 
-        isMine = sharedWith.any { it.participantId == currentUserId },
+
+        isMine = sharedWith.any { it.participantId == currencyParticipantId },
         sharedWith = sharedWith.map { share ->
             // splitValue jest teraz List<SimpleMoneyValueDto>
             // Główna waluta (isMainCurrency=true) = kwota w cost currency

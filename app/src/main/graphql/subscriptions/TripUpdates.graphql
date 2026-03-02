@@ -28,6 +28,11 @@ subscription TripUpdatesSubscription($tripId: Int!) {
                     currency
                     amount
                 }
+                leftForSettlement {
+                    isMainCurrency
+                    currency
+                    amount
+                }
                 isSettlement
             }
         }
