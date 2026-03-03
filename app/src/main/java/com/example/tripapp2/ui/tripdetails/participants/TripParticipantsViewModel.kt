@@ -7,6 +7,9 @@ import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.filterNotNull
+import com.example.tripapp2.data.model.TripDto
+import android.util.Log
 
 /**
  * ViewModel dla Trip Participants
@@ -50,6 +53,7 @@ class TripParticipantsViewModel(
 
     init {
         loadUserInfo()
+        observeTripUpdates()
     }
 
     /**
@@ -146,6 +150,44 @@ class TripParticipantsViewModel(
             )
         }
     }
+    // ==========================================
+    // REAL-TIME OBSERVATION
+    // ==========================================
+
+    private fun observeTripUpdates() {
+        viewModelScope.launch {
+            tripRepository.observeTrip(tripId)
+                .filterNotNull()
+                .collect { trip ->
+                    if (currencyParticipantId.isNotEmpty()) {
+                        Log.d("TripParticipantsVM", "Trip updated via StateFlow, refreshing participants")
+                        updateParticipantsFromTrip(trip)
+                    }
+                }
+        }
+    }
+
+    private fun updateParticipantsFromTrip(trip: TripDto) {
+        tripCurrency = trip.currency
+        tripOwnerId = trip.ownerId
+
+        if (trip.participants.isEmpty()) {
+            allParticipants = emptyList()
+            _participantsState.value = TripParticipantsState.Empty
+        } else {
+            allParticipants = trip.participants.map { participant ->
+                participant.toUiModel(
+                    ownerId = tripOwnerId,
+                    currentUserId = currencyParticipantId,
+                    currency = trip.currency,
+                    isPlaceholder = participant.isPlaceholder,
+                    accessCode = participant.accessCode
+                )
+            }.sortByType()
+            applyViewMode(_currentViewMode.value ?: ParticipantViewMode.ALL)
+        }
+    }
+
 
     /**
      * Kopiuje kod dostępu placeholdera

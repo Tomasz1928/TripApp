@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.tripapp2.R
-import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.AddExpenseFragment
 import com.example.tripapp2.ui.common.setupIconsInOriginalColor
 import com.example.tripapp2.ui.dashboard.create.CreateTripFragment
@@ -15,11 +14,15 @@ import com.example.tripapp2.ui.tripdetails.TripDetailsFragment
 import com.example.tripapp2.ui.tripdetails.participants.TripParticipantsFragment
 import com.example.tripapp2.ui.tripdetails.settlements.TripSettlementsFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.tripapp2.ui.common.TripNotificationManager
+import com.example.tripapp2.data.repository.TripRepository
+import androidx.lifecycle.lifecycleScope
 
 class DashboardActivity : AppCompatActivity() {
 
     lateinit var dashboardBottomNav: BottomNavigationView
     lateinit var tripBottomNav: BottomNavigationView
+    private lateinit var notificationManager: TripNotificationManager
 
     private var currentTripId: String? = null
 
@@ -47,6 +50,20 @@ class DashboardActivity : AppCompatActivity() {
             }
             true
         }
+
+        val rootView = findViewById<View>(android.R.id.content)
+        notificationManager = TripNotificationManager(
+            activity = this,
+            rootView = rootView,
+            lifecycleScope = lifecycleScope,
+            repository = TripRepository.getInstance(),
+        )
+        notificationManager.start()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        notificationManager.stop()
     }
 
     // =====================================================
@@ -113,6 +130,12 @@ class DashboardActivity : AppCompatActivity() {
         // Reset do dashboard
         showDashboardFragment(R.id.menu_dashboard)
         dashboardBottomNav.selectedItemId = R.id.menu_dashboard
+
+        // NOWE — wymuś odświeżenie dashboardu z aktualnego cache
+        val dashboardFragment = supportFragmentManager.findFragmentByTag("dashboard")
+        if (dashboardFragment is DashboardFragment) {
+            dashboardFragment.refreshFromCache()
+        }
     }
 
     // =====================================================

@@ -7,6 +7,23 @@
     <string name="app_name">TripApp</string>
 
     <!-- ========================================= -->
+    <!-- TRIP NOTIFICATIONS (Snackbar) -->
+    <!-- ========================================= -->
+    <string name="notification_expense_added">%1$s dodał(a) wydatek w %2$s</string>
+    <string name="notification_expense_updated">%1$s zaktualizował(a) wydatek w %2$s</string>
+    <string name="notification_expense_deleted">%1$s usunął/usunęła wydatek w %2$s</string>
+    <string name="notification_prepayment_added">%1$s dodał(a) zaliczkę w %2$s</string>
+    <string name="notification_settlement_changed">%1$s rozliczył(a) koszty w %2$s</string>
+    <string name="notification_participant_added">%1$s dodał(a) uczestnika w %2$s</string>
+    <string name="notification_participant_updated">%1$s zaktualizował(a) uczestnika w %2$s</string>
+    <string name="notification_participant_removed">%1$s usunął/usunęła uczestnika w %2$s</string>
+    <string name="notification_unknown">Zmiana w %1$s</string>
+    <string name="notification_action_refresh">Odśwież</string>
+    <string name="notification_loading">Ładowanie…</string>
+    <string name="notification_refresh_error">Problem z ładowaniem danych</string>
+
+
+    <!-- ========================================= -->
     <!-- AUTH - Autoryzacja -->
     <!-- ========================================= -->
 

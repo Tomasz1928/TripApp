@@ -24,17 +24,12 @@ data class SessionDto(
 // SUBSCRIPTION DELTA MODEL
 // ==========================================
 
-data class TripDeltaDto(
+data class TripNotificationDto(
     val tripId: String,
+    val tripName: String,
     val eventType: String,
-    val expenses: List<ExpenseDto>?,
-    val participants: List<ParticipantDto>?,
-    val categories: List<CategoryDto>?,
-    val settlement: SettlementDto?,
-    val removedExpenseIds: List<String>?,
-    val removedParticipantIds: List<String>?,
-    val totalExpenses: Float?,
-    val myCost: List<SimpleMoneyValueDto>?
+    val actorNickname: String,
+    val actorParticipantId: Int
 )
 
 // ==========================================

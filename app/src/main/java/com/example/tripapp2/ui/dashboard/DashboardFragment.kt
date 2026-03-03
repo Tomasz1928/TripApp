@@ -37,6 +37,10 @@ class DashboardFragment : BaseFragment<DashboardViewModel>(R.layout.fragment_das
         viewModel.refreshFromCache()
     }
 
+    fun refreshFromCache() {
+        viewModel.refreshFromCache()
+    }
+
     private fun setupRecyclerView() {
         tripsRecycler = requireView().findViewById(R.id.tripsRecycler)
 
