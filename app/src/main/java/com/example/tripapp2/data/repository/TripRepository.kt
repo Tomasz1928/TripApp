@@ -21,6 +21,9 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * TripRepository — centralny punkt zarządzania danymi i subskrypcjami.
@@ -73,13 +76,31 @@ class TripRepository private constructor(context: Context) {
         }.asStateFlow()
     }
 
+    // ==========================================
+    // CACHE CHANGE FLOW (for Dashboard)
+    // ==========================================
+
+    private val _cacheChangeFlow = MutableSharedFlow<Unit>(
+        replay = 0,
+        extraBufferCapacity = 5
+    )
+    val cacheChangeFlow: SharedFlow<Unit> = _cacheChangeFlow.asSharedFlow()
+
     /**
      * Emituje zmianę do StateFlow po aktualizacji cache.
      */
     private fun emitTripUpdate(tripId: String) {
         val trip = tripsCache[tripId]
         _tripFlows[tripId]?.value = trip
+
+        _cacheChangeFlow.tryEmit(Unit)
     }
+
+    private val _notificationFlow = MutableSharedFlow<TripNotificationDto>(
+        replay = 0,
+        extraBufferCapacity = 10
+    )
+    val notificationFlow: SharedFlow<TripNotificationDto> = _notificationFlow.asSharedFlow()
 
     // ==========================================
     // SUBSCRIPTION MANAGEMENT
@@ -113,7 +134,6 @@ class TripRepository private constructor(context: Context) {
      * Startuje subskrypcję dla jednego tripa (jeśli jeszcze nie działa).
      */
     fun startSubscriptionForTrip(tripId: String) {
-        // Jeśli już działa — skip
         val existingJob = subscriptionJobs[tripId]
         if (existingJob != null && existingJob.isActive) {
             Log.d(TAG, "Subscription for trip $tripId already active, skipping")
@@ -132,9 +152,9 @@ class TripRepository private constructor(context: Context) {
                 .catch { e ->
                     Log.e(TAG, "Subscription failed permanently for trip $tripId", e)
                 }
-                .collect { delta ->
-                    Log.d(TAG, "Received delta for trip $tripId: ${delta.eventType}")
-                    applyDelta(delta)
+                .collect { notification ->
+                    Log.d(TAG, "Received notification for trip $tripId: ${notification.eventType} by ${notification.actorNickname}")
+                    _notificationFlow.emit(notification)
                 }
         }
 
@@ -572,63 +592,6 @@ class TripRepository private constructor(context: Context) {
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-
-    // ==========================================
-    // SUBSCRIPTIONS (raw Flow — do użytku wewnętrznego)
-    // ==========================================
-
-    fun subscribeTripUpdates(tripId: String): Flow<TripDeltaDto> {
-        return graphQL.subscribeTripUpdates(tripId.toInt())
-    }
-
-    // ==========================================
-    // DELTA APPLICATION
-    // ==========================================
-
-    /**
-     * Aplikuje TripDelta do lokalnego cache i emituje zmianę przez StateFlow.
-     */
-    fun applyDelta(delta: TripDeltaDto) {
-        val tripId = delta.tripId
-        val currentTrip = tripsCache[tripId] ?: return
-
-        var updatedTrip = currentTrip
-
-        // Update total expenses
-        delta.totalExpenses?.let { updatedTrip = updatedTrip.copy(totalExpenses = it) }
-
-        // Update my cost
-        delta.myCost?.let { updatedTrip = updatedTrip.copy(myCost = it) }
-
-        // Update categories
-        delta.categories?.let { updatedTrip = updatedTrip.copy(categories = it) }
-
-        // Update settlement
-        delta.settlement?.let { updatedTrip = updatedTrip.copy(settlement = it) }
-
-        // Update participants
-        delta.participants?.let { newParticipants ->
-            val participantMap = updatedTrip.participants.associateBy { it.id }.toMutableMap()
-            newParticipants.forEach { participantMap[it.id] = it }
-            delta.removedParticipantIds?.forEach { participantMap.remove(it) }
-            updatedTrip = updatedTrip.copy(participants = participantMap.values.toList())
-        }
-
-        // Update expenses
-        delta.expenses?.let { newExpenses ->
-            val expenseMap = updatedTrip.expenses.associateBy { it.id }.toMutableMap()
-            newExpenses.forEach { expenseMap[it.id] = it }
-            delta.removedExpenseIds?.forEach { expenseMap.remove(it) }
-            updatedTrip = updatedTrip.copy(expenses = expenseMap.values.toList())
-        }
-
-        tripsCache[tripId] = updatedTrip
-
-        // Emituj zmianę do wszystkich obserwujących ViewModeli
-        emitTripUpdate(tripId)
-
-        Log.d(TAG, "Delta applied: ${delta.eventType} for trip $tripId")
     }
 
     // ==========================================

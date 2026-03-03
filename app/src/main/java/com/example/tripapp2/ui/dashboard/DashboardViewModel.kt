@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.NavigationCommand
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
@@ -27,6 +28,7 @@ class DashboardViewModel(
 
     init {
         loadTrips()
+        observeCacheChanges()
     }
 
     /**
@@ -78,5 +80,18 @@ class DashboardViewModel(
 
     fun refresh() {
         loadTrips()
+    }
+
+    private fun observeCacheChanges() {
+        viewModelScope.launch {
+            tripRepository.cacheChangeFlow.collectLatest {
+                val trips = tripRepository.getAllTripsFromCache()
+                if (trips.isEmpty()) {
+                    _dashboardState.value = DashboardState.Empty
+                } else {
+                    _dashboardState.value = DashboardState.Success(trips)
+                }
+            }
+        }
     }
 }

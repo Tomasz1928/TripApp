@@ -445,13 +445,19 @@ class GraphQLDataSource(context: Context) {
      * Zwraca Flow z TripDelta — UI subskrybuje to by dostawać real-time updates.
      * Wymaga zaimplementowanej subscription tripUpdates na backendzie.
      */
-    fun subscribeTripUpdates(tripId: Int): Flow<TripDeltaDto> {
+    fun subscribeTripUpdates(tripId: Int): Flow<TripNotificationDto> {
         return client.subscription(TripUpdatesSubscription(tripId))
             .toFlow()
             .map { response ->
-                val delta = response.data?.tripUpdates
+                val data = response.data?.tripUpdates
                     ?: throw Exception("Empty subscription data")
-                mapTripDelta(delta)
+                TripNotificationDto(
+                    tripId = data.tripId.toString(),
+                    tripName = data.tripName,
+                    eventType = data.eventType.name,
+                    actorNickname = data.actorNickname,
+                    actorParticipantId = data.actorParticipantId
+                )
             }
     }
 
@@ -609,109 +615,6 @@ class GraphQLDataSource(context: Context) {
             isMainCurrency = m.isMainCurrency,
             currency = m.currency,
             amount = m.amount.toFloat()
-        )
-    }
-
-    // ==========================================
-    // SUBSCRIPTION MAPPER
-    // ==========================================
-
-    private fun mapTripDelta(d: TripUpdatesSubscription.TripUpdates): TripDeltaDto {
-        return TripDeltaDto(
-            tripId = d.tripId.toString(),
-            eventType = d.eventType.name,
-            expenses = d.expenses?.map { mapSubscriptionExpense(it) },
-            participants = d.participants?.map { mapSubscriptionParticipant(it) },
-            categories = d.categories?.map {
-                CategoryDto(categoryId = it.categoryId.toString(), totalAmount = it.totalAmount.toFloat())
-            },
-            settlement = d.settlement?.let { mapSubscriptionSettlement(it) },
-            removedExpenseIds = d.removedExpenseIds?.map { it.toString() },
-            removedParticipantIds = d.removedParticipantIds?.map { it.toString() },
-            totalExpenses = d.totalExpenses?.toFloat(),
-            myCost = d.myCost?.map {
-                SimpleMoneyValueDto(
-                    isMainCurrency = it.isMainCurrency,
-                    currency = it.currency,
-                    amount = it.amount.toFloat()
-                )
-            }
-        )
-    }
-
-    private fun mapSubscriptionExpense(e: TripUpdatesSubscription.Expense): ExpenseDto {
-        return ExpenseDto(
-            id = e.id.toString(),
-            name = e.name,
-            description = e.description,
-            totalExpense = e.totalExpense.map {
-                SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
-            },
-            amount = e.amount.toFloat(),
-            currency = e.currency,
-            date = e.date.toLong(),
-            categoryId = e.categoryId.toString(),
-            payerId = e.payerId.toString(),
-            payerNickname = e.payerNickname,
-            sharedWith = e.sharedWith.map { s ->
-                ShareDto(
-                    participantId = s.participantId.toString(),
-                    participantNickname = s.participantNickname,
-                    splitValue = s.splitValue.map {
-                        SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
-                    },
-                    isSettlement = s.isSettlement,
-                    leftForSettled = s.leftForSettlement.map {
-                        SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
-                    }
-                )
-            }
-        )
-    }
-
-    private fun mapSubscriptionParticipant(p: TripUpdatesSubscription.Participant): ParticipantDto {
-        return ParticipantDto(
-            id = p.id.toString(),
-            nickname = p.nickname,
-            totalExpenses = p.totalExpenses.map {
-                SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
-            },
-            isOwner = p.isOwner,
-            isPlaceholder = p.isPlaceholder,
-            accessCode = p.accessCode,
-            isActive = p.isActive
-        )
-    }
-
-    private fun mapSubscriptionSettlement(s: TripUpdatesSubscription.Settlement): SettlementDto {
-        return SettlementDto(
-            relations = s.relations.map { r ->
-                SettlementRelationDto(
-                    relatedId = r.relatedId.toString(),
-                    relatedName = r.relatedName,
-                    leftForSettled = r.leftForSettled.map {
-                        SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
-                    },
-                    allRelatedAmount = r.allRelatedAmount.map {
-                        SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
-                    },
-                    prepayment = PrepaymentDetailsDto(
-                        amountLeft = r.prepayment.amountLeft.map {
-                            SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
-                        },
-                        history = r.prepayment.history.map { h ->
-                            PrepaymentHistoryDto(
-                                date = h.date.toLong(),
-                                values = SimpleMoneyValueDto(
-                                    h.values.isMainCurrency,
-                                    h.values.currency,
-                                    h.values.amount.toFloat()
-                                )
-                            )
-                        }
-                    )
-                )
-            }
         )
     }
 }
