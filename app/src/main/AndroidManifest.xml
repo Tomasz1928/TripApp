@@ -17,18 +17,23 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-
-        <!-- LOGIN – activity startowa -->
+        <!-- SPLASH - nowy LAUNCHER, sprawdza sesje -->
         <activity
-            android:name=".ui.auth.login.LoginActivity"
+            android:name=".ui.splash.SplashActivity"
             android:exported="true"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
-            android:theme="@style/Theme.TripApp">
+            android:theme="@style/Theme.TripApp.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- LOGIN – activity startowa -->
+        <activity
+            android:name=".ui.auth.login.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
+            android:theme="@style/Theme.TripApp" />
 
         <!-- Rejestracja -->
         <activity
