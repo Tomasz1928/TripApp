@@ -7,6 +7,15 @@
     <string name="app_name">TripApp</string>
 
     <!-- ========================================= -->
+    <!-- OPTIONS -->
+    <!-- ========================================= -->
+
+    <string name="options_title">Opcje</string>
+    <string name="options_logout">Wyloguj sie</string>
+    <string name="options_logout_confirm_title">Wylogowanie</string>
+    <string name="options_logout_confirm_message">Czy na pewno chcesz sie wylogowac?</string>
+
+    <!-- ========================================= -->
     <!-- TRIP NOTIFICATIONS (Snackbar) -->
     <!-- ========================================= -->
     <string name="notification_expense_added">%1$s dodał(a) wydatek w %2$s</string>

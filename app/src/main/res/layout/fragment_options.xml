@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Options Fragment Layout
+    Struktura: Obrazek (25%) → Nagłówek → Treść (opcje)
+-->
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbars="none"
+    android:background="@color/background">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/bottom_nav_padding">
+
+        <!-- ================================== -->
+        <!-- HEADER IMAGE - 25% wysokości ekranu -->
+        <!-- ================================== -->
+        <FrameLayout
+            android:id="@+id/headerImageContainer"
+            style="@style/HeaderImageContainer"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.25">
+
+            <ImageView
+                android:id="@+id/headerImage"
+                style="@style/HeaderImage"
+                android:src="@drawable/header_l_login"/>
+        </FrameLayout>
+
+        <!-- ================================== -->
+        <!-- NAGŁÓWEK WIDOKU (WYŚRODKOWANY) -->
+        <!-- ================================== -->
+        <TextView
+            android:id="@+id/optionsTitle"
+            style="@style/Text.Heading.Screen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/options_title"
+            android:gravity="center"
+            android:textAlignment="center"
+            app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- ================================== -->
+        <!-- TREŚĆ - Lista opcji -->
+        <!-- ================================== -->
+
+        <!-- Logout Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/logoutCard"
+            style="@style/Card"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintTop_toBottomOf="@id/optionsTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_percent="0.9">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="@dimen/padding_default">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size_large"
+                    android:layout_height="@dimen/icon_size_large"
+                    android:src="@drawable/ic_logout"
+                    android:contentDescription="@string/options_logout"
+                    app:tint="@color/error"/>
+
+                <TextView
+                    style="@style/Text.Body.Large"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/spacing_default"
+                    android:text="@string/options_logout"
+                    android:textColor="@color/error"/>
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size_medium"
+                    android:layout_height="@dimen/icon_size_medium"
+                    android:src="@drawable/ic_chevron_right"
+                    android:contentDescription="@null"
+                    app:tint="@color/text_hint"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

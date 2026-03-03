@@ -17,6 +17,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.example.tripapp2.ui.common.TripNotificationManager
 import com.example.tripapp2.data.repository.TripRepository
 import androidx.lifecycle.lifecycleScope
+import com.example.tripapp2.ui.dashboard.options.OptionsFragment
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -74,6 +75,7 @@ class DashboardActivity : AppCompatActivity() {
             R.id.menu_dashboard -> "dashboard"
             R.id.menu_add_trip -> "createTrip"
             R.id.menu_join_trip -> "joinTrip"
+            R.id.menu_settings -> "options"
             else -> "dashboard"
         }
 
@@ -82,6 +84,7 @@ class DashboardActivity : AppCompatActivity() {
                 R.id.menu_dashboard -> DashboardFragment()
                 R.id.menu_add_trip -> CreateTripFragment()
                 R.id.menu_join_trip -> JoinTripFragment()
+                R.id.menu_settings -> OptionsFragment()
                 else -> DashboardFragment()
             }
 
