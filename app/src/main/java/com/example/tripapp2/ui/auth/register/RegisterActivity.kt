@@ -2,24 +2,24 @@ package com.example.tripapp2.ui.auth.register
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.lifecycleScope
 import com.example.tripapp2.R
 import com.example.tripapp2.databinding.ActivityRegisterBinding
+import com.example.tripapp2.data.network.ApolloClientProvider
+import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.auth.login.LoginActivity
 import com.example.tripapp2.ui.dashboard.DashboardActivity
+import kotlinx.coroutines.launch
 
-/**
- * Activity rejestracji
- *
- * PRZED: 50 linii, podstawowa walidacja
- * PO: 50 linii, pełna walidacja w ViewModel, lepsze UX
- */
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
     private val viewModel: RegisterViewModel by viewModels()
+    private var repository = TripRepository.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,29 +31,24 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun setupInputListeners() {
-        // Username
         binding.usernameInput.addTextChangedListener { text ->
             viewModel.onUsernameChanged(text.toString())
         }
 
-        // Password
         binding.passwordInput.addTextChangedListener { text ->
             viewModel.onPasswordChanged(text.toString())
         }
 
-        // Register button
         binding.registerBtn.setOnClickListener {
             viewModel.onRegisterClicked()
         }
 
-        // Login redirect
         binding.loginRedirect.setOnClickListener {
             viewModel.onLoginClicked()
         }
     }
 
     private fun setupObservers() {
-        // Loading state
         viewModel.isLoading.observe(this) { isLoading ->
             binding.registerBtn.isEnabled = !isLoading
             binding.registerBtn.text = if (isLoading) {
@@ -77,14 +72,12 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
-        // Przejście do logowania
         viewModel.navigateToLoginEvent.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
                 navigateToLogin()
             }
         }
 
-        // Błędy
         viewModel.error.observe(this) { event ->
             event.getContentIfNotHandled()?.let { message ->
                 android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_LONG).show()
@@ -92,9 +85,19 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
     private fun navigateToDashboard() {
-        val intent = Intent(this, DashboardActivity::class.java)
-        startActivity(intent)
-        finish()
+        ApolloClientProvider.resetAndRebuild()
+        lifecycleScope.launch {
+            try {
+                repository.loadInitialData()
+            } catch (e: Exception) {
+                Log.w("RegisterActivity", "loadInitialData failed", e)
+            }
+
+            val intent = Intent(this@RegisterActivity, DashboardActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun navigateToLogin() {

@@ -63,6 +63,9 @@ class DashboardFragment : BaseFragment<DashboardViewModel>(R.layout.fragment_das
             },
             onCreateClick = {
                 viewModel.onCreateTripClicked()
+            },
+            onRefreshClick = {  // NOWE — callback refresh
+                viewModel.refreshFromApi()
             }
         )
         tripsRecycler.adapter = adapter
@@ -104,7 +107,6 @@ class DashboardFragment : BaseFragment<DashboardViewModel>(R.layout.fragment_das
     override fun handleNavigation(command: NavigationCommand) {
         when (command) {
             is NavigationCommand.ToTripDetails -> {
-                // ODBIERZ tripId z komendy!
                 (activity as? DashboardActivity)?.openTripDetails(command.tripId)
             }
             is NavigationCommand.ToCreateTrip -> {
