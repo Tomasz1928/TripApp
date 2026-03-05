@@ -28,9 +28,9 @@ import kotlinx.coroutines.flow.map
  * WAŻNE: Apollo generuje klasy z plików .graphql w package com.example.tripapp2.graphql.*
  * Nazwy klas = nazwy operacji: TripListQuery, TripDetailsQuery, LoginUserMutation, etc.
  */
-class GraphQLDataSource(context: Context) {
+class GraphQLDataSource() {
 
-    private val client: ApolloClient = ApolloClientProvider.getClient(context)
+    private val client: ApolloClient = ApolloClientProvider.getClient()
 
     companion object {
         private const val TAG = "GraphQLDataSource"
@@ -38,9 +38,9 @@ class GraphQLDataSource(context: Context) {
         @Volatile
         private var INSTANCE: GraphQLDataSource? = null
 
-        fun getInstance(context: Context): GraphQLDataSource {
+        fun getInstance(): GraphQLDataSource {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: GraphQLDataSource(context.applicationContext).also { INSTANCE = it }
+                INSTANCE ?: GraphQLDataSource().also { INSTANCE = it }
             }
         }
     }

@@ -14,14 +14,34 @@
         android:orientation="vertical"
         android:padding="@dimen/padding_default">
 
-        <!-- Title -->
-        <TextView
-            android:id="@+id/tripTitle"
-            style="@style/Text.Title.Medium"
-            android:layout_width="wrap_content"
+        <!-- NOWE: Title row z refreshBtn w prawym górnym rogu -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Zakopane 2024"
-            android:layout_marginTop="@dimen/spacing_small"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="@dimen/spacing_small">
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/tripTitle"
+                style="@style/Text.Title.Medium"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Zakopane 2024"/>
+
+            <!-- Refresh Button -->
+            <ImageView
+                android:id="@+id/refreshBtn"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:src="@drawable/ic_refresh"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
 
         <!-- Date -->
         <TextView

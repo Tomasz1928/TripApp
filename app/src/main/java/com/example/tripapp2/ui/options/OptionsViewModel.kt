@@ -31,9 +31,7 @@ class OptionsViewModel : BaseViewModel() {
             try {
                 tripRepository.logout()
             } catch (_: Exception) { }
-
             tripRepository.clearCache()
-            ApolloClientProvider.resetClient()
             setLoading(false)
             _logoutEvent.value = Event(Unit)
         }

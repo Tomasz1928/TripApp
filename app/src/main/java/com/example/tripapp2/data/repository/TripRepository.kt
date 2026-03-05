@@ -2,9 +2,9 @@ package com.example.tripapp2.data.repository
 
 import android.content.Context
 import android.util.Log
+import com.example.tripapp2.data.cache.TripCacheManager
 import com.example.tripapp2.data.model.*
 import com.example.tripapp2.data.network.GraphQLDataSource
-import com.example.tripapp2.data.network.SessionManager
 import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsItemInput
 import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsRequest
 import kotlinx.coroutines.CoroutineScope
@@ -34,14 +34,16 @@ import kotlinx.coroutines.flow.asSharedFlow
  * - Subskrypcje WebSocket żyją w repozytorium (nie w ViewModelach)
  *   → przetrwają zmianę fragmentów i ekranów
  * - ViewModele obserwują dane przez StateFlow (observeTrip)
+ * - Cache persystowany w pamięci telefonu (TripCacheManager)
  *
  * WAŻNE: Wymaga Context do inicjalizacji (dla Apollo Client).
  * Użyj getInstance(context) zamiast getInstance().
  */
 class TripRepository private constructor(context: Context) {
 
-    private val graphQL = GraphQLDataSource.getInstance(context)
-    private val sessionManager = SessionManager(context)
+    private val graphQL = GraphQLDataSource.getInstance()
+    private val sessionManager by lazy { SessionManager.getInstance() }
+    private val cacheManager by lazy { TripCacheManager.getInstance()  }
     private val tripsCache = mutableMapOf<String, TripDto>()
     private var cachedUserInfo: UserInfoDto? = null
 
@@ -199,6 +201,40 @@ class TripRepository private constructor(context: Context) {
     }
 
     // ==========================================
+    // PERSISTENT CACHE (NOWE)
+    // ==========================================
+
+    /**
+     * Wczytuje dane z pamięci telefonu do RAM cache.
+     * Wywoływane przy starcie aplikacji PRZED loadInitialData().
+     */
+    fun loadFromPersistentCache(): Boolean {
+        val persistedTrips = cacheManager.getAllTrips()
+        if (persistedTrips.isNotEmpty()) {
+            tripsCache.putAll(persistedTrips)
+            persistedTrips.keys.forEach { tripId -> emitTripUpdate(tripId) }
+            Log.d(TAG, "Loaded ${persistedTrips.size} trips from persistent cache")
+        }
+
+        val persistedUserInfo = cacheManager.getUserInfo()
+        if (persistedUserInfo != null) {
+            cachedUserInfo = persistedUserInfo
+        }
+
+        return persistedTrips.isNotEmpty()
+    }
+
+    /** Zapisuje cały RAM cache do pamięci telefonu. */
+    private fun persistToStorage() {
+        cacheManager.saveAllTrips(tripsCache)
+    }
+
+    /** Zapisuje pojedynczy trip do pamięci telefonu. */
+    private fun persistTrip(tripId: String) {
+        tripsCache[tripId]?.let { cacheManager.saveTrip(it) }
+    }
+
+    // ==========================================
     // AUTH
     // ==========================================
 
@@ -207,6 +243,7 @@ class TripRepository private constructor(context: Context) {
         result.onSuccess { auth ->
             if (auth.success && auth.user != null) {
                 cachedUserInfo = auth.user
+                cacheManager.saveUserInfo(auth.user)
             }
         }
         return result
@@ -217,6 +254,7 @@ class TripRepository private constructor(context: Context) {
         result.onSuccess { auth ->
             if (auth.success && auth.user != null) {
                 cachedUserInfo = auth.user
+                cacheManager.saveUserInfo(auth.user)
             }
         }
         return result
@@ -230,6 +268,7 @@ class TripRepository private constructor(context: Context) {
             tripsCache.clear()
             _tripFlows.clear()
             sessionManager.clearSession()
+            cacheManager.clearAll()
         }
         return result
     }
@@ -239,6 +278,7 @@ class TripRepository private constructor(context: Context) {
         result.onSuccess { session ->
             if (session.isAuthenticated && session.user != null) {
                 cachedUserInfo = session.user
+                cacheManager.saveUserInfo(session.user)
             }
         }
         return result
@@ -246,6 +286,11 @@ class TripRepository private constructor(context: Context) {
 
     suspend fun getCurrentUserInfo(): UserInfoDto {
         cachedUserInfo?.let { return it }
+
+        cacheManager.getUserInfo()?.let {
+            cachedUserInfo = it
+            return it
+        }
 
         val sessionResult = graphQL.getSession()
         sessionResult.onSuccess { session ->
@@ -271,8 +316,6 @@ class TripRepository private constructor(context: Context) {
             result.onSuccess { tripListDto ->
                 val tripIds = tripListDto.trips ?: emptyList()
                 Log.d(TAG, "Trip list loaded: ${tripIds.size} trips, fetching full details...")
-
-                // Dla każdego tripa pobierz pełne detale (równolegle)
                 coroutineScope {
                     tripIds.map { tripIdDto ->
                         async {
@@ -291,9 +334,7 @@ class TripRepository private constructor(context: Context) {
                         }
                     }.forEach { it.await() }
                 }
-
-                Log.d(TAG, "All trip details loaded (${tripsCache.size} in cache), starting subscriptions...")
-                startSubscriptionsForAllTrips()
+                persistToStorage()
             }
             result
         } catch (e: Exception) {
@@ -320,7 +361,7 @@ class TripRepository private constructor(context: Context) {
             result.onSuccess { trip ->
                 tripsCache[trip.id] = trip
                 emitTripUpdate(trip.id)
-                // Upewnij się że subskrypcja działa
+                persistTrip(trip.id)
                 startSubscriptionForTrip(trip.id)
             }
             result
@@ -357,7 +398,7 @@ class TripRepository private constructor(context: Context) {
                     detailsResult.onSuccess { trip ->
                         tripsCache[trip.id] = trip
                         emitTripUpdate(trip.id)
-                        // Nowy trip → startuj subskrypcję
+                        persistTrip(trip.id)
                         startSubscriptionForTrip(trip.id)
                     }
                 }
@@ -513,7 +554,7 @@ class TripRepository private constructor(context: Context) {
         participantId: String,
         amount: Float,
         currency: String,
-        direction:String
+        direction: String
     ): Result<SuccessDto> {
         return try {
             val result = graphQL.addPrepayment(tripId, participantId, amount, currency, direction)
@@ -603,5 +644,6 @@ class TripRepository private constructor(context: Context) {
         tripsCache.clear()
         cachedUserInfo = null
         _tripFlows.clear()
+        cacheManager.clearAll()
     }
 }

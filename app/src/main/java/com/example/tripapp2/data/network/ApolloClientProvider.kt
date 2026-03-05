@@ -1,5 +1,6 @@
 package com.example.tripapp2.data.network
 
+import SessionManager
 import android.content.Context
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.network.okHttpClient
@@ -23,16 +24,15 @@ object ApolloClientProvider {
 
     @Volatile
     private var apolloClient: ApolloClient? = null
+    private val sessionManager by lazy { SessionManager.getInstance() }
 
-    fun getClient(context: Context): ApolloClient {
+    fun getClient(): ApolloClient {
         return apolloClient ?: synchronized(this) {
-            apolloClient ?: buildClient(context).also { apolloClient = it }
+            apolloClient ?: buildClient().also { apolloClient = it }
         }
     }
 
-    private fun buildClient(context: Context): ApolloClient {
-        val sessionManager = SessionManager(context)
-
+    private fun buildClient(): ApolloClient {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -62,8 +62,11 @@ object ApolloClientProvider {
             .build()
     }
 
-    fun resetClient() {
-        apolloClient?.close()
-        apolloClient = null
+    fun resetAndRebuild(): ApolloClient {
+        synchronized(this) {
+            apolloClient?.close()
+            apolloClient = null
+            return buildClient().also { apolloClient = it }
+        }
     }
 }

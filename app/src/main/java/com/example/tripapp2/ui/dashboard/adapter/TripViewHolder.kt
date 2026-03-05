@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -21,7 +22,8 @@ class TripViewHolder(
     itemView: View,
     private val onTripClick: (TripUiModel) -> Unit,
     private val onCostDetailsClick: (TripUiModel) -> Unit,
-    private val onAddCostClick: (TripUiModel) -> Unit
+    private val onAddCostClick: (TripUiModel) -> Unit,
+    private val onRefreshClick: () -> Unit = {}
 ) : RecyclerView.ViewHolder(itemView) {
 
     private val title: TextView = itemView.findViewById(R.id.tripTitle)
@@ -32,7 +34,7 @@ class TripViewHolder(
     private val detailsBtn: Button = itemView.findViewById(R.id.detailsBtn)
     private val costDetailsBtn: Button = itemView.findViewById(R.id.costDetailsBtn)
     private val addCostBtn: Button = itemView.findViewById(R.id.addCostBtn)
-
+    private val refreshBtn: ImageView = itemView.findViewById(R.id.refreshBtn)
 
     companion object {
         private const val CARD_WIDTH_RATIO = 0.85f
@@ -66,6 +68,7 @@ class TripViewHolder(
         detailsBtn.setOnClickListener { onTripClick(trip) }
         costDetailsBtn.setOnClickListener { onCostDetailsClick(trip) }
         addCostBtn.setOnClickListener { onAddCostClick(trip) }
+        refreshBtn.setOnClickListener { onRefreshClick() }
     }
 
     private fun setCardWidth() {

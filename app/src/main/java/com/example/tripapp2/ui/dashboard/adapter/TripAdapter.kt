@@ -13,7 +13,8 @@ class TripAdapter(
     private val onCostDetailsClick: (TripUiModel) -> Unit,
     private val onAddCostClick: (TripUiModel) -> Unit,
     private val onJoinClick: () -> Unit,
-    private val onCreateClick: () -> Unit
+    private val onCreateClick: () -> Unit,
+    private val onRefreshClick: () -> Unit = {}
 ) : ListAdapter<TripAdapterItem, RecyclerView.ViewHolder>(TripDiffCallback()) {
 
     companion object {
@@ -45,7 +46,7 @@ class TripAdapter(
         return when (viewType) {
             TYPE_TRIP -> {
                 val view = inflater.inflate(R.layout.item_trip_card, parent, false)
-                TripViewHolder(view, onTripClick, onCostDetailsClick, onAddCostClick)
+                TripViewHolder(view, onTripClick, onCostDetailsClick, onAddCostClick, onRefreshClick)  // NOWE
             }
             TYPE_PLACEHOLDER -> {
                 val view = inflater.inflate(R.layout.item_placeholder_card, parent, false)
@@ -62,17 +63,10 @@ class TripAdapter(
         }
     }
 
-    /**
-     * Submituje listę wycieczek (ZMIENIONA NAZWA - było submitList)
-     */
     fun submitTrips(trips: List<TripUiModel>) {
-        val items = trips.map { TripAdapterItem.Trip(it) }
-        submitList(items)
+        submitList(trips.map { TripAdapterItem.Trip(it) })
     }
 
-    /**
-     * Submituje stan pusty (placeholder)
-     */
     fun submitEmptyState() {
         submitList(listOf(TripAdapterItem.Placeholder))
     }
@@ -88,8 +82,7 @@ class TripDiffCallback : DiffUtil.ItemCallback<TripAdapterItem>() {
         return when {
             oldItem is TripAdapterItem.Trip && newItem is TripAdapterItem.Trip ->
                 oldItem.trip.id == newItem.trip.id
-            oldItem is TripAdapterItem.Placeholder && newItem is TripAdapterItem.Placeholder ->
-                true
+            oldItem is TripAdapterItem.Placeholder && newItem is TripAdapterItem.Placeholder -> true
             else -> false
         }
     }

@@ -12,12 +12,12 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel dla Dashboard
  *
- * Po loadInitialData():
- * 1. Pobiera listę ID tripów
- * 2. Dla każdego ID pobiera pełne detale (równolegle)
- * 3. Cache w repo zawiera pełne TripDto
- * 4. Startuje subskrypcje WebSocket na wszystkie tripy
- * 5. Dashboard wyświetla tripy z cache
+ * Strategia:
+ * - Dane z API ładowane PRZED wejściem na Dashboard
+ *   (w SplashActivity / LoginActivity / RegisterActivity)
+ * - init: tylko wyświetl dane z cache (bez strzału do API)
+ * - refreshFromApi(): ręczny refresh (przycisk na karcie)
+ * - observeCacheChanges(): reaguje na zmiany z subskrypcji/mutacji
  */
 class DashboardViewModel(
     private val tripRepository: TripRepository = TripRepository.getInstance()
@@ -27,15 +27,16 @@ class DashboardViewModel(
     val dashboardState: LiveData<DashboardState> = _dashboardState
 
     init {
-        loadTrips()
+        // Dane już załadowane z API przed Dashboard — tylko pokaż z cache
+        refreshFromCache()
         observeCacheChanges()
     }
 
     /**
-     * Ładuje tripy: loadInitialData() pobiera ID + pełne detale + startuje subskrypcje.
-     * Po sukcesie bierze pełne TripDto z cache.
+     * Ręczny refresh — strzela do API.
+     * Wywoływane przez przycisk refresh na karcie.
      */
-    fun loadTrips() {
+    fun refreshFromApi() {
         viewModelScope.launch {
             setLoading(true)
             _dashboardState.value = DashboardState.Loading
@@ -44,7 +45,6 @@ class DashboardViewModel(
             setLoading(false)
 
             result.onSuccess {
-                // Po loadInitialData cache ma pełne TripDto
                 val trips = tripRepository.getAllTripsFromCache()
                 if (trips.isEmpty()) {
                     _dashboardState.value = DashboardState.Empty
@@ -52,7 +52,13 @@ class DashboardViewModel(
                     _dashboardState.value = DashboardState.Success(trips)
                 }
             }.onFailure { error ->
-                _dashboardState.value = DashboardState.Error(error.message ?: "Błąd")
+                // Jeśli API fail ale mamy dane w cache — pokaż cache
+                val cachedTrips = tripRepository.getAllTripsFromCache()
+                if (cachedTrips.isNotEmpty()) {
+                    _dashboardState.value = DashboardState.Success(cachedTrips)
+                } else {
+                    _dashboardState.value = DashboardState.Error(error.message ?: "Błąd")
+                }
             }
         }
     }
@@ -79,7 +85,7 @@ class DashboardViewModel(
     }
 
     fun refresh() {
-        loadTrips()
+        refreshFromApi()
     }
 
     private fun observeCacheChanges() {
