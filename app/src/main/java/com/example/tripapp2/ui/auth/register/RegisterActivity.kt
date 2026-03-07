@@ -84,10 +84,16 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
     }
+
     private fun navigateToDashboard() {
+        // POPRAWKA: resetAndRebuild() + stopAllSubscriptions() przed loadInitialData
         ApolloClientProvider.resetAndRebuild()
+        repository.stopAllSubscriptions()
+
         lifecycleScope.launch {
             try {
+                // loadInitialData() automatycznie startuje subskrypcje WS
+                // (po rejestracji prawdopodobnie 0 tripów, więc 0 subskrypcji — OK)
                 repository.loadInitialData()
             } catch (e: Exception) {
                 Log.w("RegisterActivity", "loadInitialData failed", e)

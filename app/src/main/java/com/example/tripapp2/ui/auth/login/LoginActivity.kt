@@ -72,8 +72,16 @@ class LoginActivity : AppCompatActivity() {
         viewModel.loginSuccessEvent.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
                 lifecycleScope.launch {
+                    // POPRAWKA: resetAndRebuild() tworzy nowy Apollo klient z nowym sessionId.
+                    // Dzięki fix w GraphQLDataSource (client jako property z get()),
+                    // wszystkie kolejne operacje automatycznie użyją nowego klienta.
                     ApolloClientProvider.resetAndRebuild()
+
+                    // POPRAWKA: Zatrzymaj stare subskrypcje (jeśli były) przed loadInitialData
+                    repository.stopAllSubscriptions()
+
                     try {
+                        // loadInitialData() automatycznie startuje subskrypcje WS
                         repository.loadInitialData()
                     } catch (e: Exception) {
                         Log.w("LoginActivity", "Initial data load failed", e)
@@ -97,11 +105,12 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToDashboard() {
-            repository.startSubscriptionsForAllTrips()
-            val intent = Intent(this@LoginActivity, DashboardActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
+        // POPRAWKA: Usunięto repository.startSubscriptionsForAllTrips()
+        // bo loadInitialData() robi to automatycznie
+        val intent = Intent(this@LoginActivity, DashboardActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun navigateToRegister() {

@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.tripapp2.data.cache.TripCacheManager
 import com.example.tripapp2.data.model.*
 import com.example.tripapp2.data.network.GraphQLDataSource
+import com.example.tripapp2.data.network.SessionManager
 import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsItemInput
 import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsRequest
 import kotlinx.coroutines.CoroutineScope
@@ -38,12 +39,17 @@ import kotlinx.coroutines.flow.asSharedFlow
  *
  * WAŻNE: Wymaga Context do inicjalizacji (dla Apollo Client).
  * Użyj getInstance(context) zamiast getInstance().
+ *
+ * POPRAWKI vs oryginał:
+ * - loadInitialData() automatycznie startuje subskrypcje WS po załadowaniu danych
+ * - joinTrip() nie musi osobno wołać startSubscriptionsForAllTrips() (bo robi to loadInitialData)
+ * - Import SessionManager z pełnym pakietem
  */
 class TripRepository private constructor(context: Context) {
 
     private val graphQL = GraphQLDataSource.getInstance()
     private val sessionManager by lazy { SessionManager.getInstance() }
-    private val cacheManager by lazy { TripCacheManager.getInstance()  }
+    private val cacheManager by lazy { TripCacheManager.getInstance() }
     private val tripsCache = mutableMapOf<String, TripDto>()
     private var cachedUserInfo: UserInfoDto? = null
 
@@ -116,7 +122,7 @@ class TripRepository private constructor(context: Context) {
 
     /**
      * Startuje subskrypcje WebSocket na WSZYSTKIE tripy z cache.
-     * Wywoływane po loadInitialData() i po fetchAndCacheTripDetails().
+     * Wywoływane automatycznie na koniec loadInitialData().
      *
      * Logika:
      * - Dla każdego tripa w cache, jeśli subskrypcja jeszcze nie działa → startuj
@@ -308,7 +314,11 @@ class TripRepository private constructor(context: Context) {
     // ==========================================
 
     /**
-     * Ładuje listę tripów i od razu startuje subskrypcje na wszystkie.
+     * Ładuje listę tripów, pobiera ich detale i startuje subskrypcje WS.
+     *
+     * POPRAWKA: Na koniec automatycznie woła startSubscriptionsForAllTrips(),
+     * dzięki czemu callery (SplashActivity, LoginActivity, RegisterActivity)
+     * nie muszą tego robić osobno.
      */
     suspend fun loadInitialData(): Result<TripListDto> {
         return try {
@@ -335,6 +345,11 @@ class TripRepository private constructor(context: Context) {
                     }.forEach { it.await() }
                 }
                 persistToStorage()
+
+                // POPRAWKA: Automatycznie startuj subskrypcje WS po załadowaniu danych
+                // Dzięki temu callery nie muszą tego robić osobno
+                startSubscriptionsForAllTrips()
+                Log.d(TAG, "loadInitialData completed: ${tripsCache.size} trips cached, subscriptions started")
             }
             result
         } catch (e: Exception) {
@@ -408,13 +423,20 @@ class TripRepository private constructor(context: Context) {
         }
     }
 
+    /**
+     * Dołącza do tripu i przeładowuje dane.
+     *
+     * POPRAWKA: loadInitialData() teraz automatycznie startuje subskrypcje WS,
+     * więc po joinTrip nowy trip będzie miał subskrypcję.
+     */
     suspend fun joinTrip(accessCode: String): Result<SuccessDto> {
         return try {
             val result = graphQL.joinTrip(accessCode)
 
             result.onSuccess { joinTrip ->
                 if (joinTrip.success) {
-                    // Przeładuj listę i startuj subskrypcje na nowe tripy
+                    // Przeładuj listę i pobierz detale — loadInitialData()
+                    // automatycznie startuje subskrypcje na WSZYSTKIE tripy (w tym nowy)
                     loadInitialData()
                 }
             }
