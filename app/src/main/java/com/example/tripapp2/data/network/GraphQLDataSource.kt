@@ -1,6 +1,5 @@
 package com.example.tripapp2.data.network
 
-import android.content.Context
 import android.util.Log
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
@@ -27,10 +26,17 @@ import kotlinx.coroutines.flow.map
  *
  * WAŻNE: Apollo generuje klasy z plików .graphql w package com.example.tripapp2.graphql.*
  * Nazwy klas = nazwy operacji: TripListQuery, TripDetailsQuery, LoginUserMutation, etc.
+ *
+ * KRYTYCZNE: `client` jest property z getterem (nie val), dzięki czemu
+ * po ApolloClientProvider.resetAndRebuild() automatycznie używa nowego klienta.
  */
 class GraphQLDataSource() {
 
-    private val client: ApolloClient = ApolloClientProvider.getClient()
+    // POPRAWKA: Było `private val client: ApolloClient = ApolloClientProvider.getClient()`
+    // To powodowało, że po resetAndRebuild() GraphQLDataSource ciągle używał
+    // starego, zamkniętego klienta. Teraz dynamicznie pobiera aktualny klient.
+    private val client: ApolloClient
+        get() = ApolloClientProvider.getClient()
 
     companion object {
         private const val TAG = "GraphQLDataSource"
@@ -197,7 +203,7 @@ class GraphQLDataSource() {
                 ?: return Result.failure(Exception("Join trip failed"))
 
             Result.success(SuccessDto(
-                success =  data.success,
+                success = data.success,
                 message = data.message),
             )
         } catch (e: ApolloException) {
@@ -442,7 +448,7 @@ class GraphQLDataSource() {
     // ==========================================
 
     /**
-     * Zwraca Flow z TripDelta — UI subskrybuje to by dostawać real-time updates.
+     * Zwraca Flow z TripNotificationDto — UI subskrybuje to by dostawać real-time updates.
      * Wymaga zaimplementowanej subscription tripUpdates na backendzie.
      */
     fun subscribeTripUpdates(tripId: Int): Flow<TripNotificationDto> {
@@ -511,7 +517,6 @@ class GraphQLDataSource() {
                     leftForSettled = s.leftForSettlement.map {
                         SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
                     }
-
                 )
             }
         )

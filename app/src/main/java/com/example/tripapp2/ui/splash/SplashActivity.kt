@@ -1,12 +1,11 @@
 package com.example.tripapp2.ui.splash
 
-import SessionManager
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-
+import com.example.tripapp2.data.network.SessionManager
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.auth.login.LoginActivity
 import com.example.tripapp2.ui.dashboard.DashboardActivity
@@ -22,6 +21,7 @@ import kotlinx.coroutines.launch
  *    a) Wczytaj dane z persistent cache (jeśli są)
  *    b) Weryfikuj sesję z BE (checkSession)
  *    c) Sesja ważna → loadInitialData() → DashboardActivity
+ *       (loadInitialData automatycznie startuje subskrypcje WS)
  *    d) Sesja nieważna → czyść sesję → LoginActivity
  */
 class SplashActivity : AppCompatActivity() {
@@ -37,8 +37,12 @@ class SplashActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
+            // Zatrzymaj ewentualne stare subskrypcje (np. po process death)
             repository.stopAllSubscriptions()
+
+            // Szybki start: wczytaj dane z dysku
             repository.loadFromPersistentCache()
+
             val result = repository.checkSession()
 
             result.fold(
@@ -58,6 +62,7 @@ class SplashActivity : AppCompatActivity() {
                 onFailure = {
                     if (repository.getAllTripsFromCache().isNotEmpty()) {
                         Log.w("SplashActivity", "Network error but cache available")
+                        repository.startSubscriptionsForAllTrips()
                         navigateToDashboard()
                     } else {
                         sessionManager.clearSession()
@@ -70,7 +75,6 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun navigateToDashboard() {
-        repository.startSubscriptionsForAllTrips()
         val intent = Intent(this, DashboardActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)

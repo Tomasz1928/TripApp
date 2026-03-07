@@ -1,3 +1,5 @@
+package com.example.tripapp2.data.network
+
 import android.content.Context
 import android.util.Log
 

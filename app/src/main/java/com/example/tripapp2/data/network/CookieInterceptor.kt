@@ -1,6 +1,5 @@
 package com.example.tripapp2.data.network
 
-import SessionManager
 import android.util.Log
 import okhttp3.Interceptor
 import okhttp3.Response

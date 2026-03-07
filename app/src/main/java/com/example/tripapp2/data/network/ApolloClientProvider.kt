@@ -1,11 +1,10 @@
 package com.example.tripapp2.data.network
 
-import SessionManager
-import android.content.Context
+import android.util.Log
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.network.okHttpClient
 import com.apollographql.apollo3.network.ws.GraphQLWsProtocol
-import com.apollographql.apollo3.network.ws.WebSocketNetworkTransport
+import kotlinx.coroutines.delay
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
@@ -18,9 +17,9 @@ object ApolloClientProvider {
         "http://10.0.2.2:8000/graphql/"
     private const val WS_URL =
 //        "wss://tripbe.onrender.com/graphql/"
-    "ws://10.0.2.2:8000/graphql/"
+        "ws://10.0.2.2:8000/graphql/"
 
-
+    private const val TAG = "ApolloClientProvider"
 
     @Volatile
     private var apolloClient: ApolloClient? = null
@@ -59,13 +58,36 @@ object ApolloClientProvider {
                     }
                 )
             )
+            // NOWE: automatyczny reconnect WS po utracie połączenia
+            // Backoff: 3s, 6s, 9s, ... do max 10 prób
+            .webSocketReopenWhen { throwable, attempt ->
+                Log.w(TAG, "WS connection lost (attempt $attempt)", throwable)
+                if (attempt < 10) {
+                    delay(attempt * 3000L)
+                    true  // retry
+                } else {
+                    Log.e(TAG, "WS reconnect failed after $attempt attempts, giving up")
+                    false // give up
+                }
+            }
             .build()
     }
 
+    /**
+     * Zamyka aktualny klient i buduje nowy z najnowszym sessionId.
+     *
+     * WAŻNE: Po wywołaniu tej metody wszystkie aktywne subskrypcje WS
+     * na starym kliencie zostaną przerwane. Trzeba je ponownie uruchomić.
+     *
+     * Wywoływane po:
+     * - Udanym logowaniu (nowy sessionId)
+     * - Udanej rejestracji (nowy sessionId)
+     */
     fun resetAndRebuild(): ApolloClient {
         synchronized(this) {
             apolloClient?.close()
             apolloClient = null
+            Log.d(TAG, "Apollo client reset and rebuilt with new session")
             return buildClient().also { apolloClient = it }
         }
     }
