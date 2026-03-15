@@ -18,15 +18,15 @@
     <!-- ========================================= -->
     <!-- TRIP NOTIFICATIONS (Snackbar) -->
     <!-- ========================================= -->
-    <string name="notification_expense_added">%1$s dodał(a) wydatek w %2$s</string>
-    <string name="notification_expense_updated">%1$s zaktualizował(a) wydatek w %2$s</string>
-    <string name="notification_expense_deleted">%1$s usunął/usunęła wydatek w %2$s</string>
-    <string name="notification_prepayment_added">%1$s dodał(a) zaliczkę w %2$s</string>
-    <string name="notification_settlement_changed">%1$s rozliczył(a) koszty w %2$s</string>
-    <string name="notification_participant_added">%1$s dodał(a) uczestnika w %2$s</string>
-    <string name="notification_participant_updated">%1$s zaktualizował(a) uczestnika w %2$s</string>
-    <string name="notification_participant_removed">%1$s usunął/usunęła uczestnika w %2$s</string>
-    <string name="notification_unknown">Zmiana w %1$s</string>
+    <string name="notification_expense_added">Uczestnik %1$s dodał wydatek w tripie: %2$s</string>
+    <string name="notification_expense_updated">Uczestnik %1$s zaktualizował wydatek w tripie: %2$s</string>
+    <string name="notification_expense_deleted">Uczestnik %1$s usunął wydatek z tripu: %2$s</string>
+    <string name="notification_prepayment_added">Uczestnik %1$s dodał zaliczkę w tripie: %2$s</string>
+    <string name="notification_settlement_changed">Uczestnik %1$s rozliczył koszty w tripie: %2$s</string>
+    <string name="notification_participant_added">Uczestnik %1$s dodał uczestnika do tripu %2$s</string>
+    <string name="notification_participant_updated">Uczestnik %1$s zaktualizował uczestnika w tripie: %2$s</string>
+    <string name="notification_participant_removed">Uczestnik %1$s usunął uczestnika z tripu: %2$s</string>
+    <string name="notification_unknown">Zmiana w tripie %1$s</string>
     <string name="notification_action_refresh">Odśwież</string>
     <string name="notification_loading">Ładowanie…</string>
     <string name="notification_refresh_error">Problem z ładowaniem danych</string>
