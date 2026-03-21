@@ -1,0 +1,49 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Tab: Historia — lista z zegarem w rogu -->
+    <!-- Linie listy -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M6,5h10"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M6,10h10"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M6,15h6"/>
+    <!-- Bullet points -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M3,5a1.5,1.5 0,1 1,0 0.01z"/>
+    <path
+        android:fillColor="#000000"
+        android:pathData="M3,10a1.5,1.5 0,1 1,0 0.01z"/>
+    <path
+        android:fillColor="#000000"
+        android:pathData="M3,15a1.5,1.5 0,1 1,0 0.01z"/>
+    <!-- Zegar w prawym dolnym rogu -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.3"
+        android:pathData="M18,14a6,6 0,1 1,0 12a6,6 0,1 1,0 -12z"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M18,17.5v2.5l2,1.5"/>
+</vector>

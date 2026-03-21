@@ -1,0 +1,59 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Tab: Zaliczki — monety + strzałka + osoby -->
+    <!-- Moneta duża -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.2"
+        android:pathData="M9,1a4.5,4.5 0,1 1,0 9a4.5,4.5 0,1 1,0 -9z"/>
+    <!-- $ na monecie dużej -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M8.5,4.5h1v0.7h-1v0.8h-0.6v-0.8h-1v-0.7h1v-0.7h0.6z"/>
+    <!-- Moneta mała -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1"
+        android:pathData="M17,2a3,3 0,1 1,0 6a3,3 0,1 1,0 -6z"/>
+    <!-- Strzałka -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M7,12.5h10"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M15,10.5l2,2l-2,2"/>
+    <!-- Osoba lewa -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1"
+        android:pathData="M4,16a2.5,2.5 0,1 1,0 5a2.5,2.5 0,1 1,0 -5z"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.9"
+        android:pathData="M1.5,24Q1.5,22 4,22Q6.5,22 6.5,24"/>
+    <!-- Osoba prawa -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1"
+        android:pathData="M20,16a2.5,2.5 0,1 1,0 5a2.5,2.5 0,1 1,0 -5z"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="0.9"
+        android:pathData="M17.5,24Q17.5,22 20,22Q22.5,22 22.5,24"/>
+</vector>

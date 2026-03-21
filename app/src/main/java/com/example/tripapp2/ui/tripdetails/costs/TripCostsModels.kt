@@ -4,6 +4,8 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.example.tripapp2.data.model.CategoryRegistry
 import com.example.tripapp2.data.model.ExpenseDto
+import com.example.tripapp2.data.model.ShareDto
+import com.example.tripapp2.data.model.SettlementBreakdownType
 import com.example.tripapp2.data.model.mainCurrencyAmount
 import com.example.tripapp2.ui.common.extension.toShortDateString
 
@@ -35,6 +37,8 @@ data class ExpenseDetailUiModel(
 
 /**
  * Model podziału wydatku
+ *
+ * ZMIENIONE: dodano dominantType i secondaryTypes dla ikon breakdown
  */
 data class ShareItemUiModel(
     val personName: String,
@@ -42,7 +46,9 @@ data class ShareItemUiModel(
     val formattedAmountCostCurrency: String,
     val amountTripCurrency: Float,
     val formattedAmountTripCurrency: String,
-    val isSettlement: Boolean
+    val isSettlement: Boolean,
+    val dominantType: SettlementBreakdownType,           // NOWE: typ do dużej ikony (24dp)
+    val secondaryTypes: List<SettlementBreakdownType>    // NOWE: typy do małych ikon (16dp)
 )
 
 /**
@@ -72,6 +78,8 @@ sealed class TripCostsState {
  * Konwertuje ExpenseDto na ExpenseDetailUiModel
  *
  * totalExpense i splitValue są teraz List<SimpleMoneyValueDto>
+ *
+ * ZMIENIONE: mapowanie ShareDto → ShareItemUiModel teraz wywołuje resolveBreakdownIcons()
  */
 fun ExpenseDto.toDetailUiModel(
     currencyParticipantId: String,
@@ -113,6 +121,9 @@ fun ExpenseDto.toDetailUiModel(
                 !it.isMainCurrency && it.currency == mainCurrency
             }
 
+            // NOWE: oblicz ikony breakdown
+            val (dominant, secondary) = resolveShareBreakdownIcons(share)
+
             ShareItemUiModel(
                 isSettlement = share.isSettlement,
                 personName = share.participantNickname,
@@ -126,8 +137,61 @@ fun ExpenseDto.toDetailUiModel(
                     "%.2f".format(shareTripCurrencyValue.amount)
                 } else {
                     ""
-                }
+                },
+
+                // NOWE: breakdown icons
+                dominantType = dominant,
+                secondaryTypes = secondary
             )
         }
     )
+}
+
+// ==========================================
+// BREAKDOWN ICONS LOGIC
+// ==========================================
+
+/**
+ * Logika doboru ikon — identyczna jak w SettlementDetailsModels.resolveBreakdownIcons()
+ *
+ * 1. SELF → dominant = SELF, brak secondary
+ * 2. UNSETTLED w breakdown → dominant = UNSETTLED, secondary = reszta typów
+ * 3. W pełni rozliczone → dominant = typ z największą amountTrip
+ * 4. Fallback (brak breakdown) → isSettlement ? MANUAL_BY_AMOUNT : UNSETTLED
+ */
+private fun resolveShareBreakdownIcons(
+    share: ShareDto
+): Pair<SettlementBreakdownType, List<SettlementBreakdownType>> {
+
+    val breakdown = share.settlementBreakdown
+
+    // Fallback: brak danych breakdown (backward compatibility)
+    if (breakdown.isEmpty()) {
+        return if (share.isSettlement) {
+            SettlementBreakdownType.MANUAL_BY_AMOUNT to emptyList()
+        } else {
+            SettlementBreakdownType.UNSETTLED to emptyList()
+        }
+    }
+
+    val types = breakdown.map { it.type }.distinct()
+
+    // Przypadek 1: SELF
+    if (types.contains(SettlementBreakdownType.SELF)) {
+        return SettlementBreakdownType.SELF to emptyList()
+    }
+
+    // Przypadek 2: jest UNSETTLED (częściowo rozliczone)
+    if (types.contains(SettlementBreakdownType.UNSETTLED)) {
+        val secondary = types.filter { it != SettlementBreakdownType.UNSETTLED }
+        return SettlementBreakdownType.UNSETTLED to secondary
+    }
+
+    // Przypadek 3: w pełni rozliczone → dominant = typ z największą kwotą
+    val dominant = breakdown
+        .filter { it.type != SettlementBreakdownType.SELF }
+        .maxByOrNull { it.amountTrip }
+        ?.type ?: SettlementBreakdownType.MANUAL_BY_AMOUNT
+
+    return dominant to emptyList()
 }

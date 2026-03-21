@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Item Settlement Detail Cost
-    Wiersz kosztu w tab "Koszty": tytuł + kwota z walutą + ikona rozliczenia (✓/✗)
-    Używa istniejących styli
+    Item Settlement Detail Cost — ZMIENIONY
+    Wiersz kosztu w tab "Koszty": tytuł + kwota z walutą + kontener ikon rozliczenia
+    Zamiast pojedynczego ✓/✗ → duża ikona dominująca (24dp) + małe ikony secondary (16dp)
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -21,7 +20,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Nocleg"
         android:ellipsize="end"
         android:maxLines="1"/>
 
@@ -31,16 +29,32 @@
         style="@style/Text.Body.Bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="150,00 PLN"
         android:layout_marginEnd="@dimen/spacing_small"/>
 
-    <!-- Ikona rozliczenia (✓ zielony / ✗ czerwony) -->
-    <ImageView
-        android:id="@+id/settlementStatusIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_cross"
-        app:tint="@color/error"
-        android:contentDescription="@string/settlement_details_status_icon"/>
+    <!-- Kontener ikon rozliczenia: duża (24dp) + małe (16dp) w rzędzie -->
+    <LinearLayout
+        android:id="@+id/settlementIconsContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Ikona dominująca (główny typ rozliczenia) -->
+        <ImageView
+            android:id="@+id/settlementMainIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/settlement_details_status_icon"/>
+
+        <!-- Kontener na małe ikony secondary (dynamicznie dodawane w kodzie) -->
+        <LinearLayout
+            android:id="@+id/settlementSecondaryIcons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginStart="4dp"/>
+
+    </LinearLayout>
 
 </LinearLayout>

@@ -22,7 +22,6 @@ query TripDetailsQuery($tripId: Int!) {
             name
             payerId
             sharedWith {
-                isSettlement
                 participantId
                 participantNickname
                 splitValue {
@@ -30,10 +29,16 @@ query TripDetailsQuery($tripId: Int!) {
                     currency
                     amount
                 }
+                isSettlement
                 leftForSettlement {
                     isMainCurrency
                     currency
                     amount
+                }
+                settlementBreakdown {
+                    type
+                    amountCost
+                    amountTrip
                 }
             }
             totalExpense {
@@ -94,6 +99,19 @@ query TripDetailsQuery($tripId: Int!) {
                     }
                 }
             }
+        }
+        settlementHistory {
+            id
+            settlementType
+            actorParticipantId
+            actorNickname
+            otherParticipantId
+            otherNickname
+            amountInSettlementCurrency
+            settlementCurrency
+            amountInTripCurrency
+            relatedExpenseIds
+            createdAt
         }
         title
         totalExpenses

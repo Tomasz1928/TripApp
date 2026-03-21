@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selector dla tintowania ikon tabów:
+     aktywny = primary, nieaktywny = text_secondary -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/primary" android:state_selected="true"/>
+    <item android:color="@color/text_secondary"/>
+</selector>

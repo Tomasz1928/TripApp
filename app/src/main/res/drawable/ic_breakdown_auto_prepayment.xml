@@ -1,0 +1,48 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- AUTO_PREPAYMENT: fioletowe kółko, moneta + strzałka + ZIELONE V -->
+    <!-- Duże kółko tło -->
+    <path
+        android:fillColor="#EDE7F6"
+        android:strokeColor="#B39DDB"
+        android:strokeWidth="1.2"
+        android:pathData="M10,3a9,9 0,1 1,0 18a9,9 0,1 1,0 -18z"/>
+    <!-- Moneta -->
+    <path
+        android:fillColor="#D1C4E9"
+        android:strokeColor="#7E57C2"
+        android:strokeWidth="1"
+        android:pathData="M7,8a4,4 0,1 1,0 8a4,4 0,1 1,0 -8z"/>
+    <!-- $ na monecie -->
+    <path
+        android:fillColor="#4527A0"
+        android:pathData="M6.6,11.3h0.8v0.6h-0.8v0.6h-0.5v-0.6h-0.8v-0.6h0.8v-0.6h0.5z"/>
+    <!-- Strzałka w prawo -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#7E57C2"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M12,12h6"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#7E57C2"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M15.5,9l3,3l-3,3"/>
+    <!-- Zielone V badge -->
+    <path
+        android:fillColor="#C8E6C9"
+        android:pathData="M19.5,0.5a4,4 0,1 1,0 8a4,4 0,1 1,0 -8z"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#43A047"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M17.5,4.5l1.2,1.5l2.5,-3"/>
+</vector>

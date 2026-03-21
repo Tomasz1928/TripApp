@@ -9,14 +9,17 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.example.tripapp2.R
+import com.example.tripapp2.data.model.SettlementBreakdownType
 import com.example.tripapp2.ui.common.baseModals.BaseModalFragment
 import com.example.tripapp2.ui.tripdetails.costs.ExpenseDetailUiModel
+import com.example.tripapp2.ui.tripdetails.costs.ShareItemUiModel
 
 /**
  * Modal ze szczegółami wydatku.
  * ZMIGOWANY na BaseModalFragment — usunięto zduplikowany boilerplate.
  *
- * Logika biznesowa (createExpenseDetailBody) — 1:1 z oryginałem.
+ * ZMIENIONE: Ikonki settlement per split — zamiast ✓/✗ teraz breakdown icons
+ * (identyczne jak w SettlementDetailsModalFragment)
  */
 class ExpenseDetailModalFragment : BaseModalFragment() {
 
@@ -41,7 +44,7 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
     }
 
     // ==========================================
-    // LOGIKA BIZNESOWA — 1:1 Z ORYGINAŁEM
+    // LOGIKA BIZNESOWA — ZMIENIONE (breakdown icons)
     // ==========================================
 
     private fun createExpenseDetailBody(detail: ExpenseDetailUiModel): View {
@@ -83,7 +86,7 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         // Dynamiczne nagłówki kolumn
         setupDynamicHeaders(body, detail)
 
-        // Shared With
+        // Shared With — ZMIENIONE: breakdown icons zamiast ✓/✗
         val sharedContainer = body.findViewById<LinearLayout>(R.id.sharedWithContainer)
         sharedContainer.removeAllViews()
 
@@ -91,18 +94,9 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
             val shareRow = layoutInflater.inflate(R.layout.item_share_expensts, sharedContainer, false)
 
             shareRow.findViewById<TextView>(R.id.sharePerson).text = share.personName
-            val settlementIcon = shareRow.findViewById<ImageView>(R.id.shareSettlement)
-            if (share.isSettlement) {
-                settlementIcon.setImageResource(R.drawable.ic_success)
-                settlementIcon.imageTintList = ContextCompat.getColorStateList(requireContext(),
-                    R.color.success
-                )
-            } else {
-                settlementIcon.setImageResource(R.drawable.ic_cross)
-                settlementIcon.imageTintList = ContextCompat.getColorStateList(requireContext(),
-                    R.color.error
-                )
-            }
+
+            // ZMIENIONE: breakdown icons zamiast prostego ✓/✗
+            setupShareSettlementIcons(shareRow, share)
 
             shareRow.findViewById<TextView>(R.id.shareAmountMain).text = share.formattedAmountCostCurrency
 
@@ -118,6 +112,70 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         }
 
         return body
+    }
+
+    /**
+     * NOWE: Ustawia ikonki breakdown na wierszu share
+     *
+     * Duża ikona (24dp) = dominantType
+     * Małe ikony (16dp) = secondaryTypes (dynamicznie dodawane)
+     *
+     * Ikonki są kolorowe — NIE stosujemy tint.
+     */
+    private fun setupShareSettlementIcons(shareRow: View, share: ShareItemUiModel) {
+        // Ikona dominująca (24dp)
+        val mainIcon = shareRow.findViewById<ImageView>(R.id.costShareSettlementMainIcon)
+        mainIcon.setImageResource(getBreakdownIconRes(share.dominantType))
+        mainIcon.contentDescription = getBreakdownContentDescription(share.dominantType)
+        mainIcon.imageTintList = null  // Wyczyść tint — ikonki są kolorowe
+
+        // Małe ikony secondary (16dp)
+        val secondaryContainer = shareRow.findViewById<LinearLayout>(R.id.costShareSettlementSecondaryIcons)
+        secondaryContainer.removeAllViews()
+
+        share.secondaryTypes.forEach { type ->
+            val sizePx = (16 * resources.displayMetrics.density).toInt()
+            val marginPx = (2 * resources.displayMetrics.density).toInt()
+
+            val smallIcon = ImageView(requireContext()).apply {
+                layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
+                    marginStart = marginPx
+                }
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setImageResource(getBreakdownIconRes(type))
+                contentDescription = getBreakdownContentDescription(type)
+            }
+            secondaryContainer.addView(smallIcon)
+        }
+    }
+
+    /**
+     * Zwraca drawable resource dla danego typu breakdown.
+     * Identyczne mapowanie jak w SettlementDetailsModalFragment.
+     */
+    private fun getBreakdownIconRes(type: SettlementBreakdownType): Int {
+        return when (type) {
+            SettlementBreakdownType.SELF              -> R.drawable.ic_breakdown_self
+            SettlementBreakdownType.MANUAL_BY_AMOUNT  -> R.drawable.ic_breakdown_manual_amount
+            SettlementBreakdownType.MANUAL_BY_COSTS   -> R.drawable.ic_breakdown_manual_costs
+            SettlementBreakdownType.AUTO_PREPAYMENT   -> R.drawable.ic_breakdown_auto_prepayment
+            SettlementBreakdownType.AUTO_CROSS_SETTLE -> R.drawable.ic_breakdown_auto_cross
+            SettlementBreakdownType.UNSETTLED         -> R.drawable.ic_breakdown_unsettled
+        }
+    }
+
+    /**
+     * Content description dla accessibility
+     */
+    private fun getBreakdownContentDescription(type: SettlementBreakdownType): String {
+        return when (type) {
+            SettlementBreakdownType.SELF              -> getString(R.string.breakdown_self)
+            SettlementBreakdownType.MANUAL_BY_AMOUNT  -> getString(R.string.breakdown_manual_amount)
+            SettlementBreakdownType.MANUAL_BY_COSTS   -> getString(R.string.breakdown_manual_costs)
+            SettlementBreakdownType.AUTO_PREPAYMENT   -> getString(R.string.breakdown_auto_prepayment)
+            SettlementBreakdownType.AUTO_CROSS_SETTLE -> getString(R.string.breakdown_auto_cross)
+            SettlementBreakdownType.UNSETTLED         -> getString(R.string.breakdown_unsettled)
+        }
     }
 
     private fun setupDynamicHeaders(body: View, detail: ExpenseDetailUiModel) {

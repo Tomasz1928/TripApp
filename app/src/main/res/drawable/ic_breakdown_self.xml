@@ -1,0 +1,26 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- SELF: szara osoba + ZIELONE V -->
+    <!-- Głowa -->
+    <path
+        android:fillColor="#CFD8DC"
+        android:pathData="M9,2.5a4.5,4.5 0,1 1,0 9a4.5,4.5 0,1 1,0 -9z"/>
+    <!-- Ciało -->
+    <path
+        android:fillColor="#CFD8DC"
+        android:pathData="M2,18.5q0,-4.5 7,-4.5q7,0 7,4.5v2.5h-14z"/>
+    <!-- Zielone V badge -->
+    <path
+        android:fillColor="#C8E6C9"
+        android:pathData="M19,5a5,5 0,1 1,0 10a5,5 0,1 1,0 -10z"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#43A047"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M16.5,10l1.5,1.8l3,-3.6"/>
+</vector>
