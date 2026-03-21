@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Settlement Details Body — treść modala szczegółów rozliczenia.
-    Wydzielona z modal_settlement_details.xml (usunięto CardView + header + separator).
-    Zawiera: TabLayout + 3 zakładki (Podsumowanie, Koszty, Zaliczki)
+    Settlement Details Body — ZMIENIONY
+    4 taby z samymi ikonkami (bez tekstu):
+    Tab 1: Ogólne (ic_tab_summary)
+    Tab 2: Wydatki (ic_tab_costs)
+    Tab 3: Zaliczki (ic_tab_prepayment)
+    Tab 4: Historia (ic_tab_history) — na razie pusty
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -11,34 +14,40 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <!-- TAB LAYOUT -->
-
-    <!-- CONTENT CONTAINER -->
+    <!-- TAB LAYOUT — same ikonki, bez tekstu -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:tabGravity="fill"
+        app:tabMode="fixed"
         app:tabIndicatorColor="@color/primary"
-        app:tabSelectedTextColor="@color/primary"
-        app:tabTextColor="@color/text_secondary">
+        app:tabIconTint="@color/tab_icon_selector"
+        app:tabInlineLabel="true">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/settlement_details_tab_summary" />
+            android:icon="@drawable/ic_tab_summary"/>
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/settlement_details_tab_costs" />
+            android:icon="@drawable/ic_tab_costs"/>
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/settlement_details_tab_prepayment" />
+            android:icon="@drawable/ic_tab_prepayment"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:icon="@drawable/ic_tab_history"/>
+
     </com.google.android.material.tabs.TabLayout>
 
+    <!-- CONTENT CONTAINER -->
     <FrameLayout
         android:id="@+id/tabContentContainer"
         android:layout_width="match_parent"
@@ -59,38 +68,40 @@
                 android:orientation="vertical"
                 android:padding="@dimen/padding_default">
 
+                <!-- Sekcja: Relacja wszystkich kosztów -->
                 <TextView
                     style="@style/Text.Label"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/settlement_details_all_related"
-                    android:layout_marginBottom="@dimen/spacing_tiny"/>
+                    android:text="@string/settlement_details_all_related"/>
 
                 <LinearLayout
                     android:id="@+id/allRelatedContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginBottom="@dimen/spacing_medium"/>
+                    android:layout_marginTop="@dimen/spacing_tiny"/>
 
+                <!-- Separator -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@color/divider"
-                    android:layout_marginBottom="@dimen/spacing_medium"/>
+                    android:layout_marginVertical="@dimen/spacing_small"/>
 
+                <!-- Sekcja: Pozostało do rozliczenia -->
                 <TextView
                     style="@style/Text.Label"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/settlement_details_left_for_settled"
-                    android:layout_marginBottom="@dimen/spacing_tiny"/>
+                    android:text="@string/settlement_details_left_for_settled"/>
 
                 <LinearLayout
                     android:id="@+id/leftForSettledContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"/>
+                    android:orientation="vertical"
+                    android:layout_marginTop="@dimen/spacing_tiny"/>
             </LinearLayout>
         </ScrollView>
 
@@ -122,7 +133,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/settlement_details_no_costs"
                 android:gravity="center"
-                android:paddingVertical="@dimen/spacing_large"
+                android:padding="@dimen/padding_large"
                 android:visibility="gone"/>
         </LinearLayout>
 
@@ -140,42 +151,45 @@
                 android:orientation="vertical"
                 android:padding="@dimen/padding_default">
 
+                <!-- Pozostało z zaliczek -->
                 <TextView
                     android:id="@+id/prepaymentAmountLeftLabel"
                     style="@style/Text.Label"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/settlement_details_prepayment_amount_left"
-                    android:layout_marginBottom="@dimen/spacing_tiny"/>
+                    android:text="@string/settlement_details_prepayment_amount_left"/>
 
                 <LinearLayout
                     android:id="@+id/prepaymentAmountLeftContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginBottom="@dimen/spacing_medium"/>
+                    android:layout_marginTop="@dimen/spacing_tiny"/>
 
+                <!-- Separator -->
                 <View
                     android:id="@+id/prepaymentSeparator"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@color/divider"
-                    android:layout_marginBottom="@dimen/spacing_medium"/>
+                    android:layout_marginVertical="@dimen/spacing_small"/>
 
+                <!-- Historia zaliczek -->
                 <TextView
                     android:id="@+id/prepaymentHistoryLabel"
                     style="@style/Text.Label"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/settlement_details_prepayment_history"
-                    android:layout_marginBottom="@dimen/spacing_tiny"/>
+                    android:text="@string/settlement_details_prepayment_history"/>
 
                 <LinearLayout
                     android:id="@+id/prepaymentHistoryContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"/>
+                    android:orientation="vertical"
+                    android:layout_marginTop="@dimen/spacing_tiny"/>
 
+                <!-- Empty state -->
                 <TextView
                     android:id="@+id/prepaymentEmptyState"
                     style="@style/Text.Body.Secondary"
@@ -183,10 +197,30 @@
                     android:layout_height="wrap_content"
                     android:text="@string/settlement_details_no_prepayments"
                     android:gravity="center"
-                    android:paddingVertical="@dimen/spacing_large"
+                    android:padding="@dimen/padding_large"
                     android:visibility="gone"/>
             </LinearLayout>
         </ScrollView>
+
+        <!-- TAB 4: Historia rozliczeń — na razie pusty -->
+        <LinearLayout
+            android:id="@+id/tabHistory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_default"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/historyEmptyState"
+                style="@style/Text.Body.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settlement_details_no_history"
+                android:gravity="center"
+                android:padding="@dimen/padding_large"/>
+        </LinearLayout>
 
     </FrameLayout>
 </LinearLayout>

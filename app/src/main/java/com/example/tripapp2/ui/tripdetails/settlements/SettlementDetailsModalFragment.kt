@@ -18,12 +18,13 @@ import com.google.android.material.tabs.TabLayout
  * Modal szczegółów rozliczenia z uczestnikiem.
  * ZMIGOWANY na BaseModalFragment.
  *
- * Body = modal_settlement_details_body.xml (TabLayout + 3 taby)
+ * Body = modal_settlement_details_body.xml (TabLayout + 4 taby z ikonkami)
  *
- * ZMIENIONE: Tab 2 (Koszty) — ikonki per SettlementBreakdownType zamiast ✓/✗
- * Każdy rozliczony typ ma kolorową ikonę + zielone V badge.
- * UNSETTLED ma czerwony zegar + X badge.
- * Ikonki są kolorowe (JPG/vector) — NIE stosujemy tint.
+ * ZMIENIONE:
+ * - 4 taby zamiast 3 (dodany tab Historia)
+ * - Taby z samymi ikonkami (bez tekstu)
+ * - Tab 2 (Koszty): breakdown icons zamiast ✓/✗
+ * - Tab 4 (Historia): na razie pusty placeholder
  */
 class SettlementDetailsModalFragment : BaseModalFragment() {
 
@@ -45,6 +46,7 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
     private lateinit var prepaymentHistoryLabel: TextView
     private lateinit var prepaymentHistoryContainer: LinearLayout
     private lateinit var prepaymentEmptyState: TextView
+    private lateinit var tabHistory: LinearLayout          // NOWE: Tab 4
 
     override fun onCreateBodyView(inflater: LayoutInflater, container: ViewGroup?): View? {
         return inflater.inflate(R.layout.modal_settlement_details_body, container, false)
@@ -62,10 +64,11 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         populateSummaryTab(model)
         populateCostsTab(model)
         populatePrepaymentTab(model)
+        // Tab 4 (Historia) — na razie pusty, nie wymaga populacji
     }
 
     // ==========================================
-    // INITIALIZATION — 1:1 Z ORYGINAŁEM
+    // INITIALIZATION
     // ==========================================
 
     private fun initializeViews() {
@@ -88,15 +91,26 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         prepaymentHistoryLabel = body.findViewById(R.id.prepaymentHistoryLabel)
         prepaymentHistoryContainer = body.findViewById(R.id.prepaymentHistoryContainer)
         prepaymentEmptyState = body.findViewById(R.id.prepaymentEmptyState)
+
+        tabHistory = body.findViewById(R.id.tabHistory)     // NOWE
     }
 
+    /**
+     * ZMIENIONE: 4 taby zamiast 3
+     */
     private fun setupTabLayout() {
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
+                tabSummary.visibility = View.GONE
+                tabCosts.visibility = View.GONE
+                tabPrepayment.visibility = View.GONE
+                tabHistory.visibility = View.GONE
+
                 when (tab?.position) {
-                    0 -> { tabSummary.visibility = View.VISIBLE; tabCosts.visibility = View.GONE; tabPrepayment.visibility = View.GONE }
-                    1 -> { tabSummary.visibility = View.GONE; tabCosts.visibility = View.VISIBLE; tabPrepayment.visibility = View.GONE }
-                    2 -> { tabSummary.visibility = View.GONE; tabCosts.visibility = View.GONE; tabPrepayment.visibility = View.VISIBLE }
+                    0 -> tabSummary.visibility = View.VISIBLE
+                    1 -> tabCosts.visibility = View.VISIBLE
+                    2 -> tabPrepayment.visibility = View.VISIBLE
+                    3 -> tabHistory.visibility = View.VISIBLE
                 }
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
@@ -105,7 +119,7 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
     }
 
     // ==========================================
-    // TAB 1: PODSUMOWANIE — 1:1
+    // TAB 1: PODSUMOWANIE
     // ==========================================
 
     private fun populateSummaryTab(model: SettlementDetailsUiModel) {
@@ -134,7 +148,7 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
     }
 
     // ==========================================
-    // TAB 2: KOSZTY — ZMIENIONE (breakdown icons)
+    // TAB 2: KOSZTY — breakdown icons
     // ==========================================
 
     private fun populateCostsTab(model: SettlementDetailsUiModel) {
@@ -160,25 +174,15 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
     }
 
     /**
-     * ZMIENIONE: Zamiast prostego ✓/✗ — renderuje ikony per SettlementBreakdownType
-     *
+     * Renderuje ikonki per SettlementBreakdownType
      * Layout: [tytuł] [kwota] [duża ikona 24dp] [małe ikony 16dp...]
-     *
-     * Ikonki są kolorowe same w sobie — NIE stosujemy tint/colorFilter.
-     * Kolory:
-     * - SELF: szary motyw + zielone V
-     * - MANUAL_BY_*: zielony motyw + zielone V
-     * - AUTO_*: fioletowy motyw + zielone V
-     * - UNSETTLED: czerwony motyw + czerwony X
      */
     private fun createCostRow(costRow: SettlementDetailCostRow): View {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_settlement_detail_cost, costsListContainer, false)
 
-        // Tytuł kosztu
         view.findViewById<TextView>(R.id.costTitle).text = costRow.expenseName
 
-        // Kwota + kolor kierunku
         val costAmount = view.findViewById<TextView>(R.id.costAmount)
         costAmount.text = costRow.formattedAmount
         val amountColorRes = if (costRow.isAmountPositive) R.color.success else R.color.error
@@ -188,10 +192,9 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         val mainIcon = view.findViewById<ImageView>(R.id.settlementMainIcon)
         mainIcon.setImageResource(getBreakdownIconRes(costRow.dominantType))
         mainIcon.contentDescription = getBreakdownContentDescription(costRow.dominantType)
-        // Wyczyść ewentualny stary tint z recyklingu widoku
         mainIcon.clearColorFilter()
 
-        // Małe ikony secondary (16dp) — dynamicznie dodawane
+        // Małe ikony secondary (16dp)
         val secondaryContainer = view.findViewById<LinearLayout>(R.id.settlementSecondaryIcons)
         secondaryContainer.removeAllViews()
 
@@ -213,17 +216,6 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         return view
     }
 
-    /**
-     * Zwraca drawable resource dla danego typu breakdown.
-     *
-     * Kolory ikon (wbudowane w drawable — bez tinta):
-     * - SELF:              szary   + zielone V badge
-     * - MANUAL_BY_AMOUNT:  zielony + zielone V badge (monetki)
-     * - MANUAL_BY_COSTS:   zielony + zielone V badge (rachunek + długopis)
-     * - AUTO_PREPAYMENT:   fioletowy + zielone V badge (moneta + strzałka)
-     * - AUTO_CROSS_SETTLE: fioletowy + zielone V badge (strzałki krzyżowe)
-     * - UNSETTLED:         czerwony + czerwone X badge (zegar)
-     */
     private fun getBreakdownIconRes(type: SettlementBreakdownType): Int {
         return when (type) {
             SettlementBreakdownType.SELF              -> R.drawable.ic_breakdown_self
@@ -235,9 +227,6 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         }
     }
 
-    /**
-     * Content description dla accessibility
-     */
     private fun getBreakdownContentDescription(type: SettlementBreakdownType): String {
         return when (type) {
             SettlementBreakdownType.SELF              -> getString(R.string.breakdown_self)
@@ -250,7 +239,7 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
     }
 
     // ==========================================
-    // TAB 3: ZALICZKI — 1:1
+    // TAB 3: ZALICZKI
     // ==========================================
 
     private fun populatePrepaymentTab(model: SettlementDetailsUiModel) {
@@ -323,6 +312,12 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         view.findViewById<TextView>(R.id.historyDate).text = row.formattedDate
         return view
     }
+
+    // ==========================================
+    // TAB 4: HISTORIA — na razie pusty
+    // ==========================================
+
+    // TODO: Dodaj populateHistoryTab(model) gdy będą dane historii
 
     companion object {
         fun newInstance(model: SettlementDetailsUiModel): SettlementDetailsModalFragment {
