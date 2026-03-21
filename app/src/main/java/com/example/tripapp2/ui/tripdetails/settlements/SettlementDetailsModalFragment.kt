@@ -10,6 +10,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.example.tripapp2.R
+import com.example.tripapp2.data.model.SettlementBreakdownType
 import com.example.tripapp2.ui.common.baseModals.BaseModalFragment
 import com.google.android.material.tabs.TabLayout
 
@@ -18,7 +19,11 @@ import com.google.android.material.tabs.TabLayout
  * ZMIGOWANY na BaseModalFragment.
  *
  * Body = modal_settlement_details_body.xml (TabLayout + 3 taby)
- * Logika biznesowa — 1:1 z oryginałem.
+ *
+ * ZMIENIONE: Tab 2 (Koszty) — ikonki per SettlementBreakdownType zamiast ✓/✗
+ * Każdy rozliczony typ ma kolorową ikonę + zielone V badge.
+ * UNSETTLED ma czerwony zegar + X badge.
+ * Ikonki są kolorowe (JPG/vector) — NIE stosujemy tint.
  */
 class SettlementDetailsModalFragment : BaseModalFragment() {
 
@@ -129,7 +134,7 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
     }
 
     // ==========================================
-    // TAB 2: KOSZTY — 1:1
+    // TAB 2: KOSZTY — ZMIENIONE (breakdown icons)
     // ==========================================
 
     private fun populateCostsTab(model: SettlementDetailsUiModel) {
@@ -154,26 +159,94 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         }
     }
 
+    /**
+     * ZMIENIONE: Zamiast prostego ✓/✗ — renderuje ikony per SettlementBreakdownType
+     *
+     * Layout: [tytuł] [kwota] [duża ikona 24dp] [małe ikony 16dp...]
+     *
+     * Ikonki są kolorowe same w sobie — NIE stosujemy tint/colorFilter.
+     * Kolory:
+     * - SELF: szary motyw + zielone V
+     * - MANUAL_BY_*: zielony motyw + zielone V
+     * - AUTO_*: fioletowy motyw + zielone V
+     * - UNSETTLED: czerwony motyw + czerwony X
+     */
     private fun createCostRow(costRow: SettlementDetailCostRow): View {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_settlement_detail_cost, costsListContainer, false)
 
+        // Tytuł kosztu
         view.findViewById<TextView>(R.id.costTitle).text = costRow.expenseName
+
+        // Kwota + kolor kierunku
         val costAmount = view.findViewById<TextView>(R.id.costAmount)
         costAmount.text = costRow.formattedAmount
-
         val amountColorRes = if (costRow.isAmountPositive) R.color.success else R.color.error
         costAmount.setTextColor(ContextCompat.getColor(requireContext(), amountColorRes))
 
-        val icon = view.findViewById<ImageView>(R.id.settlementStatusIcon)
-        if (costRow.isSettled) {
-            icon.setImageResource(R.drawable.ic_success)
-            icon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.success))
-        } else {
-            icon.setImageResource(R.drawable.ic_cross)
-            icon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.error))
+        // Ikona dominująca (24dp) — NIE stosujemy tint, ikonki są kolorowe
+        val mainIcon = view.findViewById<ImageView>(R.id.settlementMainIcon)
+        mainIcon.setImageResource(getBreakdownIconRes(costRow.dominantType))
+        mainIcon.contentDescription = getBreakdownContentDescription(costRow.dominantType)
+        // Wyczyść ewentualny stary tint z recyklingu widoku
+        mainIcon.clearColorFilter()
+
+        // Małe ikony secondary (16dp) — dynamicznie dodawane
+        val secondaryContainer = view.findViewById<LinearLayout>(R.id.settlementSecondaryIcons)
+        secondaryContainer.removeAllViews()
+
+        costRow.secondaryTypes.forEach { type ->
+            val sizePx = (16 * resources.displayMetrics.density).toInt()
+            val marginPx = (2 * resources.displayMetrics.density).toInt()
+
+            val smallIcon = ImageView(requireContext()).apply {
+                layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
+                    marginStart = marginPx
+                }
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setImageResource(getBreakdownIconRes(type))
+                contentDescription = getBreakdownContentDescription(type)
+            }
+            secondaryContainer.addView(smallIcon)
         }
+
         return view
+    }
+
+    /**
+     * Zwraca drawable resource dla danego typu breakdown.
+     *
+     * Kolory ikon (wbudowane w drawable — bez tinta):
+     * - SELF:              szary   + zielone V badge
+     * - MANUAL_BY_AMOUNT:  zielony + zielone V badge (monetki)
+     * - MANUAL_BY_COSTS:   zielony + zielone V badge (rachunek + długopis)
+     * - AUTO_PREPAYMENT:   fioletowy + zielone V badge (moneta + strzałka)
+     * - AUTO_CROSS_SETTLE: fioletowy + zielone V badge (strzałki krzyżowe)
+     * - UNSETTLED:         czerwony + czerwone X badge (zegar)
+     */
+    private fun getBreakdownIconRes(type: SettlementBreakdownType): Int {
+        return when (type) {
+            SettlementBreakdownType.SELF              -> R.drawable.ic_breakdown_self
+            SettlementBreakdownType.MANUAL_BY_AMOUNT  -> R.drawable.ic_breakdown_manual_amount
+            SettlementBreakdownType.MANUAL_BY_COSTS   -> R.drawable.ic_breakdown_manual_costs
+            SettlementBreakdownType.AUTO_PREPAYMENT   -> R.drawable.ic_breakdown_auto_prepayment
+            SettlementBreakdownType.AUTO_CROSS_SETTLE -> R.drawable.ic_breakdown_auto_cross
+            SettlementBreakdownType.UNSETTLED         -> R.drawable.ic_breakdown_unsettled
+        }
+    }
+
+    /**
+     * Content description dla accessibility
+     */
+    private fun getBreakdownContentDescription(type: SettlementBreakdownType): String {
+        return when (type) {
+            SettlementBreakdownType.SELF              -> getString(R.string.breakdown_self)
+            SettlementBreakdownType.MANUAL_BY_AMOUNT  -> getString(R.string.breakdown_manual_amount)
+            SettlementBreakdownType.MANUAL_BY_COSTS   -> getString(R.string.breakdown_manual_costs)
+            SettlementBreakdownType.AUTO_PREPAYMENT   -> getString(R.string.breakdown_auto_prepayment)
+            SettlementBreakdownType.AUTO_CROSS_SETTLE -> getString(R.string.breakdown_auto_cross)
+            SettlementBreakdownType.UNSETTLED         -> getString(R.string.breakdown_unsettled)
+        }
     }
 
     // ==========================================

@@ -1,0 +1,52 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- AUTO_CROSS_SETTLE: fioletowe strzałki krzyżowe + ZIELONE V -->
+    <!-- Tło -->
+    <path
+        android:fillColor="#EDE7F6"
+        android:strokeColor="#B39DDB"
+        android:strokeWidth="1"
+        android:pathData="M2,3h20a2,2 0,0 1,2 2v14a2,2 0,0 1,-2 2h-20a2,2 0,0 1,-2 -2v-14a2,2 0,0 1,2 -2z"/>
+    <!-- Strzałka w prawo (górna) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#7E57C2"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M5,9h12"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#7E57C2"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M14,6l3,3l-3,3"/>
+    <!-- Strzałka w lewo (dolna) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#7E57C2"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M19,15h-12"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#7E57C2"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M10,18l-3,-3l3,-3"/>
+    <!-- Zielone V badge -->
+    <path
+        android:fillColor="#C8E6C9"
+        android:pathData="M20,0a4,4 0,1 1,0 8a4,4 0,1 1,0 -8z"/>
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#43A047"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M18,4l1.2,1.5l2.5,-3"/>
+</vector>

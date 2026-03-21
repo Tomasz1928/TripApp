@@ -42,7 +42,8 @@ data class TripDto(
     val myCost: List<SimpleMoneyValueDto>,
     val expenses: List<ExpenseDto>,
     val participants: List<ParticipantDto>,
-    val settlement: SettlementDto?
+    val settlement: SettlementDto?,
+    val settlementHistory: List<SettlementHistoryEntryDto> = emptyList()
 )
 
 data class MoneyValueDto(
@@ -79,7 +80,8 @@ data class ShareDto(
     val participantNickname: String,
     val splitValue: List<SimpleMoneyValueDto>,
     val leftForSettled: List<SimpleMoneyValueDto>,
-    val isSettlement: Boolean
+    val isSettlement: Boolean,
+    val settlementBreakdown: List<SettlementBreakdownEntryDto> = emptyList()
 )
 
 data class ParticipantDto(
@@ -90,6 +92,49 @@ data class ParticipantDto(
     val isPlaceholder: Boolean,
     val accessCode: String?,
     val isActive: Boolean
+)
+
+data class SettlementBreakdownEntryDto(
+    val type: SettlementBreakdownType,
+    val amountCost: Float,
+    val amountTrip: Float
+)
+
+enum class SettlementBreakdownType {
+    SELF,
+    MANUAL_BY_AMOUNT,
+    MANUAL_BY_COSTS,
+    AUTO_PREPAYMENT,
+    AUTO_CROSS_SETTLE,
+    UNSETTLED
+}
+
+/**
+ * Typ zdarzenia w historii rozliczeń
+ */
+enum class SettlementHistoryEventType {
+    MANUAL_BY_AMOUNT,
+    MANUAL_BY_COSTS,
+    MANUAL_BY_PREPAYMENT,
+    AUTO_PREPAYMENT,
+    AUTO_CROSS_SETTLE
+}
+
+/**
+ * Wpis w historii rozliczeń
+ */
+data class SettlementHistoryEntryDto(
+    val id: Int,
+    val settlementType: SettlementHistoryEventType,
+    val actorParticipantId: Int?,
+    val actorNickname: String?,
+    val otherParticipantId: Int,
+    val otherNickname: String,
+    val amountInSettlementCurrency: Float,
+    val settlementCurrency: String,
+    val amountInTripCurrency: Float,
+    val relatedExpenseIds: List<Int>,
+    val createdAt: Long
 )
 
 // ==========================================

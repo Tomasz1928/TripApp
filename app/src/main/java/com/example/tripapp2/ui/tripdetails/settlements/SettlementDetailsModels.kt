@@ -3,6 +3,8 @@ package com.example.tripapp2.ui.tripdetails.settlements
 import com.example.tripapp2.data.model.ExpenseDto
 import com.example.tripapp2.data.model.PrepaymentDetailsDto
 import com.example.tripapp2.data.model.PrepaymentHistoryDto
+import com.example.tripapp2.data.model.ShareDto
+import com.example.tripapp2.data.model.SettlementBreakdownType
 import com.example.tripapp2.data.model.SimpleMoneyValueDto
 import com.example.tripapp2.data.model.mainCurrencyAmount
 import java.text.SimpleDateFormat
@@ -31,6 +33,14 @@ data class SettlementDetailAmountRow(
 /**
  * Model wiersza kosztu w tab "Koszty" (Tab 2)
  *
+ * Logika ikon (settlement breakdown):
+ * - SELF → 1 duża ikona SELF (szara osoba + zielone V)
+ * - Częściowo rozliczony (UNSETTLED w breakdown):
+ *     → duża ikona UNSETTLED (zegar + czerwone X)
+ *     + małe ikonki typów które już rozliczyły część
+ * - W pełni rozliczony:
+ *     → 1 duża ikona dominującego typu (ten z największą amountTrip)
+ *
  * Kierunek:
  * - isAmountPositive = true → pieniądze do mnie (zielony)
  * - isAmountPositive = false → pieniądze ode mnie (czerwony)
@@ -42,7 +52,9 @@ data class SettlementDetailCostRow(
     val currency: String,
     val formattedAmount: String,        // "150,00 PLN"
     val isSettled: Boolean,
-    val isAmountPositive: Boolean       // true = do mnie (zielony), false = ode mnie (czerwony)
+    val isAmountPositive: Boolean,      // true = do mnie (zielony), false = ode mnie (czerwony)
+    val dominantType: SettlementBreakdownType,          // NOWE: typ do dużej ikony (24dp)
+    val secondaryTypes: List<SettlementBreakdownType>   // NOWE: typy do małych ikon (16dp)
 )
 
 /**
@@ -157,6 +169,10 @@ fun createSettlementDetailsModel(
     )
 }
 
+// ==========================================
+// PRIVATE HELPERS — Tab 1
+// ==========================================
+
 /**
  * Mapuje listę SimpleMoneyValueDto na listę wierszy do wyświetlenia
  *
@@ -198,6 +214,129 @@ private fun mapMoneyListToRows(
             )
         }
 }
+
+// ==========================================
+// PRIVATE HELPERS — Tab 2 (ZMIENIONE)
+// ==========================================
+
+/**
+ * Buduje listę kosztów dotyczących relacji ja ↔ participant
+ *
+ * ZMIENIONE: dodano resolveBreakdownIcons() do obliczania dominantType i secondaryTypes
+ */
+private fun buildCostRows(
+    expenses: List<ExpenseDto>,
+    participantId: String,
+    currentUserId: String
+): List<SettlementDetailCostRow> {
+
+    val result = mutableListOf<SettlementDetailCostRow>()
+
+    for (expense in expenses) {
+        // Przypadek 1: Ja płaciłem → participant w sharedWith
+        if (expense.payerId == currentUserId) {
+            val share = expense.sharedWith.find { it.participantId == participantId }
+            if (share != null) {
+                val (dominant, secondary) = resolveBreakdownIcons(share)
+                result.add(
+                    SettlementDetailCostRow(
+                        expenseId = expense.id,
+                        expenseName = expense.name,
+                        splitAmount = share.splitValue.mainCurrencyAmount(),
+                        currency = expense.currency,
+                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
+                        isSettled = share.isSettlement,
+                        isAmountPositive = true,  // Participant mi jest winien
+                        dominantType = dominant,
+                        secondaryTypes = secondary
+                    )
+                )
+            }
+        }
+
+        // Przypadek 2: Participant płacił → ja w sharedWith
+        if (expense.payerId == participantId) {
+            val share = expense.sharedWith.find { it.participantId == currentUserId }
+            if (share != null) {
+                val (dominant, secondary) = resolveBreakdownIcons(share)
+                result.add(
+                    SettlementDetailCostRow(
+                        expenseId = expense.id,
+                        expenseName = expense.name,
+                        splitAmount = share.splitValue.mainCurrencyAmount(),
+                        currency = expense.currency,
+                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
+                        isSettled = share.isSettlement,
+                        isAmountPositive = false,  // Ja jestem winien participantowi
+                        dominantType = dominant,
+                        secondaryTypes = secondary
+                    )
+                )
+            }
+        }
+    }
+
+    return result
+}
+
+/**
+ * Logika doboru ikon na podstawie settlement_breakdown:
+ *
+ * 1. Jeśli SELF jest w breakdown → dominant = SELF, brak secondary
+ *    (własny split — płacący = uczestnik)
+ *
+ * 2. Jeśli UNSETTLED jest w breakdown (nie w pełni rozliczone):
+ *    - dominant = UNSETTLED (duża ikona — zegar + czerwony X)
+ *    - secondary = pozostałe typy bez UNSETTLED (małe ikonki — co już rozliczono)
+ *
+ * 3. Jeśli w pełni rozliczone (brak UNSETTLED):
+ *    - dominant = typ z największą amountTrip (główny sposób rozliczenia)
+ *    - secondary = puste (wystarczy 1 duża ikona)
+ *
+ * 4. Fallback (brak danych breakdown — stare dane):
+ *    - isSettlement=true → MANUAL_BY_AMOUNT
+ *    - isSettlement=false → UNSETTLED
+ */
+private fun resolveBreakdownIcons(
+    share: ShareDto
+): Pair<SettlementBreakdownType, List<SettlementBreakdownType>> {
+
+    val breakdown = share.settlementBreakdown
+
+    // Fallback: brak danych breakdown (backward compatibility)
+    if (breakdown.isEmpty()) {
+        return if (share.isSettlement) {
+            SettlementBreakdownType.MANUAL_BY_AMOUNT to emptyList()
+        } else {
+            SettlementBreakdownType.UNSETTLED to emptyList()
+        }
+    }
+
+    val types = breakdown.map { it.type }.distinct()
+
+    // Przypadek 1: SELF
+    if (types.contains(SettlementBreakdownType.SELF)) {
+        return SettlementBreakdownType.SELF to emptyList()
+    }
+
+    // Przypadek 2: jest UNSETTLED (częściowo rozliczone)
+    if (types.contains(SettlementBreakdownType.UNSETTLED)) {
+        val secondary = types.filter { it != SettlementBreakdownType.UNSETTLED }
+        return SettlementBreakdownType.UNSETTLED to secondary
+    }
+
+    // Przypadek 3: w pełni rozliczone → dominant = typ z największą kwotą
+    val dominant = breakdown
+        .filter { it.type != SettlementBreakdownType.SELF }
+        .maxByOrNull { it.amountTrip }
+        ?.type ?: SettlementBreakdownType.MANUAL_BY_AMOUNT
+
+    return dominant to emptyList()
+}
+
+// ==========================================
+// PRIVATE HELPERS — Tab 3
+// ==========================================
 
 /**
  * Buduje wiersze "Pozostało z zaliczek" z PrepaymentDetailsDto.amountLeft
@@ -243,56 +382,4 @@ private fun buildPrepaymentHistoryRows(
                 else PrepaymentAmountDirection.FROM_ME
             )
         }
-}
-
-/**
- * Buduje listę kosztów dotyczących relacji ja ↔ participant
- */
-private fun buildCostRows(
-    expenses: List<ExpenseDto>,
-    participantId: String,
-    currentUserId: String
-): List<SettlementDetailCostRow> {
-
-    val result = mutableListOf<SettlementDetailCostRow>()
-
-    for (expense in expenses) {
-        // Przypadek 1: Ja płaciłem → participant w sharedWith
-        if (expense.payerId == currentUserId) {
-            val share = expense.sharedWith.find { it.participantId == participantId }
-            if (share != null) {
-                result.add(
-                    SettlementDetailCostRow(
-                        expenseId = expense.id,
-                        expenseName = expense.name,
-                        splitAmount = share.splitValue.mainCurrencyAmount(),
-                        currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
-                        isSettled = share.isSettlement,
-                        isAmountPositive = true  // Participant mi jest winien
-                    )
-                )
-            }
-        }
-
-        // Przypadek 2: Participant płacił → ja w sharedWith
-        if (expense.payerId == participantId) {
-            val share = expense.sharedWith.find { it.participantId == currentUserId }
-            if (share != null) {
-                result.add(
-                    SettlementDetailCostRow(
-                        expenseId = expense.id,
-                        expenseName = expense.name,
-                        splitAmount = share.splitValue.mainCurrencyAmount(),
-                        currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
-                        isSettled = share.isSettlement,
-                        isAmountPositive = false  // Ja jestem winien participantowi
-                    )
-                )
-            }
-        }
-    }
-
-    return result
 }

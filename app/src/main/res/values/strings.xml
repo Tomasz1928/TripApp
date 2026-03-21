@@ -7,6 +7,20 @@
     <string name="app_name">TripApp</string>
 
     <!-- ========================================= -->
+    <!-- PATCH: Dodaj te stringi do strings.xml   -->
+    <!-- Wklej PRZED zamykającym tagiem </resources> -->
+    <!-- ========================================= -->
+
+    <!-- Settlement Breakdown Types — accessibility labels -->
+    <string name="breakdown_self">Własny koszt</string>
+    <string name="breakdown_manual_amount">Rozliczony ręcznie (kwota)</string>
+    <string name="breakdown_manual_costs">Rozliczony ręcznie (koszty)</string>
+    <string name="breakdown_auto_prepayment">Auto-rozliczony zaliczką</string>
+    <string name="breakdown_auto_cross">Auto-rozliczony krzyżowo</string>
+    <string name="breakdown_unsettled">Nierozliczony</string>
+
+
+    <!-- ========================================= -->
     <!-- OPTIONS -->
     <!-- ========================================= -->
 

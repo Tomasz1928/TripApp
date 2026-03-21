@@ -492,8 +492,40 @@ class GraphQLDataSource() {
             expenses = data.expenses.map { mapExpense(it) },
             participants = data.participants.map { mapParticipant(it) },
             settlement = data.settlement?.let { mapSettlement(it) },
+            settlementHistory = data.settlementHistory.map { h ->
+                SettlementHistoryEntryDto(
+                    id = h.id,
+                    settlementType = mapHistoryEventType(h.settlementType),
+                    actorParticipantId = h.actorParticipantId,
+                    actorNickname = h.actorNickname,
+                    otherParticipantId = h.otherParticipantId,
+                    otherNickname = h.otherNickname,
+                    amountInSettlementCurrency = h.amountInSettlementCurrency.toFloat(),
+                    settlementCurrency = h.settlementCurrency,
+                    amountInTripCurrency = h.amountInTripCurrency.toFloat(),
+                    relatedExpenseIds = h.relatedExpenseIds,
+                    createdAt = h.createdAt.toLong()
+                )
+            },
             myParticipantId = data.myParticipantId
         )
+    }
+    private fun mapHistoryEventType(
+        type: com.example.tripapp2.graphql.type.SettlementHistoryEventType
+    ): SettlementHistoryEventType {
+        return when (type) {
+            com.example.tripapp2.graphql.type.SettlementHistoryEventType.MANUAL_BY_AMOUNT ->
+                SettlementHistoryEventType.MANUAL_BY_AMOUNT
+            com.example.tripapp2.graphql.type.SettlementHistoryEventType.MANUAL_BY_COSTS ->
+                SettlementHistoryEventType.MANUAL_BY_COSTS
+            com.example.tripapp2.graphql.type.SettlementHistoryEventType.MANUAL_BY_PREPAYMENT ->
+                SettlementHistoryEventType.MANUAL_BY_PREPAYMENT
+            com.example.tripapp2.graphql.type.SettlementHistoryEventType.AUTO_PREPAYMENT ->
+                SettlementHistoryEventType.AUTO_PREPAYMENT
+            com.example.tripapp2.graphql.type.SettlementHistoryEventType.AUTO_CROSS_SETTLE ->
+                SettlementHistoryEventType.AUTO_CROSS_SETTLE
+            else -> SettlementHistoryEventType.MANUAL_BY_AMOUNT
+        }
     }
 
     private fun mapExpense(e: TripDetailsQuery.Expense): ExpenseDto {
@@ -516,6 +548,13 @@ class GraphQLDataSource() {
                     isSettlement = s.isSettlement,
                     leftForSettled = s.leftForSettlement.map {
                         SimpleMoneyValueDto(it.isMainCurrency, it.currency, it.amount.toFloat())
+                    },
+                    settlementBreakdown = s.settlementBreakdown.map { b ->
+                        SettlementBreakdownEntryDto(
+                            type = mapBreakdownType(b.type),
+                            amountCost = b.amountCost.toFloat(),
+                            amountTrip = b.amountTrip.toFloat()
+                        )
                     }
                 )
             }
@@ -554,6 +593,26 @@ class GraphQLDataSource() {
                 )
             }
         )
+    }
+
+    private fun mapBreakdownType(
+        type: com.example.tripapp2.graphql.type.SettlementBreakdownType
+    ): SettlementBreakdownType {
+        return when (type) {
+            com.example.tripapp2.graphql.type.SettlementBreakdownType.SELF ->
+                SettlementBreakdownType.SELF
+            com.example.tripapp2.graphql.type.SettlementBreakdownType.MANUAL_BY_AMOUNT ->
+                SettlementBreakdownType.MANUAL_BY_AMOUNT
+            com.example.tripapp2.graphql.type.SettlementBreakdownType.MANUAL_BY_COSTS ->
+                SettlementBreakdownType.MANUAL_BY_COSTS
+            com.example.tripapp2.graphql.type.SettlementBreakdownType.AUTO_PREPAYMENT ->
+                SettlementBreakdownType.AUTO_PREPAYMENT
+            com.example.tripapp2.graphql.type.SettlementBreakdownType.AUTO_CROSS_SETTLE ->
+                SettlementBreakdownType.AUTO_CROSS_SETTLE
+            com.example.tripapp2.graphql.type.SettlementBreakdownType.UNSETTLED ->
+                SettlementBreakdownType.UNSETTLED
+            else -> SettlementBreakdownType.UNSETTLED
+        }
     }
 
     // Overloaded mapMoney for different Apollo generated types
