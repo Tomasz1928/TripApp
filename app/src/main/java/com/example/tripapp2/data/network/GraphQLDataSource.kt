@@ -492,21 +492,6 @@ class GraphQLDataSource() {
             expenses = data.expenses.map { mapExpense(it) },
             participants = data.participants.map { mapParticipant(it) },
             settlement = data.settlement?.let { mapSettlement(it) },
-            settlementHistory = data.settlementHistory.map { h ->
-                SettlementHistoryEntryDto(
-                    id = h.id,
-                    settlementType = mapHistoryEventType(h.settlementType),
-                    actorParticipantId = h.actorParticipantId,
-                    actorNickname = h.actorNickname,
-                    otherParticipantId = h.otherParticipantId,
-                    otherNickname = h.otherNickname,
-                    amountInSettlementCurrency = h.amountInSettlementCurrency.toFloat(),
-                    settlementCurrency = h.settlementCurrency,
-                    amountInTripCurrency = h.amountInTripCurrency.toFloat(),
-                    relatedExpenseIds = h.relatedExpenseIds,
-                    createdAt = h.createdAt.toLong()
-                )
-            },
             myParticipantId = data.myParticipantId
         )
     }
@@ -589,7 +574,19 @@ class GraphQLDataSource() {
                                 values = mapMoney(h.values)
                             )
                         }
-                    )
+                    ),
+                    settlementHistory = r.settlementHistory.map { h ->
+                        RelationSettlementHistoryDto(
+                            id = h.id,
+                            settlementType = mapHistoryEventType(h.settlementType),
+                            actorNickname = h.actorNickname,
+                            amountInSettlementCurrency = h.amountInSettlementCurrency.toFloat(),
+                            settlementCurrency = h.settlementCurrency,
+                            amountInTripCurrency = h.amountInTripCurrency.toFloat(),
+                            relatedExpenseNames = h.relatedExpenseNames,
+                            createdAt = h.createdAt.toLong()
+                        )
+                    }
                 )
             }
         )

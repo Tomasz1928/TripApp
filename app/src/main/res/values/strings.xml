@@ -366,6 +366,21 @@
     <string name="settlement_details_prepayment_history">HISTORIA ZALICZEK</string>
     <string name="settlement_details_no_prepayments">Brak zaliczek</string>
 
+    <!-- Tab 4: Historia rozliczeń -->
+    <string name="settlement_history_label_participant">Uczestnik</string>
+    <string name="settlement_history_label_trip_amount">W walucie</string>
+    <string name="settlement_history_label_expenses">Koszty</string>
+    <string name="settlement_history_filter_all_expenses">Wszystkie koszty</string>
+    <string name="settlement_history_filter_expenses_title">Filtruj po kosztach</string>
+    <string name="settlement_history_no_results">Brak wyników dla wybranych filtrów</string>
+
+
+    <!-- Tab 4: Filtry historii -->
+    <string name="settlement_history_filter_no_expenses">Bez powiązanych kosztów</string>
+    <string name="settlement_history_filter_no_expenses_selected">Brak zaznaczonych</string>
+    <string name="settlement_history_filter_select_all">Zaznacz wszystkie</string>
+    <string name="settlement_history_filter_select_none">Odznacz wszystkie</string>
+
     <!-- Accessibility -->
     <string name="settlement_details_status_icon">Status rozliczenia</string>
 

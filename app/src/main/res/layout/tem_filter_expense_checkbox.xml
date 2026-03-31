@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Wiersz w dropdown multi-select kosztów
+    [checkbox] [nazwa kosztu]
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingHorizontal="@dimen/padding_small"
+    android:paddingVertical="6dp"
+    android:background="?attr/selectableItemBackground">
+
+    <CheckBox
+        android:id="@+id/filterExpenseCheckbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:scaleX="0.8"
+        android:scaleY="0.8"/>
+
+    <TextView
+        android:id="@+id/filterExpenseName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/text_primary"
+        android:layout_marginStart="4dp"
+        android:singleLine="true"
+        android:ellipsize="end"/>
+
+</LinearLayout>

@@ -73,45 +73,42 @@ query TripDetailsQuery($tripId: Int!) {
             relations {
                 relatedId
                 relatedName
-                allRelatedAmount {
-                    amount
-                    currency
-                    isMainCurrency
-                }
                 leftForSettled {
-                    amount
-                    currency
                     isMainCurrency
+                    currency
+                    amount
+                }
+                allRelatedAmount {
+                    isMainCurrency
+                    currency
+                    amount
                 }
                 prepayment {
                     amountLeft {
-                        amount
-                        currency
                         isMainCurrency
+                        currency
+                        amount
                     }
                     history {
                         date
                         values {
-                            amount
-                            currency
                             isMainCurrency
+                            currency
+                            amount
                         }
                     }
                 }
+                settlementHistory {
+                    id
+                    settlementType
+                    actorNickname
+                    amountInSettlementCurrency
+                    settlementCurrency
+                    amountInTripCurrency
+                    relatedExpenseNames
+                    createdAt
+                }
             }
-        }
-        settlementHistory {
-            id
-            settlementType
-            actorParticipantId
-            actorNickname
-            otherParticipantId
-            otherNickname
-            amountInSettlementCurrency
-            settlementCurrency
-            amountInTripCurrency
-            relatedExpenseIds
-            createdAt
         }
         title
         totalExpenses

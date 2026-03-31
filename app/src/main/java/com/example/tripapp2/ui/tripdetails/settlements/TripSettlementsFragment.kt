@@ -307,11 +307,16 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         val tripData = viewModel.getTripData() ?: return
         val currentUserId = viewModel.getCurrentUserId()
 
+        val relation = tripData.settlement?.relations?.find {
+            it.relatedId == participant.participantId
+        }
+
         val detailsModel = createSettlementDetailsModel(
             participant = participant,
             tripCurrency = tripData.currency,
             expenses = tripData.expenses,
-            currentUserId = currentUserId
+            currentUserId = currentUserId,
+            relation = relation
         )
 
         val modal = SettlementDetailsModalFragment.newInstance(detailsModel)
