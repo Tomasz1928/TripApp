@@ -128,14 +128,11 @@ enum SettlementHistoryEventType {
 type SettlementHistoryType {
     id: Int!
     settlementType: SettlementHistoryEventType!
-    actorParticipantId: Int
     actorNickname: String
-    otherParticipantId: Int!
-    otherNickname: String!
     amountInSettlementCurrency: Float!
     settlementCurrency: String!
     amountInTripCurrency: Float!
-    relatedExpenseIds: [Int!]!
+    relatedExpenseNames: [String!]!
     createdAt: Float!
 }
 
@@ -154,6 +151,7 @@ type SettlementRelationType {
     leftForSettled: [SimpleMoneyValueType!]!
     allRelatedAmount: [SimpleMoneyValueType!]!
     prepayment: PrepaymentDetailsType!
+    settlementHistory: [SettlementHistoryType!]!
 }
 
 type SettlementTripCurrencyType {
@@ -214,7 +212,6 @@ type TripDetailType {
     expenses: [ExpenseDetailType!]!
     participants: [ParticipantDetailType!]!
     settlement: SettlementType
-    settlementHistory: [SettlementHistoryType!]!
 }
 
 enum TripEventType {

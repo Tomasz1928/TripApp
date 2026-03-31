@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Filter bar dla historii rozliczeń (Tab 4)
+    Kompaktowy: [ikonki typów] | [bez kosztów] | [dropdown kosztów]
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/historyFilterBar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@color/background"
+    android:paddingHorizontal="@dimen/padding_small"
+    android:paddingVertical="@dimen/padding_small">
+
+    <!-- ===== Ikonki typów rozliczeń (toggle on/off) ===== -->
+
+    <ImageView
+        android:id="@+id/filterManualAmount"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="4dp"
+        android:padding="3dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_breakdown_manual_amount"
+        android:background="@drawable/bg_filter_icon"
+        android:contentDescription="@string/breakdown_manual_amount"/>
+
+    <ImageView
+        android:id="@+id/filterManualCosts"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="4dp"
+        android:padding="3dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_breakdown_manual_costs"
+        android:background="@drawable/bg_filter_icon"
+        android:contentDescription="@string/breakdown_manual_costs"/>
+
+    <ImageView
+        android:id="@+id/filterAutoPrepayment"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="4dp"
+        android:padding="3dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_breakdown_auto_prepayment"
+        android:background="@drawable/bg_filter_icon"
+        android:contentDescription="@string/breakdown_auto_prepayment"/>
+
+    <ImageView
+        android:id="@+id/filterAutoCross"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="4dp"
+        android:padding="3dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_breakdown_auto_cross"
+        android:background="@drawable/bg_filter_icon"
+        android:contentDescription="@string/breakdown_auto_cross"/>
+
+    <!-- ===== Separator 1 ===== -->
+    <View
+        android:layout_width="1dp"
+        android:layout_height="16dp"
+        android:layout_marginHorizontal="6dp"
+        android:background="@color/divider"/>
+
+    <!-- ===== Toggle "bez powiązanych kosztów" ===== -->
+    <ImageView
+        android:id="@+id/filterNoExpenses"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:padding="3dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_filter_no_expenses"
+        android:background="@drawable/bg_filter_icon"
+        android:contentDescription="@string/settlement_history_filter_no_expenses"/>
+
+    <!-- ===== Separator 2 ===== -->
+    <View
+        android:layout_width="1dp"
+        android:layout_height="16dp"
+        android:layout_marginHorizontal="6dp"
+        android:background="@color/divider"/>
+
+    <!-- ===== Dropdown kosztów (multi-select trigger) ===== -->
+    <TextView
+        android:id="@+id/filterExpenseDropdownBtn"
+        android:layout_width="0dp"
+        android:layout_height="24dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp"
+        android:background="@drawable/bg_filter_spinner"
+        android:textSize="11sp"
+        android:textColor="@color/text_secondary"
+        android:text="@string/settlement_history_filter_all_expenses"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:drawableEnd="@drawable/ic_chevron_down"
+        android:drawablePadding="4dp"/>
+
+</LinearLayout>

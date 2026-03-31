@@ -43,12 +43,6 @@ data class TripDto(
     val expenses: List<ExpenseDto>,
     val participants: List<ParticipantDto>,
     val settlement: SettlementDto?,
-    val settlementHistory: List<SettlementHistoryEntryDto> = emptyList()
-)
-
-data class MoneyValueDto(
-    val valueMainCurrency: Float,
-    val valueOtherCurrencies: List<MoneyValueDetailsDto> = emptyList()
 )
 
 data class MoneyValueDetailsDto(
@@ -120,22 +114,17 @@ enum class SettlementHistoryEventType {
     AUTO_CROSS_SETTLE
 }
 
-/**
- * Wpis w historii rozliczeń
- */
-data class SettlementHistoryEntryDto(
+data class RelationSettlementHistoryDto(
     val id: Int,
     val settlementType: SettlementHistoryEventType,
-    val actorParticipantId: Int?,
     val actorNickname: String?,
-    val otherParticipantId: Int,
-    val otherNickname: String,
     val amountInSettlementCurrency: Float,
     val settlementCurrency: String,
     val amountInTripCurrency: Float,
-    val relatedExpenseIds: List<Int>,
+    val relatedExpenseNames: List<String>,
     val createdAt: Long
 )
+
 
 // ==========================================
 // SETTLEMENT MODELS
@@ -150,7 +139,8 @@ data class SettlementRelationDto(
     val relatedName: String,
     val leftForSettled: List<SimpleMoneyValueDto>,
     val allRelatedAmount: List<SimpleMoneyValueDto>,
-    val prepayment: PrepaymentDetailsDto
+    val prepayment: PrepaymentDetailsDto,
+    val settlementHistory: List<RelationSettlementHistoryDto> = emptyList()  // ← DODANE
 )
 
 data class PrepaymentDetailsDto(
