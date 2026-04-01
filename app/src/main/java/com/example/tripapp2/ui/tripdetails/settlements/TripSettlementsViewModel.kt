@@ -5,8 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.tripapp2.data.model.TripDto
-import com.example.tripapp2.data.model.isSettled
-import com.example.tripapp2.data.model.hasOutstandingAmount
+import com.example.tripapp2.data.repository.CurrencyRepository
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
@@ -173,12 +172,10 @@ class TripSettlementsViewModel(
         viewModelScope.launch {
             try {
                 val trip = tripRepository.getTripDetails(tripId) ?: return@launch
-
-                val availableCurrencies = mutableListOf(trip.currency)
-                participant.leftForSettled.forEach { money ->
-                    if (!money.isMainCurrency && !availableCurrencies.contains(money.currency)) {
-                        availableCurrencies.add(money.currency)
-                    }
+                val allCurrencies = CurrencyRepository.getInstance().getCurrencies()
+                val availableCurrencies = buildList {
+                    add(trip.currency)
+                    addAll(allCurrencies.filter { it != trip.currency })
                 }
 
                 _showPrepaymentModalEvent.value = Event(PrepaymentUiModel(

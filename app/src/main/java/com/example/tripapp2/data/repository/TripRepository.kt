@@ -49,6 +49,7 @@ class TripRepository private constructor(context: Context) {
 
     private val graphQL = GraphQLDataSource.getInstance()
     private val sessionManager by lazy { SessionManager.getInstance() }
+    private val currencyRepository by lazy { CurrencyRepository.getInstance() }
     private val cacheManager by lazy { TripCacheManager.getInstance() }
     private val tripsCache = mutableMapOf<String, TripDto>()
     private var cachedUserInfo: UserInfoDto? = null
@@ -275,6 +276,7 @@ class TripRepository private constructor(context: Context) {
             _tripFlows.clear()
             sessionManager.clearSession()
             cacheManager.clearAll()
+            currencyRepository.clear()
         }
         return result
     }
@@ -324,6 +326,7 @@ class TripRepository private constructor(context: Context) {
         return try {
             val result = graphQL.getTripList()
             result.onSuccess { tripListDto ->
+                currencyRepository.loadCurrencies()
                 val tripIds = tripListDto.trips ?: emptyList()
                 Log.d(TAG, "Trip list loaded: ${tripIds.size} trips, fetching full details...")
                 coroutineScope {

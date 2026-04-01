@@ -9,6 +9,7 @@ import com.example.tripapp2.data.model.ShareRequest
 import com.example.tripapp2.data.model.SimpleMoneyValueDto
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.common.base.BaseViewModel
+import com.example.tripapp2.data.repository.CurrencyRepository
 import com.example.tripapp2.ui.common.base.Event
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -287,9 +288,6 @@ class AddExpenseViewModel(
     }
 
     fun getCurrencies(): List<String> {
-        return listOf(
-            "PLN", "EUR", "USD", "GBP", "CHF", "JPY", "CNY", "AUD", "CAD", "NZD",
-            "SEK", "NOK", "DKK", "RUB", "INR", "BRL", "MXN", "KRW", "SGD", "HKD"
-        )
+        return CurrencyRepository.getInstance().getCurrencies()
     }
 }
