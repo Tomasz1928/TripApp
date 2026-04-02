@@ -1,235 +1,379 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Trip Details Fragment Layout
-    Struktura: Obrazek (35%) → Nagłówek → Treść
--->
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
 
+    <!-- TOP BAR -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/padding_default"
+        android:paddingVertical="@dimen/padding_medium"
+        android:background="@color/surface"
+        android:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="@dimen/icon_size_xxlarge"
+            android:layout_height="@dimen/icon_size_xxlarge"
+            android:padding="@dimen/padding_small"
+            android:src="@drawable/ic_back_arrow"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_back_button"/>
+
+        <TextView
+            style="@style/Text.Body.Bold"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_small"
+            android:text="@string/nav_overview"
+            android:textSize="@dimen/text_size_body_large"/>
+    </LinearLayout>
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollViewTripDetails"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:fillViewport="true"
-        android:scrollbars="none">
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        android:paddingBottom="@dimen/bottom_nav_padding"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/bottom_nav_padding">
+            android:orientation="vertical">
 
-            <!-- ================================== -->
-            <!-- HEADER IMAGE - 35% wysokości ekranu -->
-            <!-- ================================== -->
-            <FrameLayout
-                android:id="@+id/headerImageContainer"
-                style="@style/HeaderImageContainer"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHeight_percent="0.25">
-
-                <ImageView
-                    android:id="@+id/headerImage"
-                    style="@style/HeaderImage"
-                    android:src="@drawable/header_l_trip_details"/>
-
-                <ImageView
-                    android:id="@+id/backButton"
-                    style="@style/BackButton" />
-            </FrameLayout>
-
-            <!-- Back Button (na obrazku) -->
-
-            <!-- ================================== -->
-            <!-- NAGŁÓWEK - Tytuł i opis wycieczki (WYŚRODKOWANE) -->
-            <!-- ================================== -->
-            <TextView
-                android:id="@+id/tripTitle"
-                style="@style/Text.Heading.Screen"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Zakopane 2024"
-                android:gravity="center"
-                android:textAlignment="center"
-                app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
-
-            <TextView
-                android:id="@+id/tripSubtitle"
-                style="@style/Text.Body.Secondary"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Wspólne chodzenie po szlakach i biesiadowanie"
-                android:paddingStart="@dimen/padding_default"
-                android:paddingEnd="@dimen/padding_default"
-                android:layout_marginTop="@dimen/spacing_tiny"
-                android:gravity="center"
-                android:textAlignment="center"
-                app:layout_constraintTop_toBottomOf="@id/tripTitle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
-
-            <!-- ================================== -->
-            <!-- TREŚĆ - Karty informacyjne -->
-            <!-- ================================== -->
+            <!-- HERO: Trip name + description + date -->
             <LinearLayout
-                android:id="@+id/infoContainer"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingTop="@dimen/padding_default"
-                android:paddingStart="@dimen/padding_default"
-                android:paddingEnd="@dimen/padding_default"
-                android:layout_marginTop="@dimen/spacing_medium"
-                app:layout_constraintTop_toBottomOf="@id/tripSubtitle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                android:gravity="center"
+                android:paddingVertical="@dimen/spacing_large"
+                android:paddingHorizontal="@dimen/padding_default"
+                android:background="@color/surface">
 
-                <!-- Your Expenses Card -->
+                <TextView
+                    android:id="@+id/tripTitle"
+                    style="@style/Text.Title.Medium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    tools:text="Wakacje Chorwacja"/>
+
+                <TextView
+                    android:id="@+id/tripSubtitle"
+                    style="@style/Text.Body.Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    tools:text="Piękna wycieczka nad Adriatyk"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="@dimen/spacing_small">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_small"
+                        android:layout_height="@dimen/icon_size_small"
+                        android:src="@drawable/ic_calendar"
+                        android:layout_marginEnd="@dimen/spacing_tiny"/>
+
+                    <TextView
+                        android:id="@+id/tripDate"
+                        style="@style/Text.Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/text_secondary"
+                        tools:text="12.08 — 18.08.2025"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"/>
+
+            <!-- METRIC CARDS ROW -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/padding_medium"
+                android:baselineAligned="false">
+
+                <!-- Total expenses card -->
                 <com.google.android.material.card.MaterialCardView
-                    style="@style/Card.Info"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/info_row_height">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:padding="@dimen/padding_medium"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large"
-                            android:src="@drawable/ic_wallet"
-                            android:contentDescription="@string/cd_wallet_icon"/>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            android:layout_marginStart="@dimen/spacing_small">
-
-                            <TextView
-                                style="@style/Text.Label"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/trip_details_total_expenses_label"/>
-
-                            <TextView
-                                android:id="@+id/totalExpenses"
-                                style="@style/Text.Body.Bold"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0,00 PLN"/>
-                        </LinearLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Date Card -->
-                <com.google.android.material.card.MaterialCardView
-                    style="@style/Card.Info"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/info_row_height">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:padding="@dimen/padding_medium"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large"
-                            android:src="@drawable/ic_calendar"
-                            android:contentDescription="@string/cd_calendar_icon"/>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            android:layout_marginStart="@dimen/spacing_small">
-
-                            <TextView
-                                style="@style/Text.Label"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/trip_details_date_label"/>
-
-                            <TextView
-                                android:id="@+id/tripDate"
-                                style="@style/Text.Body.Bold"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="12.08 - 18.08.2024"/>
-                        </LinearLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-
-                <!-- Settlements Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/settlementsCard"
-                    style="@style/Card.Info"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/info_row_height"
+                    android:id="@+id/totalExpensesCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="@dimen/spacing_tiny"
+                    app:cardCornerRadius="@dimen/corner_radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:padding="@dimen/padding_medium"
-                        android:gravity="center_vertical">
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/padding_medium">
 
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large"
-                            android:src="@drawable/ic_wallet"
-                            android:contentDescription="@string/cd_wallet_icon"/>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <TextView
+                            style="@style/Text.Caption"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_weight="1"
-                            android:layout_marginStart="@dimen/spacing_small">
+                            android:text="@string/trip_details_total_expenses_label"
+                            android:textColor="@color/text_hint"
+                            android:textAllCaps="true"
+                            android:textSize="@dimen/text_size_tiny"
+                            android:letterSpacing="0.05"/>
 
-                            <TextView
-                                style="@style/Text.Label"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="ROZLICZENIA"/>
+                        <TextView
+                            android:id="@+id/totalExpenses"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/text_size_title"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginTop="@dimen/spacing_tiny"
+                            tools:text="4 250,00"/>
 
-                            <TextView
-                                android:id="@+id/settlementsStatus"
-                                style="@style/Text.Body.Bold"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Zobacz szczegóły"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_medium"
-                            android:layout_height="@dimen/icon_size_medium"
-                            android:src="@drawable/ic_back_arrow"
-                            android:rotation="180"
-                            android:contentDescription="@string/cd_back_button"/>
+                        <TextView
+                            android:id="@+id/totalExpensesCurrency"
+                            style="@style/Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_secondary"
+                            tools:text="PLN"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- My cost card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/spacing_tiny"
+                    app:cardCornerRadius="@dimen/corner_radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="@dimen/padding_medium">
+
+                        <TextView
+                            style="@style/Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mój koszt"
+                            android:textColor="@color/text_hint"
+                            android:textAllCaps="true"
+                            android:textSize="@dimen/text_size_tiny"
+                            android:letterSpacing="0.05"/>
+
+                        <TextView
+                            android:id="@+id/myCostAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/text_size_title"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary"
+                            android:layout_marginTop="@dimen/spacing_tiny"
+                            tools:text="1 062,50"/>
+
+                        <TextView
+                            android:id="@+id/myCostCurrency"
+                            style="@style/Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_secondary"
+                            tools:text="PLN"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- SECTIONS CARD -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/padding_medium">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="@dimen/corner_radius_large"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:divider="@drawable/divider_horizontal"
+                        android:showDividers="middle">
+
+                        <!-- Row: Expenses by currency -->
+                        <LinearLayout
+                            android:id="@+id/rowExpensesByCurrency"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_blue"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_small"
+                                    android:layout_height="@dimen/icon_size_small"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_wallet"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Wydatki wg waluty"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/currencyCount"
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="1dp"
+                                    android:textColor="@color/text_secondary"
+                                    tools:text="3 waluty"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"/>
+                        </LinearLayout>
+
+                        <!-- Row: Settlements -->
+                        <LinearLayout
+                            android:id="@+id/rowSettlements"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_green"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_small"
+                                    android:layout_height="@dimen/icon_size_small"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_wallet"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Rozliczenia"
+                                    android:textStyle="bold"/>
+
+                                <TextView
+                                    android:id="@+id/settlementsStatus"
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="1dp"
+                                    android:textColor="@color/success"
+                                    tools:text="Wszystko rozliczone"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Kept for ViewModel compatibility -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/settlementsCard"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"/>
+
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

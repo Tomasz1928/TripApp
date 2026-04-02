@@ -72,9 +72,11 @@
     <!-- BUTTON - Przyciski -->
     <!-- ========================================= -->
 
+    <dimen name="button_height_big">64dp</dimen>
     <dimen name="button_height_default">48dp</dimen>
     <dimen name="button_height_small">32dp</dimen>
     <dimen name="button_corner_radius">12dp</dimen>
+    <dimen name="button_height_topbar">40dp</dimen>
 
     <!-- ========================================= -->
     <!-- CARD - Karty -->

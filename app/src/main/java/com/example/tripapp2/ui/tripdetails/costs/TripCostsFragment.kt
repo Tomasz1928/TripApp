@@ -16,11 +16,14 @@ import com.example.tripapp2.ui.tripdetails.participants.ParticipantUiModel
 import com.google.android.material.button.MaterialButton
 
 /**
- * Fragment kosztów wycieczki
+ * Fragment kosztów wycieczki — Propozycja C: Floating Sections
  *
- * Zmiany:
- * - Dodany przycisk "Dodaj koszt" w filtrach (zamiast bottom nav)
- * - Przyciski edytuj/usuń dla wydatków w filtrze PAID_BY_ME
+ * Zmiany vs oryginał:
+ * - Brak header image (top bar z tytułem + przycisk "Dodaj")
+ * - Przycisk "Dodaj koszt" przeniesiony z filtrów do top bar
+ * - Filtry jako pill chipy pod top barem
+ * - Wydatki w jednej grouped card (divider_horizontal między wierszami)
+ * - Logika filtrów, adaptera i stanów — BEZ ZMIAN
  */
 class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_trip_costs) {
 
@@ -32,9 +35,11 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
     private lateinit var scrollExpensesContainer: ScrollView
     private lateinit var adapter: ExpenseAdapter
 
+    // Przycisk dodaj (teraz w top bar)
+    private lateinit var addExpenseButton: MaterialButton
+
     // Przyciski filtrów
     private lateinit var filterAll: MaterialButton
-    private lateinit var addExpenseButton: MaterialButton
     private lateinit var filterMine: MaterialButton
     private lateinit var filterPaidByMe: MaterialButton
     private lateinit var filterPaidByOthers: MaterialButton
@@ -74,7 +79,7 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
             }
         }
 
-        // Aktualny filtr (do podświetlania przycisków i aktualizacji adaptera)
+        // Aktualny filtr
         viewModel.currentFilter.observe(viewLifecycleOwner) { filter ->
             updateFilterButtons(filter)
             recreateAdapter(filter)
@@ -92,13 +97,16 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
         expensesContainer = view.findViewById(R.id.expensesContainer)
         scrollExpensesContainer = view.findViewById(R.id.scrollExpensesContainer)
 
-        // Filtry
-        filterAll = view.findViewById(R.id.filterAll)
+        // Przycisk dodaj — teraz w top bar
         addExpenseButton = view.findViewById(R.id.addExpenseButton)
+
+        // Filtry — ID zachowane
+        filterAll = view.findViewById(R.id.filterAll)
         filterMine = view.findViewById(R.id.filterMine)
         filterPaidByMe = view.findViewById(R.id.filterPaidByMe)
         filterPaidByOthers = view.findViewById(R.id.filterPaidByOthers)
     }
+
     private fun recreateAdapter(currentFilter: ExpenseFilter) {
         adapter = ExpenseAdapter(
             onExpenseClick = { expense ->
@@ -113,7 +121,6 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
             currentFilter = currentFilter
         )
 
-        // Odśwież wyświetlanie
         val currentState = viewModel.costsState.value
         if (currentState is TripCostsState.Success) {
             displayExpenses(currentState.expenses)
@@ -137,11 +144,12 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
 
     private fun setupFilters() {
         filterAll.setOnClickListener { viewModel.onFilterAllClicked() }
-        addExpenseButton.setOnClickListener { navigateToAddExpense() } // NOWY
+        addExpenseButton.setOnClickListener { navigateToAddExpense() }
         filterMine.setOnClickListener { viewModel.onFilterMineClicked() }
         filterPaidByMe.setOnClickListener { viewModel.onFilterPaidByMeClicked() }
         filterPaidByOthers.setOnClickListener { viewModel.onFilterPaidByOthersClicked() }
     }
+
     private fun navigateToAddExpense() {
         (activity as? DashboardActivity)?.showAddExpenseFromCosts(getTripId())
     }
@@ -167,9 +175,6 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
         }
     }
 
-    /**
-     * Obsługa różnych stanów ekranu
-     */
     private fun handleCostsState(state: TripCostsState) {
         when (state) {
             is TripCostsState.Loading -> {
@@ -190,21 +195,14 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
         }
     }
 
-    /**
-     * Wyświetla wydatki używając adaptera
-     */
     private fun displayExpenses(expenses: List<ExpenseDetailUiModel>) {
         expensesContainer.removeAllViews()
-
         expenses.forEach { expense ->
             val view = adapter.createExpenseView(expensesContainer, expense)
             expensesContainer.addView(view)
         }
     }
 
-    /**
-     * Wyświetla pusty stan
-     */
     private fun displayEmptyState() {
         expensesContainer.removeAllViews()
         val emptyView = layoutInflater.inflate(
@@ -215,42 +213,30 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
         expensesContainer.addView(emptyView)
     }
 
-    /**
-     * Pokazuje modal ze szczegółami wydatku
-     */
     private fun showExpenseDetailModal(detail: ExpenseDetailUiModel) {
         val modal = ExpenseDetailModalFragment.newInstance(detail)
         modal.show(parentFragmentManager, "expense_detail_modal")
     }
 
-    private fun navigateToEditExpense(tripId: String, expenseId: String) {
-        (activity as? DashboardActivity)?.showEditExpenseFromCosts(tripId, expenseId)
-    }
-
-    /**
-     * Pokazuje dialog potwierdzenia usunięcia wydatku
-     */
     private fun showDeleteConfirmationDialog(expense: ExpenseDetailUiModel) {
         ConfirmModalFragment.newInstance(
-            title = "Usuń wydatek",
-            message = "Czy na pewno chcesz usunąć wydatek \"${expense.name}\"?\n\nKwota: ${expense.formattedAmountCostCurrency}",
+            title = getString(R.string.expense_action_delete),
+            message = "Czy na pewno chcesz usunąć wydatek \"${expense.name}\"?",
             confirmText = getString(R.string.dialog_button_delete),
             confirmStyle = ConfirmModalFragment.ConfirmStyle.DANGER,
             onConfirm = { viewModel.confirmDeleteExpense(expense.id) }
         ).show(parentFragmentManager, "delete_expense")
     }
 
-    /**
-     * Aktualizuje wygląd przycisków filtrów
-     */
-    private fun updateFilterButtons(activeFilter: ExpenseFilter) {
-        // Reset wszystkich
+    private fun navigateToEditExpense(tripId: String, expenseId: String) {
+        (activity as? DashboardActivity)?.showEditExpenseFromCosts(tripId, expenseId)
+    }
+
+    private fun updateFilterButtons(filter: ExpenseFilter) {
         listOf(filterAll, filterMine, filterPaidByMe, filterPaidByOthers).forEach {
             it.alpha = 0.6f
         }
-
-        // Podświetl aktywny
-        val activeButton = when (activeFilter) {
+        val activeButton = when (filter) {
             ExpenseFilter.ALL -> filterAll
             ExpenseFilter.MINE -> filterMine
             ExpenseFilter.PAID_BY_ME -> filterPaidByMe
@@ -260,7 +246,7 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
     }
 
     private fun getTripId(): String {
-        return arguments?.getString(ARG_TRIP_ID) ?: "trip_2" // Mock fallback
+        return arguments?.getString(ARG_TRIP_ID) ?: ""
     }
 
     companion object {

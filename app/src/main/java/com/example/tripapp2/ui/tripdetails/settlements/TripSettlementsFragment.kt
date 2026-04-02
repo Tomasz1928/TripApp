@@ -18,19 +18,19 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 
 /**
- * Fragment rozliczeń
+ * Fragment rozliczeń — Propozycja C: Floating Sections
  *
- * Przepływ danych (po refaktorze):
- * - Lista uczestników pochodzi z TripDto.participants (bez mnie)
- * - Balans pochodzi z TripDto.settlement.relations (nowy format z relatedId)
- * - Każda relacja jest ZAWSZE w odniesieniu do mojego ID
- * - SimpleMoneyValueDto.amount > 0 → participant jest mi winien
- * - SimpleMoneyValueDto.amount < 0 → ja jestem winien participantowi
+ * Zmiany vs oryginał:
+ * - Brak header image (top bar z back + tytuł)
+ * - Hero balance: duża kwota centralnie z kolorem wg statusu
+ * - Opis tekstowy pod balansem (kto komu ile jest winien)
+ * - Participant cards — bez zmian strukturalnych, dodana opacity dla settled
+ * - balanceSummaryCard ukryty (kompatybilność z ViewModel)
  *
- * Logika przycisków:
- * - Zaliczka: ZAWSZE widoczny dla każdego uczestnika
- * - Szczegóły: widoczny TYLKO gdy hasSettlementRelation = true
- * - Rozlicz: widoczny TYLKO gdy hasSettlementRelation = true AND balanceStatus != SETTLED
+ * Logika przycisków (BEZ ZMIAN):
+ * - Zaliczka: ZAWSZE widoczny
+ * - Szczegóły: tylko gdy hasSettlementRelation = true
+ * - Rozlicz: tylko gdy hasSettlementRelation = true AND balanceStatus != SETTLED
  */
 class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.fragment_trip_settlements) {
 
@@ -38,13 +38,22 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         TripSettlementsViewModelFactory(getTripId())
     }
 
-    // Views
+    // ================================
+    // VIEWS
+    // ================================
     private lateinit var backButton: ImageView
-    private lateinit var balanceSummaryCard: MaterialCardView
-    private lateinit var balanceAmount: TextView
     private lateinit var scrollParticipants: ScrollView
     private lateinit var participantsContainer: LinearLayout
     private lateinit var emptyState: LinearLayout
+
+    // Hero balance (nowe w Propozycji C)
+    private lateinit var balanceAmount: TextView
+    private lateinit var balanceCurrency: TextView
+    private lateinit var balanceDescription: TextView
+    private lateinit var heroBalance: LinearLayout
+
+    // Hidden (kompatybilność z ViewModel)
+    private lateinit var balanceSummaryCard: MaterialCardView
 
     override fun setupUI() {
         initializeViews()
@@ -89,11 +98,18 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
     private fun initializeViews() {
         val view = requireView()
         backButton = view.findViewById(R.id.backButton)
-        balanceSummaryCard = view.findViewById(R.id.balanceSummaryCard)
-        balanceAmount = view.findViewById(R.id.balanceAmount)
         scrollParticipants = view.findViewById(R.id.scrollParticipants)
         participantsContainer = view.findViewById(R.id.participantsContainer)
         emptyState = view.findViewById(R.id.emptyState)
+
+        // Hero balance
+        balanceAmount = view.findViewById(R.id.balanceAmount)
+        balanceCurrency = view.findViewById(R.id.balanceCurrency)
+        balanceDescription = view.findViewById(R.id.balanceDescription)
+        heroBalance = view.findViewById(R.id.heroBalance)
+
+        // Hidden
+        balanceSummaryCard = view.findViewById(R.id.balanceSummaryCard)
     }
 
     private fun setupClickListeners() {
@@ -102,9 +118,6 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         }
     }
 
-    /**
-     * Powrót do TripDetails
-     */
     private fun onBackClicked() {
         (activity as? DashboardActivity)?.apply {
             tripBottomNav.visibility = View.VISIBLE
@@ -118,74 +131,81 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         }
     }
 
-    /**
-     * Obsługa różnych stanów ekranu
-     */
+    // ================================================================
+    // STATE HANDLING
+    // ================================================================
+
     private fun handleSettlementsState(state: TripSettlementsState) {
         when (state) {
             is TripSettlementsState.Loading -> {
-                balanceSummaryCard.hide()
+                heroBalance.hide()
                 scrollParticipants.hide()
-                participantsContainer.hide()
                 emptyState.hide()
             }
             is TripSettlementsState.Success -> {
                 emptyState.hide()
-                balanceSummaryCard.show()
+                heroBalance.show()
                 scrollParticipants.show()
-                participantsContainer.show()
 
-                displayBalanceSummary(
+                displayHeroBalance(
                     state.myTotalBalance,
                     state.formattedMyTotalBalance,
-                    state.myBalanceStatus
+                    state.myBalanceStatus,
+                    state.tripCurrency
                 )
                 displayParticipants(state.participants, state.tripCurrency)
             }
             is TripSettlementsState.Empty -> {
-                balanceSummaryCard.hide()
+                heroBalance.hide()
                 scrollParticipants.hide()
-                participantsContainer.hide()
                 emptyState.show()
             }
             is TripSettlementsState.Error -> {
-                balanceSummaryCard.hide()
+                heroBalance.hide()
                 scrollParticipants.hide()
-                participantsContainer.hide()
                 emptyState.hide()
                 showError(state.message)
             }
         }
     }
 
-    /**
-     * Wyświetla podsumowanie mojego całkowitego balansu
-     */
-    private fun displayBalanceSummary(
+    // ================================================================
+    // HERO BALANCE
+    // ================================================================
+
+    private fun displayHeroBalance(
         totalBalance: Float,
         formattedBalance: String,
-        balanceStatus: ParticipantBalanceStatus
+        balanceStatus: ParticipantBalanceStatus,
+        currency: String
     ) {
-        balanceAmount.text = formattedBalance
+        // Kwota
+        balanceAmount.text = "%.2f".format(totalBalance)
+        balanceCurrency.text = currency
 
-        val (colorRes, statusTextRes) = when (balanceStatus) {
-            ParticipantBalanceStatus.POSITIVE -> {
-                R.color.success to R.string.settlements_balance_positive
-            }
-            ParticipantBalanceStatus.NEGATIVE -> {
-                R.color.error to R.string.settlements_balance_negative
-            }
-            ParticipantBalanceStatus.SETTLED -> {
-                R.color.text_secondary to R.string.settlements_balance_settled
-            }
+        // Kolor na podstawie statusu
+        val colorRes = when (balanceStatus) {
+            ParticipantBalanceStatus.POSITIVE -> R.color.success
+            ParticipantBalanceStatus.NEGATIVE -> R.color.error
+            ParticipantBalanceStatus.SETTLED -> R.color.text_secondary
         }
-
         balanceAmount.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+
+        // Opis
+        balanceDescription.text = when (balanceStatus) {
+            ParticipantBalanceStatus.POSITIVE ->
+                "Inni są Ci winni łącznie $formattedBalance"
+            ParticipantBalanceStatus.NEGATIVE ->
+                "Jesteś winien innym łącznie $formattedBalance"
+            ParticipantBalanceStatus.SETTLED ->
+                "Wszystko rozliczone"
+        }
     }
 
-    /**
-     * Wyświetla listę uczestników z ich balansem
-     */
+    // ================================================================
+    // PARTICIPANTS
+    // ================================================================
+
     private fun displayParticipants(
         participants: List<SettlementParticipantUiModel>,
         currency: String
@@ -198,14 +218,6 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         }
     }
 
-    /**
-     * Tworzy kartę uczestnika z przyciskami
-     *
-     * Logika przycisków:
-     * - Zaliczka: ZAWSZE widoczny
-     * - Szczegóły: tylko gdy hasSettlementRelation = true
-     * - Rozlicz: tylko gdy hasSettlementRelation = true AND balanceStatus != SETTLED
-     */
     private fun createParticipantCard(
         participant: SettlementParticipantUiModel,
         currency: String
@@ -213,17 +225,14 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         val inflater = LayoutInflater.from(requireContext())
         val cardView = inflater.inflate(R.layout.item_settlement_participant, participantsContainer, false)
 
-        // Znajdź views w karcie
         val nicknameText = cardView.findViewById<TextView>(R.id.participantNickname)
         val balanceText = cardView.findViewById<TextView>(R.id.balanceAmount)
         val prepaymentButton = cardView.findViewById<MaterialButton>(R.id.prepaymentButton)
         val detailsButton = cardView.findViewById<MaterialButton>(R.id.settlementDetailsButton)
         val settleButton = cardView.findViewById<MaterialButton>(R.id.settleButton)
 
-        // Ustaw dane
+        // Dane
         nicknameText.text = participant.nickname
-
-        // Placeholder badge (jeśli potrzebny)
         if (participant.isPlaceholder) {
             nicknameText.text = "${participant.nickname} (placeholder)"
         }
@@ -231,22 +240,20 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         // Balans i kolor
         balanceText.text = participant.formattedBalance
 
-        val (colorRes, statusTextRes) = when (participant.balanceStatus) {
-            ParticipantBalanceStatus.POSITIVE -> {
-                R.color.success to R.string.settlements_balance_positive
-            }
-            ParticipantBalanceStatus.NEGATIVE -> {
-                R.color.error to R.string.settlements_balance_negative
-            }
-            ParticipantBalanceStatus.SETTLED -> {
-                R.color.text_secondary to R.string.settlements_balance_settled
-            }
+        val (colorRes, _) = when (participant.balanceStatus) {
+            ParticipantBalanceStatus.POSITIVE -> R.color.success to R.string.settlements_balance_positive
+            ParticipantBalanceStatus.NEGATIVE -> R.color.error to R.string.settlements_balance_negative
+            ParticipantBalanceStatus.SETTLED -> R.color.text_secondary to R.string.settlements_balance_settled
         }
-
         balanceText.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
 
+        // Opacity dla rozliczonych (Propozycja C)
+        if (participant.isSettled) {
+            cardView.alpha = 0.7f
+        }
+
         // ==========================================
-        // LOGIKA PRZYCISKÓW
+        // LOGIKA PRZYCISKÓW (BEZ ZMIAN)
         // ==========================================
 
         // Zaliczka - ZAWSZE widoczny
@@ -255,7 +262,7 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
             viewModel.onPrepaymentClicked(participant)
         }
 
-        // Szczegóły - tylko gdy hasSettlementRelation = true
+        // Szczegóły - tylko gdy hasSettlementRelation
         if (participant.hasSettlementRelation) {
             detailsButton.visibility = View.VISIBLE
             detailsButton.setOnClickListener {
@@ -265,7 +272,7 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
             detailsButton.visibility = View.GONE
         }
 
-        // Rozlicz - tylko gdy hasSettlementRelation = true AND balance != 0
+        // Rozlicz - tylko gdy hasSettlementRelation AND balance != 0
         if (participant.hasSettlementRelation && participant.balanceStatus != ParticipantBalanceStatus.SETTLED) {
             settleButton.visibility = View.VISIBLE
             settleButton.setOnClickListener {
@@ -278,31 +285,18 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         return cardView
     }
 
-    /**
-     * Pokazuje modal zaliczki
-     *
-     * Przepływ:
-     * 1. Tworzy PrepaymentModalFragment z danymi uczestnika
-     * 2. Po potwierdzeniu w modalu - callback z PrepaymentRequest
-     * 3. Uzupełnia tripId i przekazuje do ViewModel
-     * 4. ViewModel zapisuje przez Repository → cache aktualizowany
-     * 5. UI odświeżane przez loadSettlements()
-     */
+    // ================================================================
+    // MODALS (BEZ ZMIAN)
+    // ================================================================
+
     private fun showPrepaymentModal(model: PrepaymentUiModel) {
         val modal = PrepaymentModalFragment.newInstance(model) { request ->
-            // Uzupełnij tripId (modal go nie zna)
             val fullRequest = request.copy(tripId = getTripId())
-            // Przekaż do ViewModel - zapisze i odświeży dane
             viewModel.onPrepaymentConfirmed(fullRequest)
         }
         modal.show(parentFragmentManager, "prepayment_modal")
     }
 
-    /**
-     * Pokazuje modal szczegółów rozliczenia
-     *
-     * Po refaktorze: pokazuje pełne info per waluta z leftForSettled + prepayment
-     */
     private fun showDetailsModal(participant: SettlementParticipantUiModel) {
         val tripData = viewModel.getTripData() ?: return
         val currentUserId = viewModel.getCurrentUserId()
@@ -323,9 +317,6 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         modal.show(parentFragmentManager, "settlement_details_modal")
     }
 
-    /**
-     * Pokazuje modal rozliczenia
-     */
     private fun showSettleModal(model: SettleModalUiModel) {
         val modal = SettleModalFragment.newInstance(
             model = model,
@@ -342,6 +333,15 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         modal.show(parentFragmentManager, "settle_modal")
     }
 
+    // ================================================================
+    // HELPERS
+    // ================================================================
+
+    private fun getTripId(): String {
+        return arguments?.getString(ARG_TRIP_ID)
+            ?: throw IllegalStateException("Trip ID is required")
+    }
+
     companion object {
         private const val ARG_TRIP_ID = "tripId"
 
@@ -352,10 +352,5 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
                 }
             }
         }
-    }
-
-    private fun getTripId(): String {
-        return arguments?.getString(ARG_TRIP_ID)
-            ?: throw IllegalStateException("Trip ID is required")
     }
 }

@@ -138,6 +138,11 @@
     <string name="trip_costs_no_expenses">Brak wydatków</string>
     <string name="trip_costs_add_expense">Dodaj koszt</string>
 
+    <string name="add_expense_amount_tap_hint">Kliknij aby wpisać kwotę</string>
+    <string name="add_expense_row_category_label">Kategoria</string>
+    <string name="add_expense_row_date_label">Data i godzina</string>
+    <string name="add_expense_row_split_label">Podział kosztów</string>
+
     <!-- ========================================= -->
     <!-- EXPENSE DETAIL -->
     <!-- ========================================= -->

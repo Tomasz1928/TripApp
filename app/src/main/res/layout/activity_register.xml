@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Register Activity Layout
-    Struktura: Obrazek (35%) → Nagłówek → Treść formularza
--->
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -16,50 +12,54 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- ================================== -->
-        <!-- HEADER IMAGE - 35% wysokości ekranu -->
-        <!-- ================================== -->
-        <FrameLayout
-            android:id="@+id/headerImageContainer"
-            style="@style/HeaderImageContainer"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.25">
-
-            <ImageView
-                android:id="@+id/headerImage"
-                style="@style/HeaderImage"
-                android:src="@drawable/header_l_login"/>
-        </FrameLayout>
-
-        <!-- ================================== -->
-        <!-- NAGŁÓWEK WIDOKU -->
-        <!-- ================================== -->
-        <TextView
-            android:id="@+id/title"
-            style="@style/Text.Display"
+        <!-- BRAND / LOGO AREA -->
+        <LinearLayout
+            android:id="@+id/brandContainer"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/register_title"
+            android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginTop="@dimen/spacing_medium"
-            app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+            android:paddingTop="56dp"
+            android:paddingBottom="@dimen/spacing_large"
+            android:background="@color/surface"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- ================================== -->
-        <!-- TREŚĆ - Formularz rejestracji -->
-        <!-- ================================== -->
+            <ImageView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/ic_launcher_foreground"
+                android:background="@drawable/bg_brand_icon"
+                android:scaleType="centerInside"
+                android:contentDescription="@string/app_name"/>
 
-        <!-- Username Input -->
+            <TextView
+                android:id="@+id/title"
+                style="@style/Text.Title.Large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/register_title"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/spacing_medium"/>
+
+            <TextView
+                style="@style/Text.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Utwórz konto w TripApp"
+                android:textColor="@color/text_hint"
+                android:layout_marginTop="@dimen/spacing_tiny"/>
+        </LinearLayout>
+
+        <!-- FORM -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/usernameLayout"
             style="@style/InputLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_large"
-            app:layout_constraintTop_toBottomOf="@id/title"
+            app:layout_constraintTop_toBottomOf="@id/brandContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintWidth_percent="0.9">
@@ -73,7 +73,6 @@
                 android:inputType="textPersonName"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Password Input -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/passwordLayout"
             style="@style/InputLayout"
@@ -95,7 +94,6 @@
                 android:inputType="textPassword"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Register Button -->
         <Button
             android:id="@+id/registerBtn"
             style="@style/Button.Primary"
@@ -108,7 +106,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintWidth_percent="0.9"/>
 
-        <!-- Login Redirect -->
         <LinearLayout
             android:id="@+id/loginRedirectContainer"
             android:layout_width="wrap_content"
