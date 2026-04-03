@@ -22,7 +22,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingHorizontal="@dimen/padding_default"
-            android:paddingVertical="@dimen/padding_medium"
+            android:paddingVertical="@dimen/padding_default"
             android:background="@color/surface"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"

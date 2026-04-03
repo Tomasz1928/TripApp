@@ -1,108 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/Card.Expense"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/expense_item_margin">
+    android:orientation="vertical"
+    android:padding="@dimen/padding_medium"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
+    <!-- Main row: icon + text + amount -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/padding_medium">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <!-- Główna zawartość wydatku -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:minHeight="@dimen/expense_item_height">
+        <!-- Category icon in rounded square -->
+        <FrameLayout
+            android:layout_width="@dimen/icon_size_large"
+            android:layout_height="@dimen/icon_size_large">
 
-            <!-- Category Icon -->
+            <ImageView
+                android:id="@+id/expenseCategoryBg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/bg_icon_rounded"
+                android:scaleType="fitXY"/>
+
             <ImageView
                 android:id="@+id/expenseCategoryIcon"
                 android:layout_width="@dimen/icon_size_large"
                 android:layout_height="@dimen/icon_size_large"
-                android:layout_marginEnd="@dimen/spacing_medium"
+                android:layout_gravity="center"
                 android:contentDescription="@string/cd_category_icon"
                 android:src="@drawable/ic_category_food"/>
+        </FrameLayout>
 
-            <!-- Name and Payer -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+        <!-- Name + payer -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="@dimen/spacing_medium">
 
-                <TextView
-                    android:id="@+id/expenseName"
-                    style="@style/Text.Body.Bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Obiad"/>
-
-                <TextView
-                    android:id="@+id/expensePayer"
-                    style="@style/Text.Caption"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Anna"
-                    android:layout_marginTop="2dp"/>
-            </LinearLayout>
-
-            <!-- Amounts -->
-            <LinearLayout
+            <TextView
+                android:id="@+id/expenseName"
+                style="@style/Text.Body"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="end">
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="Kolacja w restauracji"/>
 
-                <TextView
-                    android:id="@+id/expenseAmount"
-                    style="@style/Text.Body.Bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="120,00 PLN"/>
-
-                <TextView
-                    android:id="@+id/expenseAmountSecondary"
-                    style="@style/Text.Caption"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/secondary"
-                    android:text="25,00 EUR"
-                    android:layout_marginTop="2dp"
-                    android:visibility="gone"/>
-            </LinearLayout>
+            <TextView
+                android:id="@+id/expensePayer"
+                style="@style/Text.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_hint"
+                android:layout_marginTop="1dp"
+                tools:text="Marek · 01.04"/>
         </LinearLayout>
 
+        <!-- Amounts (right aligned) -->
         <LinearLayout
-            android:id="@+id/actionsContainer"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="@dimen/spacing_tiny"
-            android:visibility="gone">
+            android:orientation="vertical"
+            android:gravity="end">
 
-            <!-- Edytuj Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/editButton"
-                style="@style/Button.Action.Primary"
+            <TextView
+                android:id="@+id/expenseAmount"
+                style="@style/Text.Body.Bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/expense_action_edit"/>
+                tools:text="245,00 PLN"/>
 
-            <!-- Usuń Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/deleteButton"
-                style="@style/Button.Action.Error"
+            <TextView
+                android:id="@+id/expenseAmountSecondary"
+                style="@style/Text.Caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/expense_action_delete"/>
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="1dp"
+                android:visibility="gone"
+                tools:text="25,00 EUR"/>
         </LinearLayout>
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+
+    <!-- Action buttons (visible only in PAID_BY_ME filter) -->
+    <LinearLayout
+        android:id="@+id/actionsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:layout_marginStart="44dp"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/editButton"
+            style="@style/Button.Action.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/expense_action_edit"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/deleteButton"
+            style="@style/Button.Action.Error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/expense_action_delete"/>
+    </LinearLayout>
+
+</LinearLayout>

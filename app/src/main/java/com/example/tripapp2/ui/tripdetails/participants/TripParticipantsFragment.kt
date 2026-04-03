@@ -225,6 +225,9 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
     ): View {
         val view = layoutInflater.inflate(R.layout.item_participant, participantsContainer, false)
 
+        val avatar = view.findViewById<TextView>(R.id.participantAvatar)
+        avatar.text = participant.nickname.take(2).uppercase()
+
         // Podstawowe info
         view.findViewById<TextView>(R.id.participantNickname).text = participant.nickname
         val expensesLabel = getString(R.string.participants_expenses_label)

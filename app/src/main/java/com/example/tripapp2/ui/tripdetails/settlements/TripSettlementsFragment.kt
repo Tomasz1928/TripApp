@@ -225,6 +225,9 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         val inflater = LayoutInflater.from(requireContext())
         val cardView = inflater.inflate(R.layout.item_settlement_participant, participantsContainer, false)
 
+        val avatar = cardView.findViewById<TextView>(R.id.participantAvatar)
+        avatar.text = participant.nickname.take(2).uppercase()
+
         val nicknameText = cardView.findViewById<TextView>(R.id.participantNickname)
         val balanceText = cardView.findViewById<TextView>(R.id.balanceAmount)
         val prepaymentButton = cardView.findViewById<MaterialButton>(R.id.prepaymentButton)

@@ -122,8 +122,8 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/bg_icon_rounded_red"/>
                         <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
+                            android:layout_width="@dimen/icon_size_large"
+                            android:layout_height="@dimen/icon_size_large"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_logout"
                             android:contentDescription="@string/options_logout"/>

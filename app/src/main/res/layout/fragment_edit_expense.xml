@@ -35,7 +35,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="@dimen/padding_default"
-        android:paddingVertical="@dimen/padding_medium"
+        android:paddingVertical="@dimen/padding_default"
         android:background="@color/surface"
         android:elevation="2dp"
         app:layout_constraintTop_toTopOf="parent"
@@ -281,8 +281,8 @@
                                     android:scaleType="fitXY"/>
 
                                 <ImageView
-                                    android:layout_width="@dimen/icon_size_small"
-                                    android:layout_height="@dimen/icon_size_small"
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
                                     android:layout_gravity="center"
                                     android:src="@drawable/ic_edit"
                                     android:contentDescription="@string/add_expense_title_hint"/>
@@ -412,8 +412,8 @@
                                     android:scaleType="fitXY"/>
 
                                 <ImageView
-                                    android:layout_width="@dimen/icon_size_small"
-                                    android:layout_height="@dimen/icon_size_small"
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
                                     android:layout_gravity="center"
                                     android:src="@drawable/ic_calendar"
                                     android:contentDescription="@string/add_expense_date_hint"/>
@@ -522,8 +522,8 @@
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
                             android:padding="@dimen/padding_default"
-                            android:clickable="true"
-                            android:focusable="true"
+                            android:clickable="false"
+                            android:focusable="false"
                             android:foreground="?attr/selectableItemBackground">
 
                             <!-- Awatar płacącego -->
@@ -577,12 +577,6 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="@dimen/spacing_small"
                                 android:visibility="gone"/>
-
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_small"
-                                android:layout_height="@dimen/icon_size_small"
-                                android:src="@drawable/ic_chevron_right"
-                                android:contentDescription="@null"/>
                         </LinearLayout>
 
                         <!-- ============================== -->
@@ -595,8 +589,8 @@
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
                             android:padding="@dimen/padding_default"
-                            android:clickable="true"
-                            android:focusable="true"
+                            android:clickable="false"
+                            android:focusable="false"
                             android:foreground="?attr/selectableItemBackground">
 
                             <FrameLayout
@@ -610,8 +604,8 @@
                                     android:scaleType="fitXY"/>
 
                                 <ImageView
-                                    android:layout_width="@dimen/icon_size_small"
-                                    android:layout_height="@dimen/icon_size_small"
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
                                     android:layout_gravity="center"
                                     android:src="@drawable/ic_people"
                                     android:contentDescription="@string/add_expense_split_hint"/>
@@ -664,12 +658,6 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="@dimen/spacing_small"
                                 android:visibility="gone"/>
-
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_small"
-                                android:layout_height="@dimen/icon_size_small"
-                                android:src="@drawable/ic_chevron_right"
-                                android:contentDescription="@null"/>
                         </LinearLayout>
 
                     </LinearLayout>

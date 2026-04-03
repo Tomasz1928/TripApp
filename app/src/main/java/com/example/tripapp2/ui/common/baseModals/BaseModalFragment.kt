@@ -45,7 +45,7 @@ open class BaseModalFragment : DialogFragment() {
     protected var modalCard: View? = null
     protected var modalTitle: TextView? = null
     protected var modalSubtitle: TextView? = null
-    protected var modalCloseButton: ImageView? = null
+    protected var modalCloseButton: View? = null
     protected var modalBodyContainer: FrameLayout? = null
     protected var modalFooter: LinearLayout? = null
     protected var modalSeparator: View? = null

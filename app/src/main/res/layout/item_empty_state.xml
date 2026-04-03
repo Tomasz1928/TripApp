@@ -1,24 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
     android:padding="@dimen/padding_large">
 
+    <!-- Dashed circle icon -->
+    <FrameLayout
+        android:layout_width="48dp"
+        android:layout_height="48dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/bg_empty_state_circle"
+            android:scaleType="fitCenter"/>
+    </FrameLayout>
+
     <TextView
         style="@style/Text.Body.Bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
         android:text="@string/trip_costs_no_expenses"
-        android:textColor="@color/text_secondary"/>
+        android:textColor="@color/text_primary"/>
 
     <TextView
         style="@style/Text.Caption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/spacing_small"
+        android:layout_marginTop="@dimen/spacing_tiny"
         android:text="Nie znaleziono żadnych wydatków dla wybranych filtrów"
-        android:textAlignment="center"/>
+        android:textAlignment="center"
+        android:textColor="@color/text_hint"/>
 
 </LinearLayout>

@@ -75,13 +75,9 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
 
         // Info — z labelkami z string resources
         val descriptionLabel = getString(R.string.expense_detail_description_label)
-        body.findViewById<TextView>(R.id.expenseDescription).text = "$descriptionLabel\n${detail.description}"
-
-        val dateLabel = getString(R.string.expense_detail_date_label)
-        body.findViewById<TextView>(R.id.expenseDate).text = "$dateLabel ${detail.date}"
-
-        val payerLabel = getString(R.string.expense_detail_payer_label)
-        body.findViewById<TextView>(R.id.expensePayer).text = "$payerLabel ${detail.payerName}"
+        body.findViewById<TextView>(R.id.expenseDescription).text = detail.description
+        body.findViewById<TextView>(R.id.expenseDate).text = detail.date
+        body.findViewById<TextView>(R.id.expensePayer).text = detail.payerName
 
         // Dynamiczne nagłówki kolumn
         setupDynamicHeaders(body, detail)
