@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Item Settlement Detail Cost — ZMIENIONY
-    Wiersz kosztu w tab "Koszty": tytuł + kwota z walutą + kontener ikon rozliczenia
-    Zamiast pojedynczego ✓/✗ → duża ikona dominująca (24dp) + małe ikony secondary (16dp)
+    Item Settlement Detail Cost — ZMIENIONY (dual-currency)
+    Wiersz kosztu w tab "Koszty":
+    [tytuł] [kwoty: primary + secondary] [ikony rozliczenia]
+
+    Logika wyświetlania:
+    - Single-currency: costAmount (niebieskie) = waluta tripu, costAmountSecondary = GONE
+    - Multi-currency: costAmount (niebieskie) = waluta kosztu, costAmountSecondary (pomarańczowe) = waluta tripu
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -21,15 +26,37 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:ellipsize="end"
-        android:maxLines="1"/>
+        android:maxLines="1"
+        tools:text="Hotel Berlin"/>
 
-    <!-- Kwota z walutą -->
-    <TextView
-        android:id="@+id/costAmount"
-        style="@style/Text.Body.Bold"
+    <!-- Kwoty (vertical: primary + optional secondary) -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/spacing_small"/>
+        android:orientation="vertical"
+        android:gravity="end"
+        android:layout_marginEnd="@dimen/spacing_small">
+
+        <!-- Kwota główna (primary, always visible) -->
+        <TextView
+            android:id="@+id/costAmount"
+            style="@style/Text.Body.Bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="225,00 EUR"/>
+
+        <!-- Kwota drugorzędna (secondary, visible only when multi-currency) -->
+        <TextView
+            android:id="@+id/costAmountSecondary"
+            style="@style/Text.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="@color/secondary"
+            android:layout_marginTop="1dp"
+            android:visibility="gone"
+            tools:text="950,00 PLN"/>
+    </LinearLayout>
 
     <!-- Kontener ikon rozliczenia: duża (24dp) + małe (16dp) w rzędzie -->
     <LinearLayout

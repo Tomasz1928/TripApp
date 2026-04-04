@@ -15,6 +15,16 @@ import com.google.android.material.card.MaterialCardView
 /**
  * Adapter do tworzenia view'ów wydatków
  * Używany zarówno w RecyclerView jak i LinearLayout
+ *
+ * ZMIENIONE: dual-currency — poprawna logika wyświetlania kwot
+ *
+ * Logika wyświetlania:
+ * - Gdy currencyCost == currencyTrip (single-currency):
+ *     → expenseAmount (niebieskie): formattedAmountTripCurrency (jedyna kwota)
+ *     → expenseAmountSecondary: ukryte
+ * - Gdy currencyCost != currencyTrip (multi-currency):
+ *     → expenseAmount (niebieskie): formattedAmountCostCurrency (waluta kosztu)
+ *     → expenseAmountSecondary (pomarańczowe): formattedAmountTripCurrency (waluta tripu)
  */
 class ExpenseAdapter(
     private val onExpenseClick: (ExpenseDetailUiModel) -> Unit,
@@ -46,15 +56,20 @@ class ExpenseAdapter(
         // Płatnik - ZAWSZE widoczny
         view.findViewById<TextView>(R.id.expensePayer).text = expense.payerName
 
-        // Kwota główna (cost currency) - ZAWSZE widoczna
-        view.findViewById<TextView>(R.id.expenseAmount).text = expense.formattedAmountCostCurrency
+        val isMultiCurrency = expense.currencyTrip != expense.currencyCost
 
-        // Kwota drugorzędna (trip currency) - tylko gdy INNA niż cost currency i są dane
+        // Kwota główna i drugorzędna
+        val mainAmount = view.findViewById<TextView>(R.id.expenseAmount)
         val secondaryAmount = view.findViewById<TextView>(R.id.expenseAmountSecondary)
-        if (expense.currencyTrip != expense.currencyCost && expense.formattedAmountTripCurrency.isNotEmpty()) {
+
+        if (isMultiCurrency) {
+            // Multi-currency: niebiesko = waluta kosztu, pomarańczowo = waluta tripu
+            mainAmount.text = expense.formattedAmountCostCurrency
             secondaryAmount.text = expense.formattedAmountTripCurrency
             secondaryAmount.visibility = View.VISIBLE
         } else {
+            // Single-currency: niebiesko = waluta tripu (jedyna)
+            mainAmount.text = expense.formattedAmountTripCurrency
             secondaryAmount.visibility = View.GONE
         }
 

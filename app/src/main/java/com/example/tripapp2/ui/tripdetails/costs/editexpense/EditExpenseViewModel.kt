@@ -8,6 +8,7 @@ import com.example.tripapp2.data.model.ShareRequest
 import com.example.tripapp2.data.model.SimpleMoneyValueDto
 import com.example.tripapp2.data.model.UpdateExpenseRequest
 import com.example.tripapp2.data.model.mainCurrencyAmount
+import com.example.tripapp2.data.model.notMainCurrencyAmount
 import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.ExpenseCategories
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitParticipant
@@ -135,7 +136,7 @@ class EditExpenseViewModel(
                     id = participant.id,
                     name = participant.nickname,
                     isSelected = share != null,
-                    amount = share?.splitValue?.mainCurrencyAmount() ?: 0f
+                    amount = share?.splitValue?.notMainCurrencyAmount() ?: 0f
                 )
             }
             _participants.value = splitParticipants

@@ -9,6 +9,7 @@ import com.example.tripapp2.data.model.SettlementHistoryEventType
 import com.example.tripapp2.data.model.SettlementRelationDto
 import com.example.tripapp2.data.model.SimpleMoneyValueDto
 import com.example.tripapp2.data.model.mainCurrencyAmount
+import com.example.tripapp2.data.model.notMainCurrencyAmount
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -35,6 +36,16 @@ data class SettlementDetailAmountRow(
 /**
  * Model wiersza kosztu w tab "Koszty" (Tab 2)
  *
+ * ZMIENIONE: dual-currency — analogicznie do ExpenseDetailUiModel
+ *
+ * Logika wyświetlania:
+ * - isMultiCurrency = true (waluta kosztu != waluta tripu):
+ *     → niebiesko: formattedAmountCostCurrency (kwota w walucie kosztu)
+ *     → pomarańczowo: formattedAmountTripCurrency (kwota w walucie tripu)
+ * - isMultiCurrency = false (waluta kosztu == waluta tripu):
+ *     → niebiesko: formattedAmountTripCurrency (jedyna kwota)
+ *     → secondary ukryte
+ *
  * Logika ikon (settlement breakdown):
  * - SELF → 1 duża ikona SELF (szara osoba + zielone V)
  * - Częściowo rozliczony (UNSETTLED w breakdown):
@@ -51,12 +62,19 @@ data class SettlementDetailCostRow(
     val expenseId: String,
     val expenseName: String,
     val splitAmount: Float,
-    val currency: String,
-    val formattedAmount: String,        // "150,00 PLN"
     val isSettled: Boolean,
     val isAmountPositive: Boolean,      // true = do mnie (zielony), false = ode mnie (czerwony)
-    val dominantType: SettlementBreakdownType,          // NOWE: typ do dużej ikony (24dp)
-    val secondaryTypes: List<SettlementBreakdownType>   // NOWE: typy do małych ikon (16dp)
+    val dominantType: SettlementBreakdownType,
+    val secondaryTypes: List<SettlementBreakdownType>,
+
+    // ZMIENIONE: dual-currency zamiast jednego formattedAmount
+    val costCurrency: String,                   // Waluta kosztu (expense.currency)
+    val tripCurrency: String,                   // Waluta tripu (główna)
+    val isMultiCurrency: Boolean,               // true = cost != trip
+    val amountTripCurrency: Float,              // Kwota w walucie tripu (mainCurrencyAmount)
+    val formattedAmountTripCurrency: String,     // "150,00 PLN"
+    val amountCostCurrency: Float?,             // Kwota w walucie kosztu (notMainCurrencyAmount), null gdy single-currency
+    val formattedAmountCostCurrency: String      // "35,00 EUR" lub taka sama jak trip gdy single
 )
 
 /**
@@ -147,7 +165,7 @@ fun createSettlementDetailsModel(
     relation: SettlementRelationDto? = null
 ): SettlementDetailsUiModel {
 
-// --- Tab 1: Sekcje kwotowe ---
+    // --- Tab 1: Sekcje kwotowe ---
 
     val allRelatedRows = mapMoneyListToRows(
         moneyList = participant.allRelatedAmount,
@@ -164,7 +182,8 @@ fun createSettlementDetailsModel(
     val costRows = buildCostRows(
         expenses = expenses,
         participantId = participant.participantId,
-        currentUserId = currentUserId
+        currentUserId = currentUserId,
+        tripCurrency = tripCurrency
     )
 
     // --- Tab 3: Zaliczki ---
@@ -242,39 +261,67 @@ private fun mapMoneyListToRows(
 }
 
 // ==========================================
-// PRIVATE HELPERS — Tab 2 (ZMIENIONE)
+// PRIVATE HELPERS — Tab 2 (ZMIENIONE — dual-currency)
 // ==========================================
 
 /**
  * Buduje listę kosztów dotyczących relacji ja ↔ participant
  *
- * ZMIENIONE: dodano resolveBreakdownIcons() do obliczania dominantType i secondaryTypes
+ * ZMIENIONE: dual-currency — splitValue zawiera:
+ *   isMainCurrency=true  → kwota w walucie tripu
+ *   isMainCurrency=false → kwota w walucie kosztu (gdy inna niż trip)
+ *
+ * Logika wyświetlania:
+ * - Gdy expense.currency == tripCurrency (single-currency):
+ *     → niebiesko: kwota z mainCurrencyAmount() + tripCurrency
+ *     → brak secondary
+ * - Gdy expense.currency != tripCurrency (multi-currency):
+ *     → niebiesko: kwota z notMainCurrencyAmount() + expense.currency
+ *     → pomarańczowo: kwota z mainCurrencyAmount() + tripCurrency
  */
 private fun buildCostRows(
     expenses: List<ExpenseDto>,
     participantId: String,
-    currentUserId: String
+    currentUserId: String,
+    tripCurrency: String
 ): List<SettlementDetailCostRow> {
 
     val result = mutableListOf<SettlementDetailCostRow>()
 
     for (expense in expenses) {
+        val isMultiCurrency = expense.currency != tripCurrency
+
         // Przypadek 1: Ja płaciłem → participant w sharedWith
         if (expense.payerId == currentUserId) {
             val share = expense.sharedWith.find { it.participantId == participantId }
             if (share != null) {
                 val (dominant, secondary) = resolveBreakdownIcons(share)
+
+                val amountTrip = share.splitValue.mainCurrencyAmount()
+                val amountCost = if (isMultiCurrency) share.splitValue.notMainCurrencyAmount() else null
+
                 result.add(
                     SettlementDetailCostRow(
                         expenseId = expense.id,
                         expenseName = expense.name,
-                        splitAmount = share.splitValue.mainCurrencyAmount(),
-                        currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
+                        splitAmount = amountTrip,
                         isSettled = share.isSettlement,
                         isAmountPositive = true,  // Participant mi jest winien
                         dominantType = dominant,
-                        secondaryTypes = secondary
+                        secondaryTypes = secondary,
+
+                        // Dual-currency
+                        costCurrency = expense.currency,
+                        tripCurrency = tripCurrency,
+                        isMultiCurrency = isMultiCurrency,
+                        amountTripCurrency = amountTrip,
+                        formattedAmountTripCurrency = "%.2f %s".format(amountTrip, tripCurrency),
+                        amountCostCurrency = amountCost,
+                        formattedAmountCostCurrency = if (isMultiCurrency) {
+                            "%.2f %s".format(amountCost ?: 0f, expense.currency)
+                        } else {
+                            "%.2f %s".format(amountTrip, tripCurrency)
+                        }
                     )
                 )
             }
@@ -285,17 +332,32 @@ private fun buildCostRows(
             val share = expense.sharedWith.find { it.participantId == currentUserId }
             if (share != null) {
                 val (dominant, secondary) = resolveBreakdownIcons(share)
+
+                val amountTrip = share.splitValue.mainCurrencyAmount()
+                val amountCost = if (isMultiCurrency) share.splitValue.notMainCurrencyAmount() else null
+
                 result.add(
                     SettlementDetailCostRow(
                         expenseId = expense.id,
                         expenseName = expense.name,
-                        splitAmount = share.splitValue.mainCurrencyAmount(),
-                        currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.splitValue.mainCurrencyAmount(), expense.currency),
+                        splitAmount = amountTrip,
                         isSettled = share.isSettlement,
                         isAmountPositive = false,  // Ja jestem winien participantowi
                         dominantType = dominant,
-                        secondaryTypes = secondary
+                        secondaryTypes = secondary,
+
+                        // Dual-currency
+                        costCurrency = expense.currency,
+                        tripCurrency = tripCurrency,
+                        isMultiCurrency = isMultiCurrency,
+                        amountTripCurrency = amountTrip,
+                        formattedAmountTripCurrency = "%.2f %s".format(amountTrip, tripCurrency),
+                        amountCostCurrency = amountCost,
+                        formattedAmountCostCurrency = if (isMultiCurrency) {
+                            "%.2f %s".format(amountCost ?: 0f, expense.currency)
+                        } else {
+                            "%.2f %s".format(amountTrip, tripCurrency)
+                        }
                     )
                 )
             }

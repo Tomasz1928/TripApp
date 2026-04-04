@@ -7,6 +7,7 @@ import com.example.tripapp2.data.model.SimpleMoneyValueDto
 import com.example.tripapp2.data.model.isSettled
 import com.example.tripapp2.data.model.mainCurrencyBalance
 import com.example.tripapp2.data.model.hasOutstandingAmount
+import com.example.tripapp2.data.model.notMainCurrencyBalance
 
 // ==========================================
 // UI MODELS - Settlements
