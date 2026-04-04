@@ -277,5 +277,8 @@ val SettlementRelationDto.hasOutstandingAmount: Boolean
 fun List<SimpleMoneyValueDto>.mainCurrencyAmount(): Float =
     firstOrNull { it.isMainCurrency }?.amount ?: 0f
 
+fun List<SimpleMoneyValueDto>.notMainCurrencyAmount(): Float =
+    firstOrNull { !it.isMainCurrency }?.amount ?: 0f
+
 fun List<SimpleMoneyValueDto>.amountFor(currency: String): Float =
     firstOrNull { it.currency == currency }?.amount ?: 0f

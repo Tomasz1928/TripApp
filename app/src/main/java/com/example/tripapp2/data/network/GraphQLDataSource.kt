@@ -13,6 +13,7 @@ import com.example.tripapp2.graphql.type.SimpleMoneyValueInput
 import com.example.tripapp2.graphql.type.SettleByCostsItem
 import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsItemInput
 import com.example.tripapp2.ui.tripdetails.settlements.SettleByCostsRequest
+import com.example.tripapp2.graphql.AvailableCurrenciesQuery
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -465,6 +466,23 @@ class GraphQLDataSource() {
                     actorParticipantId = data.actorParticipantId
                 )
             }
+    }
+
+    // ==========================================
+// CURRENCIES
+// ==========================================
+
+    suspend fun getAvailableCurrencies(): Result<List<String>> {
+        return try {
+            val response = client.query(AvailableCurrenciesQuery()).execute()
+            val data = response.data?.availableCurrencies
+                ?: return Result.failure(Exception("Failed to load currencies"))
+
+            Result.success(data)
+        } catch (e: ApolloException) {
+            Log.e(TAG, "AvailableCurrencies error", e)
+            Result.failure(e)
+        }
     }
 
     // ==========================================

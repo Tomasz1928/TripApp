@@ -29,7 +29,7 @@ class ExpenseAdapter(
      */
     fun createExpenseView(parent: ViewGroup, expense: ExpenseDetailUiModel): View {
         val inflater = LayoutInflater.from(parent.context)
-        val view = inflater.inflate(R.layout.item_expense, parent, false) as MaterialCardView
+        val view = inflater.inflate(R.layout.item_expense, parent, false) as LinearLayout
 
         // Ikonka kategorii
         val categoryIcon = view.findViewById<ImageView>(R.id.expenseCategoryIcon)

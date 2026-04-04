@@ -22,6 +22,7 @@ data class TripUiModel(
     val totalValue: Float,
     val currency: String,
     val totalFormatted: String,     // Już sformatowany: "4 250 PLN"
+    val myCostFormatted: String,
     val categories: List<PieCategoryUiModel>
 )
 
@@ -53,6 +54,7 @@ sealed class DashboardState {
  * Konwertuje TripDto na TripUiModel
  */
 fun TripDto.toUiModel(context: Context): TripUiModel {
+    val myCostMain = myCost.firstOrNull { it.isMainCurrency }?.amount ?: 0f
     return TripUiModel(
         id = id,
         title = title,
@@ -60,6 +62,7 @@ fun TripDto.toUiModel(context: Context): TripUiModel {
         totalValue = totalExpenses,
         currency = currency,
         totalFormatted = "%,.0f %s".format(totalExpenses, currency),
+        myCostFormatted = "%,.0f %s".format(myCostMain, currency),
         categories = categories.map { it.toUiModel(currency, context) }
     )
 }

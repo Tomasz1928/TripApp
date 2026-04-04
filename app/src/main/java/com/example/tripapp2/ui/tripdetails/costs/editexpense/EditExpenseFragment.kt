@@ -17,6 +17,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import com.example.tripapp2.data.repository.CurrencyRepository
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -252,7 +253,7 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
     }
 
     private fun setupCurrencyDropdown() {
-        val currencies = listOf("PLN", "EUR", "USD", "GBP", "CHF", "CZK", "NOK", "SEK", "DKK")
+        val currencies = CurrencyRepository.getInstance().getCurrencies()
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, currencies)
         currencyInput.setAdapter(adapter)
 

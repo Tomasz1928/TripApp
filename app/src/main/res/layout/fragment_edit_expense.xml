@@ -1,57 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Edit Expense Fragment Layout
-    Struktura: Obrazek (25%) → Nagłówek (wyśrodkowany) + STRZAŁKA WSTECZ → Treść formularza
-    Kopia fragment_add_expense.xml z różnicami:
-    - Tytuł: "Edytuj wydatek"
-    - Przycisk: "Zaktualizuj" (id: updateButton)
-    - ScrollView id: scrollViewEditExpense
+    Edit Expense Fragment Layout — PROPOZYCJA C: Floating Sections
+    ============================================================
+    Struktura: TopBar (back + tytuł + Zapisz) → Hero Amount → Sections List (settings-style)
+    
+    Kluczowe zmiany vs oryginał:
+    - BEZ header image (25% ekranu odzyskane)
+    - Przycisk "Zapisz" w toolbarze (nie trzeba scrollować do CTA)
+    - Kwota jako hero element (duża czcionka, centralnie)
+    - Pola formularza jako klikalne wiersze (styl Settings/iOS)
+    - Awatar stack w wierszu podziału kosztów
+    
+    Interakcje:
+    - Kliknięcie hero amount → pokazuje inputy kwoty + waluty (można zrobić jako expand/collapse)
+    - Kliknięcie wiersza → otwiera odpowiedni dialog/bottom sheet (tak jak obecne buttony)
+    - Długi formularz zamieniony na kompaktową listę
 -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
 
     <!-- ================================== -->
-    <!-- HEADER IMAGE - 25% wysokości ekranu -->
+    <!-- TOP BAR: Back + Tytuł + Zapisz    -->
+    <!-- Zastępuje header image + bottom CTA -->
     <!-- ================================== -->
-    <FrameLayout
-        android:id="@+id/headerImageContainer"
-        style="@style/HeaderImageContainer"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.25">
-
-        <ImageView
-            android:id="@+id/headerImage"
-            style="@style/HeaderImage"
-            android:src="@drawable/header_l_add_cost"/>
-
-        <ImageView
-            android:id="@+id/backButton"
-            style="@style/BackButton" />
-    </FrameLayout>
-
-    <!-- ================================== -->
-    <!-- NAGŁÓWEK WIDOKU (WYŚRODKOWANY) -->
-    <!-- ================================== -->
-    <TextView
-        android:id="@+id/title"
-        style="@style/Text.Heading.Screen"
+    <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/edit_expense_title"
-        android:gravity="center"
-        android:textAlignment="center"
-        app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/padding_default"
+        android:paddingVertical="@dimen/padding_default"
+        android:background="@color/surface"
+        android:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Przycisk wstecz -->
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="@dimen/icon_size_xxlarge"
+            android:layout_height="@dimen/icon_size_xxlarge"
+            android:padding="@dimen/padding_small"
+            android:src="@drawable/ic_back_arrow"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_back_button"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <!-- Tytuł -->
+        <TextView
+            android:id="@+id/title"
+            style="@style/Text.Body.Bold"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_small"
+            android:text="@string/edit_expense_title"
+            android:textSize="@dimen/text_size_body_large"/>
+
+        <!-- Przycisk ZAPISZ (zastępuje updateButton na dole) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/updateButton"
+            style="@style/Button.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height_topbar"
+            android:text="@string/edit_expense_button"
+            android:textSize="@dimen/text_size_small"
+            android:minWidth="0dp"
+            android:paddingHorizontal="@dimen/padding_default"
+            app:cornerRadius="@dimen/corner_radius_small"/>
+    </LinearLayout>
 
     <!-- ================================== -->
-    <!-- TREŚĆ - Formularz wydatku (scrollowalny) -->
+    <!-- SCROLLABLE CONTENT                 -->
     <!-- ================================== -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollViewEditExpense"
@@ -60,152 +88,111 @@
         android:fillViewport="true"
         android:clipToPadding="false"
         android:scrollbars="none"
-        android:paddingBottom="@dimen/bottom_nav_height"
-        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/padding_default">
+            android:orientation="vertical">
 
-            <!-- Tytuł -->
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/titleLayout"
-                    style="@style/InputLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/add_expense_title_hint">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/titleInput"
-                        style="@style/InputEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:maxLength="40"
-                        android:inputType="textCapSentences"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <TextView
-                    android:id="@+id/titleCounter"
-                    style="@style/Text.Counter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_marginEnd="@dimen/padding_medium"
-                    android:layout_marginTop="@dimen/spacing_small"
-                    android:text="0/40"/>
-            </FrameLayout>
-
-            <!-- Opis -->
-            <FrameLayout
+            <!-- ================================== -->
+            <!-- HERO AMOUNT SECTION                -->
+            <!-- Kwota + waluta jako centralny element -->
+            <!-- Kliknięcie → expand z inputami      -->
+            <!-- ================================== -->
+            <LinearLayout
+                android:id="@+id/heroAmountContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/descriptionLayout"
-                    style="@style/InputLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/add_expense_description_hint">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/descriptionInput"
-                        style="@style/InputEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:maxLength="200"
-                        android:inputType="textMultiLine"
-                        android:minLines="2"
-                        android:maxLines="4"/>
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <TextView
-                    android:id="@+id/descriptionCounter"
-                    style="@style/Text.Counter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_marginEnd="@dimen/padding_medium"
-                    android:layout_marginTop="@dimen/spacing_small"
-                    android:text="0/200"/>
-            </FrameLayout>
-
-            <!-- Kategoria (klikalne pole) -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/categoryCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                app:cardCornerRadius="@dimen/input_corner_radius"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp"
-                app:cardBackgroundColor="@android:color/transparent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingVertical="@dimen/spacing_large"
+                android:paddingHorizontal="@dimen/padding_default"
+                android:background="@color/surface"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground">
 
+                <!-- Label -->
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/add_expense_amount_hint"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.08"
+                    android:textColor="@color/text_hint"/>
+
+                <!-- Kwota + Waluta w jednej linii -->
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/input_height"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="@dimen/padding_medium"
-                    android:paddingEnd="@dimen/padding_medium">
+                    android:gravity="center_vertical|bottom"
+                    android:layout_marginTop="@dimen/spacing_tiny">
 
-                    <ImageView
-                        android:id="@+id/categoryIcon"
-                        android:layout_width="@dimen/icon_size_large"
-                        android:layout_height="@dimen/icon_size_large"
-                        android:layout_marginEnd="@dimen/spacing_small"
-                        android:visibility="gone"
-                        android:contentDescription="@string/cd_category_icon"/>
-
+                    <!-- Wyświetlana kwota (duża czcionka) -->
                     <TextView
-                        android:id="@+id/categoryInput"
-                        style="@style/InputEditText"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:hint="@string/add_expense_category_hint"
-                        android:gravity="center_vertical"
-                        android:background="@android:color/transparent"
-                        android:textColorHint="@color/text_hint"/>
+                        android:id="@+id/amountDisplay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/text_size_display"
+                        android:textColor="@color/text_primary"
+                        android:fontFamily="@font/plus_jakarta_sans"
+                        android:textStyle="bold"
+                        android:letterSpacing="-0.02"
+                        tools:text="245.00"/>
+
+                    <!-- Waluta obok kwoty -->
+                    <TextView
+                        android:id="@+id/currencyDisplay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/text_size_title"
+                        android:textColor="@color/text_secondary"
+                        android:fontFamily="@font/plus_jakarta_sans"
+                        android:textStyle="bold"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:layout_marginBottom="3dp"
+                        tools:text="PLN"/>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:id="@+id/categoryError"
-                style="@style/Text.Error"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/padding_medium"
-                android:layout_marginTop="@dimen/spacing_tiny"
-                android:visibility="gone"/>
+                <!-- Hint (widoczny gdy brak kwoty) -->
+                <TextView
+                    android:id="@+id/amountHint"
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:text="Kliknij aby wpisać kwotę"
+                    android:textColor="@color/text_hint"/>
+            </LinearLayout>
 
-            <!-- Kwota + Waluta -->
+            <!-- ================================== -->
+            <!-- EXPANDABLE AMOUNT INPUT            -->
+            <!-- Ukryte domyślnie, pokazuje się po  -->
+            <!-- kliknięciu hero amount              -->
+            <!-- ================================== -->
             <LinearLayout
+                android:id="@+id/amountInputContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="@dimen/spacing_medium">
+                android:paddingHorizontal="@dimen/padding_default"
+                android:paddingBottom="@dimen/spacing_default"
+                android:background="@color/surface"
+                android:visibility="gone"
+                tools:visibility="visible">
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/amountLayout"
                     style="@style/InputLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:layout_marginEnd="@dimen/spacing_small"
+                    android:layout_weight="0.6"
                     android:hint="@string/add_expense_amount_hint">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -218,128 +205,509 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/currencyLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    style="@style/InputLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="@string/add_expense_currency_hint">
+                    android:layout_weight="0.4"
+                    android:layout_marginStart="@dimen/spacing_small"
+                    android:hint="@string/add_expense_currency_hint"
+                    app:endIconMode="dropdown_menu">
 
                     <AutoCompleteTextView
                         android:id="@+id/currencyInput"
+                        style="@style/InputEditText.Dropdown"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="none"
-                        android:text="PLN"/>
+                        android:dropDownHeight="150dp"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
-            <!-- Data + Czas -->
+            <!-- Divider pod hero -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"/>
+
+            <!-- ================================== -->
+            <!-- SECTIONS LIST (Settings-style)     -->
+            <!-- Jedna karta z wieloma wierszami     -->
+            <!-- ================================== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/spacing_medium">
+                android:orientation="vertical"
+                android:padding="@dimen/padding_medium">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/dateLayout"
-                    style="@style/InputLayout"
-                    android:layout_width="0dp"
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="@dimen/spacing_small"
-                    android:hint="@string/add_expense_date_hint">
+                    app:cardCornerRadius="@dimen/corner_radius_large"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/dateInput"
-                        style="@style/InputEditText"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none"
-                        android:focusable="false"
-                        android:clickable="true"/>
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:orientation="vertical"
+                        android:divider="@drawable/divider_horizontal"
+                        android:showDividers="middle">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/timeLayout"
-                    style="@style/InputLayout"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="@string/add_expense_time_hint">
+                        <!-- ============================== -->
+                        <!-- ROW 1: Tytuł + Opis            -->
+                        <!-- ============================== -->
+                        <LinearLayout
+                            android:id="@+id/rowTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/timeInput"
-                        style="@style/InputEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="none"
-                        android:focusable="false"
-                        android:clickable="true"/>
-                </com.google.android.material.textfield.TextInputLayout>
+                            <!-- Ikona -->
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded"
+                                    android:scaleType="fitXY"/>
+
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_edit"
+                                    android:contentDescription="@string/add_expense_title_hint"/>
+                            </FrameLayout>
+
+                            <!-- Tekst -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+
+                                <TextView
+                                    android:id="@+id/titleDisplay"
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/add_expense_title_hint"
+                                    android:textColorHint="@color/text_hint"
+                                    tools:text="Kolacja w restauracji"/>
+
+                                <TextView
+                                    android:id="@+id/descriptionDisplay"
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:hint="@string/add_expense_description_hint"
+                                    android:textColorHint="@color/text_hint"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <!-- Chevron -->
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                        <!-- ============================== -->
+                        <!-- ROW 2: Kategoria               -->
+                        <!-- ============================== -->
+                        <LinearLayout
+                            android:id="@+id/rowCategory"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <!-- Ikona kategorii (dynamiczna) -->
+                            <ImageView
+                                android:id="@+id/categoryIcon"
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large"
+                                android:src="@drawable/ic_category_other_fees"
+                                android:scaleType="fitCenter"
+                                android:contentDescription="@string/cd_category_icon"/>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+
+                                <TextView
+                                    android:id="@+id/categoryInput"
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/add_expense_category_hint"
+                                    android:textColorHint="@color/text_hint"/>
+
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Kategoria"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <!-- Error indicator (dot) -->
+                            <TextView
+                                android:id="@+id/categoryError"
+                                style="@style/Text.Error"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="@dimen/spacing_small"
+                                android:visibility="gone"/>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                        <!-- ============================== -->
+                        <!-- ROW 3: Data i godzina           -->
+                        <!-- ============================== -->
+                        <LinearLayout
+                            android:id="@+id/rowDate"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_blue"
+                                    android:scaleType="fitXY"/>
+
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_calendar"
+                                    android:contentDescription="@string/add_expense_date_hint"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+
+                                <!-- Wyświetlana data + czas w jednej linii -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <TextView
+                                        android:id="@+id/dateDisplay"
+                                        style="@style/Text.Body"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:hint="@string/add_expense_date_hint"
+                                        android:textColorHint="@color/text_hint"
+                                        tools:text="01.04.2026"/>
+
+                                    <TextView
+                                        style="@style/Text.Body"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text=", "
+                                        android:textColor="@color/text_secondary"/>
+
+                                    <TextView
+                                        android:id="@+id/timeDisplay"
+                                        style="@style/Text.Body"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:hint="@string/add_expense_time_hint"
+                                        android:textColorHint="@color/text_hint"
+                                        tools:text="19:30"/>
+                                </LinearLayout>
+
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Data i godzina"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <!-- Ukryte TextInputy (potrzebne do logiki) -->
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/dateLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:visibility="gone">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/dateInput"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="none"
+                                    android:focusable="false"/>
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/timeLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:visibility="gone">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/timeInput"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="none"
+                                    android:focusable="false"/>
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <TextView
+                                android:id="@+id/dateError"
+                                style="@style/Text.Error"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="@dimen/spacing_small"
+                                android:visibility="gone"/>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                        <!-- ============================== -->
+                        <!-- ROW 4: Kto płacił              -->
+                        <!-- ============================== -->
+                        <LinearLayout
+                            android:id="@+id/rowPayer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="false"
+                            android:focusable="false"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <!-- Awatar płacącego -->
+                            <TextView
+                                android:id="@+id/payerAvatar"
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large"
+                                android:gravity="center"
+                                android:textSize="@dimen/text_size_caption"
+                                android:textColor="@color/primary"
+                                android:textStyle="bold"
+                                android:background="@drawable/bg_avatar_circle"
+                                tools:text="MK"/>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+
+                                <TextView
+                                    android:id="@+id/payerDisplay"
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/add_expense_payer_hint"
+                                    android:textColorHint="@color/text_hint"
+                                    tools:text="Marek"/>
+
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/add_expense_payer_hint"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <!-- Ukryty przycisk payer (zachowuje kompatybilność) -->
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/payerButton"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:visibility="gone"/>
+
+                            <TextView
+                                android:id="@+id/payerError"
+                                style="@style/Text.Error"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="@dimen/spacing_small"
+                                android:visibility="gone"/>
+                        </LinearLayout>
+
+                        <!-- ============================== -->
+                        <!-- ROW 5: Podział kosztów          -->
+                        <!-- ============================== -->
+                        <LinearLayout
+                            android:id="@+id/rowSplit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="false"
+                            android:focusable="false"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_amber"
+                                    android:scaleType="fitXY"/>
+
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_people"
+                                    android:contentDescription="@string/add_expense_split_hint"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+
+                                <TextView
+                                    android:id="@+id/splitDisplay"
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:hint="Kliknij aby ustawić podział"
+                                    android:textColorHint="@color/text_hint"
+                                    tools:text="Po równo · 4 osoby"/>
+
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/add_expense_split_hint"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <!-- Ukryty przycisk split (zachowuje kompatybilność) -->
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/splitButton"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:visibility="gone"/>
+
+                            <!-- Avatar stack (dynamicznie w kodzie) -->
+                            <LinearLayout
+                                android:id="@+id/splitAvatarStack"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginEnd="@dimen/spacing_small"/>
+
+                            <TextView
+                                android:id="@+id/splitError"
+                                style="@style/Text.Error"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="@dimen/spacing_small"
+                                android:visibility="gone"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
             </LinearLayout>
 
-            <!-- Kto płacił -->
-            <TextView
-                style="@style/Text.Label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:text="@string/add_expense_payer_hint"/>
+            <!-- ================================== -->
+            <!-- HIDDEN INPUTS (kompatybilność)     -->
+            <!-- Zachowuje ID widoków dla Fragment   -->
+            <!-- ================================== -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/payerButton"
-                style="@style/Button.Secondary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_tiny"
-                android:text="Wybierz osobę"
-                android:textAlignment="viewStart"
-                android:gravity="start|center_vertical"
-                app:icon="@drawable/ic_settings"
-                app:iconGravity="end"/>
+                <!-- Ukryte pole tytułu (dane trzymane w titleDisplay) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/titleLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp">
 
-            <TextView
-                android:id="@+id/payerError"
-                style="@style/Text.Error"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="gone"/>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/titleInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Podział kosztów -->
-            <TextView
-                style="@style/Text.Label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:text="@string/add_expense_split_hint"/>
+                <TextView
+                    android:id="@+id/titleCounter"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/splitButton"
-                style="@style/Button.Secondary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_tiny"
-                android:text="Kliknij aby ustawić podział"
-                android:textAlignment="viewStart"
-                android:gravity="start|center_vertical"
-                app:icon="@drawable/ic_settings"
-                app:iconGravity="end"/>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/descriptionInput"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"/>
 
-            <TextView
-                android:id="@+id/splitError"
-                style="@style/Text.Error"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="gone"/>
+                <TextView
+                    android:id="@+id/descriptionCounter"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"/>
 
-            <!-- Przycisk ZAKTUALIZUJ -->
-            <Button
-                android:id="@+id/updateButton"
-                style="@style/Button.Primary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:text="@string/edit_expense_button"/>
+                <!-- categoryCard zachowane dla kompatybilności -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/categoryCard"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"/>
+            </LinearLayout>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

@@ -1,154 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Trip Settlements Fragment Layout (NOWY)
-    Struktura: Obrazek (25%) → Nagłówek → Podsumowanie balansu → Lista uczestników z balansami
-    Wzorowany na fragment_trip_participants - używa TYLKO istniejących styli
--->
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <!-- TOP BAR: Back + Rozliczenia -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/padding_default"
+        android:paddingVertical="@dimen/padding_medium"
+        android:background="@color/surface"
+        android:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- ================================== -->
-        <!-- HEADER IMAGE - 25% wysokości ekranu -->
-        <!-- ================================== -->
-        <FrameLayout
-            android:id="@+id/headerImageContainer"
-            style="@style/HeaderImageContainer"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.25">
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="@dimen/icon_size_xxlarge"
+            android:layout_height="@dimen/icon_size_xxlarge"
+            android:padding="@dimen/padding_small"
+            android:src="@drawable/ic_back_arrow"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_back_button"/>
 
-            <ImageView
-                android:id="@+id/headerImage"
-                style="@style/HeaderImage"
-                android:src="@drawable/header_l_settlements"/>
-
-            <!-- Back Button (na obrazku) -->
-            <ImageView
-                android:id="@+id/backButton"
-                style="@style/BackButton" />
-        </FrameLayout>
-
-        <!-- ================================== -->
-        <!-- NAGŁÓWEK WIDOKU (WYŚRODKOWANY) -->
-        <!-- ================================== -->
         <TextView
-            android:id="@+id/settlementsTitle"
-            style="@style/Text.Heading.Screen"
+            style="@style/Text.Body.Bold"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/settlements_title"
-            android:gravity="center"
-            android:textAlignment="center"
-            app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_small"
+            android:text="Rozliczenia"
+            android:textSize="@dimen/text_size_body_large"/>
+    </LinearLayout>
 
-        <!-- ================================== -->
-        <!-- KARTA PODSUMOWANIA MOJEGO BALANSU -->
-        <!-- ================================== -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/balanceSummaryCard"
-            style="@style/Card"
-            android:layout_width="0dp"
+    <!-- HERO BALANCE -->
+    <LinearLayout
+        android:id="@+id/heroBalance"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingVertical="@dimen/spacing_large"
+        android:paddingHorizontal="@dimen/padding_default"
+        android:background="@color/surface"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            style="@style/Text.Caption"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/padding_default"
+            android:text="Mój balans"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08"
+            android:textColor="@color/text_hint"/>
+
+        <TextView
+            android:id="@+id/balanceAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_size_heading"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginTop="@dimen/spacing_tiny"
+            tools:text="-175,00"/>
+
+        <TextView
+            android:id="@+id/balanceCurrency"
+            style="@style/Text.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_secondary"
+            tools:text="PLN"/>
+
+        <TextView
+            android:id="@+id/balanceDescription"
+            style="@style/Text.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_small"
-            app:layout_constraintTop_toBottomOf="@id/settlementsTitle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:textColor="@color/text_hint"
+            android:gravity="center"
+            tools:text="Jesteś winien innym łącznie 175 PLN"/>
+    </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/padding_medium"
-                android:gravity="center">
+    <View
+        android:id="@+id/balanceDivider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/divider"
+        app:layout_constraintTop_toBottomOf="@id/heroBalance"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-                <TextView
-                    android:id="@+id/balanceLabel"
-                    style="@style/Text.Body.Secondary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settlements_my_balance"/>
+    <!-- PARTICIPANT SETTLEMENT CARDS -->
+    <ScrollView
+        android:id="@+id/scrollParticipants"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/balanceDivider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-                <TextView
-                    android:id="@+id/balanceAmount"
-                    style="@style/Text.Title.Medium"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="+0,00 PLN"
-                    android:textColor="@color/success"
-                    android:layout_marginTop="@dimen/spacing_tiny"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- ================================== -->
-        <!-- TREŚĆ - Lista uczestników z balansami -->
-        <!-- ================================== -->
-        <ScrollView
-            android:id="@+id/scrollParticipants"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:fillViewport="true"
-            android:clipToPadding="false"
-            app:layout_constraintTop_toBottomOf="@id/balanceSummaryCard"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
-
-            <LinearLayout
-                android:id="@+id/participantsContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/padding_default"/>
-        </ScrollView>
-
-        <!-- ================================== -->
-        <!-- EMPTY STATE - Brak uczestników -->
-        <!-- ================================== -->
         <LinearLayout
-            android:id="@+id/emptyState"
-            style="@style/EmptyState"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/balanceSummaryCard"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:id="@+id/participantsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_medium"/>
+    </ScrollView>
 
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@drawable/ic_category_other_fees"
-                app:tint="@color/text_hint"/>
+    <!-- Empty state -->
+    <LinearLayout
+        android:id="@+id/emptyState"
+        style="@style/EmptyState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/balanceDivider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-            <TextView
-                android:id="@+id/emptyStateTitle"
-                style="@style/Text.Title.Medium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/settlements_empty_title"
-                android:layout_marginTop="@dimen/spacing_medium"/>
+        <TextView
+            style="@style/Text.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Brak uczestników do rozliczenia"/>
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/emptyStateMessage"
-                style="@style/Text.Body.Secondary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/settlements_empty_message"
-                android:gravity="center"
-                android:layout_marginTop="@dimen/spacing_small"/>
+    <!-- Hidden view for ViewModel compatibility -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/balanceSummaryCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"/>
 
-        </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

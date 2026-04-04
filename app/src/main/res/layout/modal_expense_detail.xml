@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/expenseBodyRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/padding_small"
     android:fillViewport="true">
 
     <LinearLayout
@@ -12,21 +12,39 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header: icon + name + category + amount -->
+        <!-- ================================== -->
+        <!-- HEADER: Icon + Name + Amounts      -->
+        <!-- Obie waluty widoczne               -->
+        <!-- ================================== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingBottom="@dimen/padding_medium">
+            android:padding="@dimen/padding_default">
 
-            <ImageView
-                android:id="@+id/expenseCategoryIcon"
+            <!-- Category icon in rounded square -->
+            <FrameLayout
                 android:layout_width="@dimen/icon_size_xlarge"
                 android:layout_height="@dimen/icon_size_xlarge"
-                android:contentDescription="@string/cd_category_icon"
-                android:layout_marginEnd="@dimen/spacing_medium"/>
+                android:layout_marginEnd="@dimen/spacing_medium">
 
+                <ImageView
+                    android:id="@+id/expenseCategoryBg"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/bg_icon_rounded"
+                    android:scaleType="fitXY"/>
+
+                <ImageView
+                    android:id="@+id/expenseCategoryIcon"
+                    android:layout_width="@dimen/icon_size_medium"
+                    android:layout_height="@dimen/icon_size_medium"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/cd_category_icon"/>
+            </FrameLayout>
+
+            <!-- Name -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -35,175 +53,236 @@
 
                 <TextView
                     android:id="@+id/expenseName"
-                    style="@style/Text.Body.Large"
-                    android:textStyle="bold"
+                    style="@style/Text.Body"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Obiad w restauracji"/>
+                    android:textStyle="bold"
+                    android:textSize="@dimen/text_size_body_large"
+                    tools:text="Kolacja w restauracji"/>
             </LinearLayout>
 
+            <!-- Amounts (right aligned, both currencies) -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="end">
 
+                <!-- Main amount (cost currency) — ALWAYS visible -->
                 <TextView
                     android:id="@+id/expenseAmountMain"
                     style="@style/Text.Body.Bold"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/primary"
-                    android:text="120 PLN"/>
+                    android:textSize="@dimen/text_size_body_large"
+                    tools:text="245,00 PLN"/>
 
+                <!-- Secondary amount (trip currency) — visible when different -->
                 <TextView
                     android:id="@+id/expenseAmountSecondary"
                     style="@style/Text.Caption"
-                    android:textStyle="bold"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/secondary"
-                    android:text="25 EUR"
-                    android:visibility="gone"/>
+                    android:textStyle="bold"
+                    android:layout_marginTop="1dp"
+                    android:visibility="gone"
+                    tools:text="≈ 56,78 EUR"/>
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Separator -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider"
-            android:layout_marginBottom="@dimen/spacing_medium"/>
-
-        <!-- Date and Payer -->
+        <!-- ================================== -->
+        <!-- INFO ROWS (settings-style)         -->
+        <!-- ================================== -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingBottom="@dimen/padding_medium">
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/padding_default">
 
-            <TextView
-                android:id="@+id/expenseDate"
-                style="@style/Text.Caption"
-                android:layout_width="0dp"
+            <!-- Description -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Data: 12.01.2026"/>
+                android:orientation="horizontal"
+                android:paddingVertical="@dimen/spacing_small"
+                android:gravity="center_vertical">
 
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/expense_detail_description_label"
+                    android:textColor="@color/text_hint"/>
+
+                <TextView
+                    android:id="@+id/expenseDescription"
+                    style="@style/Text.Body"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="Restauracja włoska na starówce"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/divider"/>
+
+            <!-- Date -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="@dimen/spacing_small"
+                android:gravity="center_vertical">
+
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/expense_detail_date_label"
+                    android:textColor="@color/text_hint"/>
+
+                <TextView
+                    android:id="@+id/expenseDate"
+                    style="@style/Text.Body"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="01.04.2026"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/divider"/>
+
+            <!-- Payer -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="@dimen/spacing_small"
+                android:gravity="center_vertical">
+
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/expense_detail_payer_label"
+                    android:textColor="@color/text_hint"/>
+
+                <TextView
+                    android:id="@+id/expensePayer"
+                    style="@style/Text.Body"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="Marek"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/divider"
+            android:layout_marginTop="@dimen/spacing_tiny"/>
+
+        <!-- ================================== -->
+        <!-- SPLIT SECTION                      -->
+        <!-- Dual currency: cost + trip         -->
+        <!-- ================================== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_default">
+
+            <!-- Split header label -->
             <TextView
-                android:id="@+id/expensePayer"
                 style="@style/Text.Caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Płacił: Anna"/>
-        </LinearLayout>
+                android:text="@string/expense_detail_split_label"
+                android:textColor="@color/text_hint"
+                android:textAllCaps="true"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="@dimen/spacing_small"/>
 
-        <!-- Description -->
-        <TextView
-            android:id="@+id/expenseDescription"
-            style="@style/Text.Caption"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Opis: \nLunch w centrum miasta"
-            android:paddingBottom="@dimen/padding_medium"/>
-
-        <!-- Separator -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider"
-            android:layout_marginBottom="@dimen/spacing_medium"/>
-
-        <!-- Header Row -->
-        <LinearLayout
-            android:id="@+id/sharedWithHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingVertical="@dimen/spacing_tiny"
-            android:gravity="center_vertical">
-
-            <!-- LEWY KONTENER 40% -->
+            <!-- Dynamic column headers (cost currency + trip currency) -->
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/splitHeaderRow"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingBottom="@dimen/spacing_tiny">
 
-                <FrameLayout
+                <!-- LEFT 40%: Person + settlement icon -->
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1">
+                    android:layout_weight="4">
+                </LinearLayout>
 
-                    <TextView
-                        style="@style/Text.Caption"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="start|center_vertical"
-                        android:text="Osoba"
-                        android:textColor="@color/text_secondary"/>
-                </FrameLayout>
-
-
-                <FrameLayout
+                <!-- RIGHT 60%: Two currency columns -->
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1">
+                    android:layout_weight="5"
+                    android:orientation="horizontal">
 
-                    <TextView
-                        style="@style/Text.Caption"
-                        android:layout_width="wrap_content"
+                    <!-- Trip currency header (secondary, shown only when different) -->
+                    <FrameLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="Rozliczenie"
-                        android:textColor="@color/text_secondary"/>
-                </FrameLayout>
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:id="@+id/headerTripCurrency"
+                            style="@style/Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end"
+                            android:textColor="@color/secondary"
+                            android:visibility="gone"
+                            tools:text="EUR"/>
+                    </FrameLayout>
+
+                    <!-- Cost currency header (primary, always visible) -->
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:id="@+id/headerCostCurrency"
+                            style="@style/Text.Caption"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end"
+                            android:textColor="@color/primary"
+                            tools:text="PLN"/>
+                    </FrameLayout>
+                </LinearLayout>
             </LinearLayout>
 
-            <!-- PRAWY KONTENER 60% -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/divider"
+                android:layout_marginBottom="@dimen/spacing_tiny"/>
+
+            <!-- Shared With Container (dynamically populated) -->
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/sharedWithContainer"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="horizontal">
+                android:orientation="vertical"/>
 
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:id="@+id/headerTripCurrency"
-                        style="@style/Text.Caption"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:textColor="@color/secondary"
-                        android:visibility="gone"/>
-                </FrameLayout>
-
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:id="@+id/headerCostCurrency"
-                        style="@style/Text.Caption"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:textColor="@color/primary"/>
-                </FrameLayout>
-            </LinearLayout>
         </LinearLayout>
-
-        <!-- Shared With Container -->
-        <LinearLayout
-            android:id="@+id/sharedWithContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"/>
 
     </LinearLayout>
 </ScrollView>

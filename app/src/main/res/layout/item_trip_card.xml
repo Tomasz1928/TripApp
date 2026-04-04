@@ -2,11 +2,13 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     style="@style/Card.Trip"
     android:layout_width="@dimen/trip_card_width"
     android:layout_height="wrap_content"
     app:cardUseCompatPadding="true"
-    app:cardBackgroundColor="@color/surface">
+    app:cardBackgroundColor="@color/surface"
+    app:cardCornerRadius="@dimen/corner_radius_large">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,24 +16,37 @@
         android:orientation="vertical"
         android:padding="@dimen/padding_default">
 
-        <!-- NOWE: Title row z refreshBtn w prawym górnym rogu -->
+        <!-- HEADER: Title + refresh -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="@dimen/spacing_small">
+            android:gravity="center_vertical">
 
-            <!-- Title -->
-            <TextView
-                android:id="@+id/tripTitle"
-                style="@style/Text.Title.Medium"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Zakopane 2024"/>
+                android:orientation="vertical">
 
-            <!-- Refresh Button -->
+                <TextView
+                    android:id="@+id/tripTitle"
+                    style="@style/Text.Body.Bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/text_size_body_large"
+                    tools:text="Wakacje Chorwacja"/>
+
+                <TextView
+                    android:id="@+id/tripDate"
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_hint"
+                    android:layout_marginTop="2dp"
+                    tools:text="12.08 — 18.08 · 4 osoby"/>
+            </LinearLayout>
+
             <ImageView
                 android:id="@+id/refreshBtn"
                 android:layout_width="32dp"
@@ -43,45 +58,48 @@
                 android:focusable="true"/>
         </LinearLayout>
 
-        <!-- Date -->
-        <TextView
-            android:id="@+id/tripDate"
-            style="@style/Text.Caption"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10 - 15 Grudnia 2024"
-            android:layout_marginTop="@dimen/spacing_tiny"/>
-
-        <!-- Total -->
-        <TextView
-            android:id="@+id/tripTotal"
-            style="@style/Text.Title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="4 250 zł"
-            android:layout_marginBottom="@dimen/spacing_small"/>
-
-        <!-- Separator -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider"
-            android:layout_marginVertical="@dimen/spacing_medium"/>
-
-        <!-- PieChart + Legend -->
+        <!-- HERO AMOUNT -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginTop="@dimen/spacing_medium">
+
+            <TextView
+                android:id="@+id/tripTotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size_title_large"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                tools:text="4 250,00 PLN"/>
+
+            <TextView
+                android:id="@+id/tripMyCost"
+                style="@style/Text.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_hint"
+                android:layout_marginTop="2dp"
+                tools:text="Mój koszt: 1 062,50 PLN"/>
+        </LinearLayout>
+
+        <!-- PIECHART + LEGEND in grey container -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="1dp">
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_icon_rounded"
+            android:padding="@dimen/padding_medium"
+            android:layout_marginTop="@dimen/spacing_medium">
 
             <!-- PieChart -->
             <com.example.tripapp2.ui.common.widget.PieChartView
                 android:id="@+id/pieChart"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.4"
-                android:gravity="start"/>
+                android:layout_width="64dp"
+                android:layout_height="64dp"/>
 
             <!-- Legend ScrollView -->
             <androidx.core.widget.NestedScrollView
@@ -104,9 +122,10 @@
         <!-- Separator -->
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider"
-            android:layout_marginVertical="@dimen/spacing_medium"/>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:baselineAligned="false"/>
 
         <!-- Buttons -->
         <Button

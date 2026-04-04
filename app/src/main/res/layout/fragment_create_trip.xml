@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Create Trip Fragment Layout
-    Struktura: Obrazek (35%) → Nagłówek → Treść formularza
--->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
@@ -15,152 +12,205 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:scrollbars="none">
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        android:paddingBottom="@dimen/bottom_nav_padding">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/bottom_nav_padding">
+            android:orientation="vertical">
 
-            <!-- ================================== -->
-            <!-- HEADER IMAGE - 35% wysokości ekranu -->
-            <!-- ================================== -->
-            <FrameLayout
-                android:id="@+id/headerImageContainer"
-                style="@style/HeaderImageContainer"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHeight_percent="0.25">
-
-                <ImageView
-                    android:id="@+id/headerImage"
-                    style="@style/HeaderImage"
-                    android:src="@drawable/header_l_create_trip"/>
-            </FrameLayout>
-
-            <!-- ================================== -->
-            <!-- NAGŁÓWEK WIDOKU -->
-            <!-- ================================== -->
-            <TextView
-                android:id="@+id/title"
-                style="@style/Text.Display"
-                android:layout_width="0dp"
+            <!-- TOP BAR: Tytuł + Utwórz -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/create_trip_title"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/padding_default"
+                android:paddingVertical="@dimen/padding_default"
+                android:background="@color/surface"
+                android:elevation="2dp">
+
+                <TextView
+                    android:id="@+id/title"
+                    style="@style/Text.Body.Bold"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/create_trip_title"
+                    android:textSize="@dimen/text_size_body_large"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/TripCreateBtn"
+                    style="@style/Button.Primary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/button_height_topbar"
+                    android:text="@string/create_trip_button"
+                    android:textSize="@dimen/text_size_small"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="@dimen/padding_default"
+                    app:cornerRadius="@dimen/corner_radius_small"/>
+            </LinearLayout>
+
+            <!-- HERO ICON -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:gravity="center"
-                android:layout_marginTop="@dimen/spacing_medium"
-                app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                android:paddingVertical="@dimen/spacing_large"
+                android:background="@color/surface">
 
-            <!-- ================================== -->
-            <!-- TREŚĆ - Formularz tworzenia podróży -->
-            <!-- ================================== -->
+                <FrameLayout
+                    android:layout_width="56dp"
+                    android:layout_height="56dp">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/bg_icon_rounded_blue"
+                        android:scaleType="fitXY"/>
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_add_trip"
+                        android:contentDescription="@string/create_trip_title"/>
+                </FrameLayout>
 
-            <!-- Trip Name -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/TripNameLayout"
-                style="@style/InputLayout"
-                android:layout_width="0dp"
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wypełnij dane wycieczki"
+                    android:textColor="@color/text_hint"
+                    android:layout_marginTop="@dimen/spacing_small"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"/>
+
+            <!-- FORM SECTIONS -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                app:layout_constraintTop_toBottomOf="@id/title"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintWidth_percent="0.9">
+                android:orientation="vertical"
+                android:padding="@dimen/padding_medium">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/TripNameInput"
-                    style="@style/InputEditText"
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/create_trip_name_hint"
-                    android:inputType="textCapSentences"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                    app:cardCornerRadius="@dimen/corner_radius_large"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface">
 
-            <!-- Currency -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/TripCurrencyLayout"
-                style="@style/InputLayout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                app:endIconMode="dropdown_menu"
-                app:layout_constraintTop_toBottomOf="@id/TripNameLayout"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintWidth_percent="0.9">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:divider="@drawable/divider_horizontal"
+                        android:showDividers="middle">
 
-                <AutoCompleteTextView
-                    android:id="@+id/TripCurrencyInput"
-                    style="@style/InputEditText.Dropdown"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/create_trip_currency_hint"
-                    android:inputType="none"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                        <!-- Trip Name -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/padding_default">
 
-            <!-- Date Range -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/TripDateLayout"
-                style="@style/InputLayout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                app:layout_constraintTop_toBottomOf="@id/TripCurrencyLayout"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintWidth_percent="0.9">
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/TripNameLayout"
+                                style="@style/InputLayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="@string/create_trip_name_hint">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/TripDateInput"
-                    style="@style/InputEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/create_trip_date_hint"
-                    android:focusable="false"
-                    android:clickable="true"
-                    android:inputType="none"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/TripNameInput"
+                                    style="@style/InputEditText"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textCapSentences"/>
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
 
-            <!-- Description -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/TripDescriptionLayout"
-                style="@style/InputLayout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                app:layout_constraintTop_toBottomOf="@id/TripDateLayout"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintWidth_percent="0.9">
+                        <!-- Currency + Date -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:padding="@dimen/padding_default"
+                            android:baselineAligned="false">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/TripDescriptionInput"
-                    style="@style/InputEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/input_height_multiline"
-                    android:hint="@string/create_trip_description_hint"
-                    android:inputType="textMultiLine"
-                    android:gravity="top"
-                    android:scrollHorizontally="false"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/TripCurrencyLayout"
+                                style="@style/InputLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0.4"
+                                android:layout_marginEnd="@dimen/spacing_small"
+                                android:hint="@string/create_trip_currency_hint"
+                                app:endIconMode="dropdown_menu">
 
-            <!-- Create Button -->
-            <Button
-                android:id="@+id/TripCreateBtn"
-                style="@style/Button.Primary"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:text="@string/create_trip_button"
-                app:layout_constraintTop_toBottomOf="@id/TripDescriptionLayout"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintWidth_percent="0.9"/>
+                                <AutoCompleteTextView
+                                    android:id="@+id/TripCurrencyInput"
+                                    style="@style/InputEditText.Dropdown"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="none"/>
+                            </com.google.android.material.textfield.TextInputLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/TripDateLayout"
+                                style="@style/InputLayout"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="0.6"
+                                android:hint="@string/create_trip_date_hint">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/TripDateInput"
+                                    style="@style/InputEditText"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="none"
+                                    android:focusable="false"
+                                    android:clickable="true"/>
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+
+                        <!-- Description -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/padding_default">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/TripDescriptionLayout"
+                                style="@style/InputLayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="@string/create_trip_description_hint">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/TripDescriptionInput"
+                                    style="@style/InputEditText"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="@dimen/input_height_multiline"
+                                    android:inputType="textMultiLine"
+                                    android:gravity="top"/>
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

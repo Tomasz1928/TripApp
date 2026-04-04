@@ -1,77 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Item Share Expenses — ZMIENIONY
-    Wiersz podziału wydatku: osoba + ikony rozliczenia + kwoty
-    Zamiast pojedynczego ✓/✗ → duża ikona (24dp) + małe secondary (16dp)
--->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingVertical="@dimen/spacing_tiny"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:paddingVertical="@dimen/spacing_small">
 
-    <!-- LEWY KONTENER 40% -->
+    <!-- LEFT 40%: Person name + settlement icons -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="5"
-        android:orientation="horizontal">
+        android:layout_weight="4"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <FrameLayout
+        <!-- Person name -->
+        <TextView
+            android:id="@+id/sharePerson"
+            style="@style/Text.Body"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="5">
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="Marek"/>
 
-            <TextView
-                android:id="@+id/sharePerson"
-                style="@style/Text.Body.Bold"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start|center_vertical"
-                android:text="Anna"/>
-        </FrameLayout>
-
-        <!-- ZMIENIONE: kontener ikon breakdown zamiast pojedynczego ImageView -->
-        <FrameLayout
-            android:layout_width="0dp"
+        <!-- Settlement breakdown icons -->
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="5">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="@dimen/spacing_tiny">
 
+            <!-- Main icon (24dp) -->
+            <ImageView
+                android:id="@+id/costShareSettlementMainIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/settlement_details_status_icon"/>
+
+            <!-- Secondary icons container (16dp each, dynamically added) -->
             <LinearLayout
+                android:id="@+id/costShareSettlementSecondaryIcons"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <!-- Ikona dominująca (24dp) -->
-                <ImageView
-                    android:id="@+id/costShareSettlementMainIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/settlement_details_status_icon"/>
-
-                <!-- Kontener na małe ikony secondary (16dp, dynamicznie dodawane) -->
-                <LinearLayout
-                    android:id="@+id/costShareSettlementSecondaryIcons"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginStart="2dp"/>
-
-            </LinearLayout>
-        </FrameLayout>
+                android:layout_marginStart="2dp"/>
+        </LinearLayout>
     </LinearLayout>
 
+    <!-- RIGHT 60%: Two currency columns -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="5"
         android:orientation="horizontal">
 
+        <!-- Trip currency amount (secondary, shown only when different) -->
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -84,11 +73,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:text="12,45 EUR"
                 android:textColor="@color/secondary"
-                android:visibility="gone"/>
+                android:visibility="gone"
+                tools:text="12,45 EUR"/>
         </FrameLayout>
 
+        <!-- Cost currency amount (primary, always visible) -->
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -100,8 +90,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:text="123,56 PLN"
-                android:textColor="@color/primary"/>
+                android:textColor="@color/primary"
+                tools:text="61,25 PLN"/>
         </FrameLayout>
     </LinearLayout>
+
 </LinearLayout>

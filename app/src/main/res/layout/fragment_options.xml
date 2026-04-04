@@ -1,105 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Options Fragment Layout
-    Struktura: Obrazek (25%) → Nagłówek → Treść (opcje)
--->
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:scrollbars="none"
     android:background="@color/background">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:paddingBottom="@dimen/bottom_nav_padding">
 
-        <!-- ================================== -->
-        <!-- HEADER IMAGE - 25% wysokości ekranu -->
-        <!-- ================================== -->
-        <FrameLayout
-            android:id="@+id/headerImageContainer"
-            style="@style/HeaderImageContainer"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.25">
-
-            <ImageView
-                android:id="@+id/headerImage"
-                style="@style/HeaderImage"
-                android:src="@drawable/header_l_login"/>
-        </FrameLayout>
-
-        <!-- ================================== -->
-        <!-- NAGŁÓWEK WIDOKU (WYŚRODKOWANY) -->
-        <!-- ================================== -->
-        <TextView
-            android:id="@+id/optionsTitle"
-            style="@style/Text.Heading.Screen"
-            android:layout_width="0dp"
+        <!-- TOP BAR -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/options_title"
-            android:gravity="center"
-            android:textAlignment="center"
-            app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="@dimen/padding_default"
+            android:paddingVertical="@dimen/padding_medium"
+            android:background="@color/surface"
+            android:elevation="2dp">
 
-        <!-- ================================== -->
-        <!-- TREŚĆ - Lista opcji -->
-        <!-- ================================== -->
+            <TextView
+                android:id="@+id/optionsTitle"
+                style="@style/Text.Body.Bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/options_title"
+                android:textSize="@dimen/text_size_body_large"/>
+        </LinearLayout>
 
-        <!-- Logout Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/logoutCard"
-            style="@style/Card"
-            android:layout_width="0dp"
+        <!-- USER CARD -->
+        <LinearLayout
+            android:id="@+id/userCard"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_large"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintTop_toBottomOf="@id/optionsTitle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintWidth_percent="0.9">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="@dimen/padding_default"
+            android:paddingVertical="@dimen/spacing_default"
+            android:background="@color/surface">
+
+            <TextView
+                android:id="@+id/userAvatar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:textSize="@dimen/text_size_body_large"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:background="@drawable/bg_avatar_circle_primary"
+                tools:text="AK"/>
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="@dimen/padding_default">
-
-                <ImageView
-                    android:layout_width="@dimen/icon_size_large"
-                    android:layout_height="@dimen/icon_size_large"
-                    android:src="@drawable/ic_logout"
-                    android:contentDescription="@string/options_logout"
-                    app:tint="@color/error"/>
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/spacing_medium">
 
                 <TextView
-                    style="@style/Text.Body.Large"
-                    android:layout_width="0dp"
+                    android:id="@+id/userName"
+                    style="@style/Text.Body.Bold"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="@dimen/spacing_default"
-                    android:text="@string/options_logout"
-                    android:textColor="@color/error"/>
+                    android:textSize="@dimen/text_size_body_large"
+                    tools:text="Adam"/>
 
-                <ImageView
-                    android:layout_width="@dimen/icon_size_medium"
-                    android:layout_height="@dimen/icon_size_medium"
-                    android:src="@drawable/ic_chevron_right"
-                    android:contentDescription="@null"
-                    app:tint="@color/text_hint"/>
-
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Zalogowany"
+                    android:textColor="@color/text_hint"
+                    android:layout_marginTop="1dp"/>
             </LinearLayout>
+        </LinearLayout>
 
-        </com.google.android.material.card.MaterialCardView>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- SETTINGS SECTIONS -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_medium">
+
+            <!-- Logout card (zachowuje ID logoutCard) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/logoutCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="@dimen/corner_radius_medium"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/divider"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@color/surface"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/padding_default">
+
+                    <FrameLayout
+                        android:layout_width="@dimen/icon_size_large"
+                        android:layout_height="@dimen/icon_size_large">
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/bg_icon_rounded_red"/>
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_large"
+                            android:layout_height="@dimen/icon_size_large"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_logout"
+                            android:contentDescription="@string/options_logout"/>
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/Text.Body"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/spacing_medium"
+                        android:text="@string/options_logout"
+                        android:textColor="@color/error"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </LinearLayout>
 </androidx.core.widget.NestedScrollView>

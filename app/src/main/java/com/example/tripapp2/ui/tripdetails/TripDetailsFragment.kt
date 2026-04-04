@@ -17,7 +17,14 @@ import com.example.tripapp2.ui.tripdetails.modal.ExpensesListModalFragment
 import com.google.android.material.card.MaterialCardView
 
 /**
- * Fragment szczegółów wycieczki
+ * Fragment szczegółów wycieczki — Propozycja C: Floating Sections
+ *
+ * Zmiany vs oryginał:
+ * - Brak header image (top bar z back button)
+ * - Hero sekcja: nazwa + opis + data wycieczki
+ * - Metric cards: łączne wydatki + mój koszt obok siebie
+ * - Floating rows: wydatki wg waluty + rozliczenia (settings-style)
+ * - settlementsCard zastąpiony przez rowSettlements (ukryty settlementsCard dla kompatybilności)
  */
 class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment_trip_details) {
 
@@ -25,12 +32,31 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         TripDetailsViewModelFactory(getTripId())
     }
 
+    // ================================
+    // VIEWS
+    // ================================
     private lateinit var scrollViewTripDetails: NestedScrollView
+    private lateinit var backButton: ImageView
+
+    // Hero
     private lateinit var tripTitle: TextView
     private lateinit var tripSubtitle: TextView
     private lateinit var tripDate: TextView
+
+    // Metric cards
     private lateinit var totalExpenses: TextView
-    private lateinit var backButton: ImageView
+    private lateinit var totalExpensesCurrency: TextView
+    private lateinit var totalExpensesCard: MaterialCardView
+    private lateinit var myCostAmount: TextView
+    private lateinit var myCostCurrency: TextView
+
+    // Section rows
+    private lateinit var rowExpensesByCurrency: View
+    private lateinit var currencyCount: TextView
+    private lateinit var rowSettlements: View
+    private lateinit var settlementsStatus: TextView
+
+    // Hidden (kompatybilność z ViewModel)
     private lateinit var settlementsCard: MaterialCardView
 
     override fun setupUI() {
@@ -39,7 +65,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
     }
 
     override fun setupCustomObservers() {
-        // Stan szczegółów wycieczki
         viewModel.tripDetailsState.observe(viewLifecycleOwner) { state ->
             handleTripDetailsState(state)
         }
@@ -48,11 +73,27 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
     private fun initializeViews() {
         val view = requireView()
         scrollViewTripDetails = view.findViewById(R.id.scrollViewTripDetails)
+        backButton = view.findViewById(R.id.backButton)
+
+        // Hero
         tripTitle = view.findViewById(R.id.tripTitle)
         tripSubtitle = view.findViewById(R.id.tripSubtitle)
         tripDate = view.findViewById(R.id.tripDate)
+
+        // Metric cards
         totalExpenses = view.findViewById(R.id.totalExpenses)
-        backButton = view.findViewById(R.id.backButton)
+        totalExpensesCurrency = view.findViewById(R.id.totalExpensesCurrency)
+        totalExpensesCard = view.findViewById(R.id.totalExpensesCard)
+        myCostAmount = view.findViewById(R.id.myCostAmount)
+        myCostCurrency = view.findViewById(R.id.myCostCurrency)
+
+        // Section rows
+        rowExpensesByCurrency = view.findViewById(R.id.rowExpensesByCurrency)
+        currencyCount = view.findViewById(R.id.currencyCount)
+        rowSettlements = view.findViewById(R.id.rowSettlements)
+        settlementsStatus = view.findViewById(R.id.settlementsStatus)
+
+        // Hidden
         settlementsCard = view.findViewById(R.id.settlementsCard)
     }
 
@@ -61,28 +102,30 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
             viewModel.onBackClicked()
         }
 
-
-        totalExpenses.setOnClickListener {
+        // Kliknięcie w kartę łącznych wydatków → modal walutowy
+        totalExpensesCard.setOnClickListener {
             showExpensesModal()
         }
 
-        settlementsCard.setOnClickListener {
+        // Row: wydatki wg waluty → modal walutowy
+        rowExpensesByCurrency.setOnClickListener {
+            showExpensesModal()
+        }
+
+        // Row: rozliczenia → ekran rozliczeń
+        rowSettlements.setOnClickListener {
             navigateToSettlements()
         }
     }
 
-    /**
-     * Obsługa różnych stanów ekranu
-     */
     private fun handleTripDetailsState(state: TripDetailsState) {
         when (state) {
             is TripDetailsState.Loading -> {
-                // Opcjonalnie: pokazać ProgressBar
+                // Opcjonalnie: ProgressBar
             }
             is TripDetailsState.Success -> {
                 displayTripDetails(state.details)
             }
-            // ✅ OPCJONALNE: Możesz usunąć Error state (obsługiwany przez BaseFragment)
             is TripDetailsState.Error -> {
                 showError(state.message)
             }
@@ -90,18 +133,33 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
     }
 
     /**
-     * Wyświetla dane wycieczki
+     * Wyświetla dane wycieczki w nowym layoucie
      */
     private fun displayTripDetails(details: TripDetailsUiModel) {
+        // Hero
         tripTitle.text = details.title
         tripSubtitle.text = details.description
         tripDate.text = details.dateRange
-        totalExpenses.text = details.myTotalExpenses
+
+        // Metric cards — rozdziel kwotę i walutę
+        val breakdown = details.myExpensesBreakdown
+        if (breakdown.isNotEmpty()) {
+            val mainExpense = breakdown.first()
+            totalExpenses.text = "%.2f".format(mainExpense.amount)
+            totalExpensesCurrency.text = mainExpense.currency
+            myCostAmount.text = "%.2f".format(mainExpense.amount)
+            myCostCurrency.text = mainExpense.currency
+        } else {
+            totalExpenses.text = details.myTotalExpenses
+        }
+
+        // Currency count
+        currencyCount.text = "${breakdown.size} walut"
+
+        // Settlements status (uproszczony — rozbuduj wg potrzeb)
+        settlementsStatus.text = "Zobacz szczegóły"
     }
 
-    /**
-     * Pokazuje modal z rozbiciem wydatków
-     */
     private fun showExpensesModal() {
         val state = viewModel.tripDetailsState.value
         if (state is TripDetailsState.Success) {
@@ -112,16 +170,10 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         }
     }
 
-    /**
-     * Nawigacja do rozliczeń
-     */
     private fun navigateToSettlements() {
         (activity as? DashboardActivity)?.showSettlements(getTripId())
     }
 
-    /**
-     * Obsługa nawigacji
-     */
     override fun handleNavigation(command: NavigationCommand) {
         when (command) {
             is NavigationCommand.Back -> {
@@ -131,11 +183,8 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         }
     }
 
-    /**
-     * Pobiera ID wycieczki (z argumentów lub mock)
-     */
     private fun getTripId(): String {
-        return arguments?.getString(ARG_TRIP_ID)?: ""
+        return arguments?.getString(ARG_TRIP_ID) ?: ""
     }
 
     companion object {
@@ -149,9 +198,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
     }
 }
 
-/**
- * Factory dla ViewModel z parametrem tripId
- */
 class TripDetailsViewModelFactory(
     private val tripId: String
 ) : androidx.lifecycle.ViewModelProvider.Factory {

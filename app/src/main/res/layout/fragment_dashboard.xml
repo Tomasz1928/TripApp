@@ -5,47 +5,56 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipToPadding="false"
-    android:paddingBottom="@dimen/margin_medium">
+    android:paddingBottom="@dimen/bottom_nav_padding"
+    android:background="@color/background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Welcome Small Text -->
-        <TextView
-            android:id="@+id/welcomeSmall"
-            style="@style/Text.Caption"
-            android:layout_width="wrap_content"
+        <!-- TOP SECTION: Welcome + title (na białym tle) -->
+        <LinearLayout
+            android:id="@+id/topSection"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/dashboard_welcome_small"
-            android:layout_marginStart="@dimen/spacing_large"
-            android:layout_marginTop="@dimen/spacing_large"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/spacing_large"
+            android:paddingBottom="@dimen/spacing_default"
+            android:paddingHorizontal="@dimen/spacing_large"
+            android:background="@color/surface"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Dashboard Title -->
-        <TextView
-            android:id="@+id/dashboardTitle"
-            style="@style/Text.Title.Large"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/dashboard_title"
-            android:layout_marginStart="@dimen/spacing_large"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/welcomeSmall"/>
+            <TextView
+                android:id="@+id/welcomeSmall"
+                style="@style/Text.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dashboard_welcome_small"
+                android:textColor="@color/text_hint"/>
 
-        <!-- Trips RecyclerView -->
+            <TextView
+                android:id="@+id/dashboardTitle"
+                style="@style/Text.Title.Large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dashboard_title"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <!-- TRIPS RECYCLER -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/tripsRecycler"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_large"
+            android:layout_marginTop="@dimen/spacing_medium"
             android:paddingStart="@dimen/spacing_large"
             android:paddingEnd="@dimen/spacing_large"
             android:clipToPadding="false"
             android:overScrollMode="never"
             android:nestedScrollingEnabled="true"
-            app:layout_constraintTop_toBottomOf="@id/dashboardTitle"
+            app:layout_constraintTop_toBottomOf="@id/topSection"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 

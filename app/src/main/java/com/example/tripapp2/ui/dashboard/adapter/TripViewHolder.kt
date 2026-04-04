@@ -15,8 +15,13 @@ import com.example.tripapp2.ui.common.widget.PieChartView
 import com.example.tripapp2.ui.dashboard.TripUiModel
 
 /**
- * ViewHolder dla karty wycieczki
- * Wydzielona logika bindowania dla czystości kodu
+ * ViewHolder dla karty wycieczki — Propozycja C
+ *
+ * Zmiany vs oryginał:
+ * - tripTotal jako hero amount (duży, centralny)
+ * - tripMyCost — nowe pole pod kwotą
+ * - PieChart mniejszy (64dp) w szarym kontenerze obok legendy
+ * - 3 inline buttony (2 szare + 1 primary) zamiast 3 stacked primary
  */
 class TripViewHolder(
     itemView: View,
@@ -29,19 +34,20 @@ class TripViewHolder(
     private val title: TextView = itemView.findViewById(R.id.tripTitle)
     private val date: TextView = itemView.findViewById(R.id.tripDate)
     private val total: TextView = itemView.findViewById(R.id.tripTotal)
+    private val myCost: TextView = itemView.findViewById(R.id.tripMyCost)
     private val chart: PieChartView = itemView.findViewById(R.id.pieChart)
     private val legendContainer: LinearLayout = itemView.findViewById(R.id.legendContainer)
     private val detailsBtn: Button = itemView.findViewById(R.id.detailsBtn)
     private val costDetailsBtn: Button = itemView.findViewById(R.id.costDetailsBtn)
-    private val addCostBtn: Button = itemView.findViewById(R.id.addCostBtn)
+    private val addCostBtn: View = itemView.findViewById(R.id.addCostBtn)
     private val refreshBtn: ImageView = itemView.findViewById(R.id.refreshBtn)
 
     companion object {
         private const val CARD_WIDTH_RATIO = 0.85f
-        private const val LEGEND_ITEM_MARGIN_DP = 8
-        private const val DOT_SIZE_DP = 12
-        private const val DOT_MARGIN_DP = 8
-        private const val TEXT_SIZE = 12f
+        private const val LEGEND_ITEM_MARGIN_DP = 4
+        private const val DOT_SIZE_DP = 8
+        private const val DOT_MARGIN_DP = 6
+        private const val TEXT_SIZE = 11f
     }
 
     fun bind(trip: TripUiModel) {
@@ -49,6 +55,9 @@ class TripViewHolder(
         title.text = trip.title
         date.text = trip.dateRange
         total.text = trip.totalFormatted
+
+        // Mój koszt
+        myCost.text = "Mój koszt: ${trip.myCostFormatted}"
 
         // Ustaw szerokość karty
         setCardWidth()
@@ -62,9 +71,10 @@ class TripViewHolder(
             )
         })
 
-        // Legenda
+        // Legenda (kompaktowa, 2 kolumny)
         setupLegend(trip)
 
+        // Click listeners
         detailsBtn.setOnClickListener { onTripClick(trip) }
         costDetailsBtn.setOnClickListener { onCostDetailsClick(trip) }
         addCostBtn.setOnClickListener { onAddCostClick(trip) }
@@ -109,42 +119,15 @@ class TripViewHolder(
             }
         }
 
-        // Nazwa kategorii
-        val nameView = TextView(itemView.context).apply {
-            text = category.label
-            setTextColor(Color.DKGRAY)
+        // Nazwa + wartość
+        val textView = TextView(itemView.context).apply {
+            text = "${category.label} ${category.formattedValue}"
+            setTextColor(itemView.context.getColor(R.color.text_secondary))
             textSize = TEXT_SIZE
         }
 
-        // Wartość
-        val valueView = TextView(itemView.context).apply {
-            text = category.formattedValue
-            setTextColor(Color.BLACK)
-            textSize = TEXT_SIZE
-        }
-
-        // Lewa strona (kropka + nazwa)
-        val leftContainer = LinearLayout(itemView.context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            addView(dot)
-            addView(nameView)
-        }
-
-        // Prawa strona (wartość)
-        val rightContainer = LinearLayout(itemView.context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.END or Gravity.CENTER_VERTICAL
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            addView(valueView)
-        }
-
-        item.addView(leftContainer)
-        item.addView(rightContainer)
+        item.addView(dot)
+        item.addView(textView)
 
         return item
     }

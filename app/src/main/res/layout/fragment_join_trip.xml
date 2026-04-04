@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Join Trip Fragment Layout
-    Struktura: Obrazek (35%) → Nagłówek → Treść formularza
--->
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -18,64 +14,109 @@
         android:layout_height="wrap_content"
         android:paddingBottom="@dimen/bottom_nav_padding">
 
-        <!-- ================================== -->
-        <!-- HEADER IMAGE - 35% wysokości ekranu -->
-        <!-- ================================== -->
-        <FrameLayout
-            android:id="@+id/headerImageContainer"
-            style="@style/HeaderImageContainer"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintHeight_percent="0.25">
-
-            <ImageView
-                android:id="@+id/headerImage"
-                style="@style/HeaderImage"
-                android:src="@drawable/header_l_join_trip"/>
-        </FrameLayout>
-
-        <!-- ================================== -->
-        <!-- NAGŁÓWEK WIDOKU -->
-        <!-- ================================== -->
-        <TextView
-            android:id="@+id/title"
-            style="@style/Text.Display"
+        <!-- TOP BAR -->
+        <LinearLayout
+            android:id="@+id/topBar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/join_trip_title"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="@dimen/padding_default"
+            android:paddingVertical="@dimen/padding_default"
+            android:background="@color/surface"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                style="@style/Text.Body.Bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/join_trip_title"
+                android:textSize="@dimen/text_size_body_large"/>
+        </LinearLayout>
+
+        <!-- HERO ICON -->
+        <LinearLayout
+            android:id="@+id/heroSection"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginTop="@dimen/spacing_medium"
-            app:layout_constraintTop_toBottomOf="@id/headerImageContainer"
+            android:paddingVertical="@dimen/spacing_xlarge"
+            android:background="@color/surface"
+            app:layout_constraintTop_toBottomOf="@id/topBar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <FrameLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/bg_icon_rounded_green"
+                    android:scaleType="fitXY"/>
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_join_trip"
+                    android:contentDescription="@string/join_trip_title"/>
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/title"
+                style="@style/Text.Body.Bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Wpisz kod dostępu"
+                android:textSize="@dimen/text_size_body_large"
+                android:layout_marginTop="@dimen/spacing_medium"/>
+
+            <TextView
+                style="@style/Text.Caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Otrzymasz go od właściciela podróży"
+                android:textColor="@color/text_hint"
+                android:layout_marginTop="@dimen/spacing_tiny"/>
+        </LinearLayout>
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="@color/divider"
+            app:layout_constraintTop_toBottomOf="@id/heroSection"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- ================================== -->
-        <!-- TREŚĆ - Formularz dołączania -->
-        <!-- ================================== -->
-
-        <!-- Access Code Input -->
+        <!-- CODE INPUT -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/TripJoinLayout"
             style="@style/InputLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_large"
-            app:layout_constraintTop_toBottomOf="@id/title"
+            app:layout_constraintTop_toBottomOf="@id/divider"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintWidth_percent="0.9">
+            app:layout_constraintWidth_percent="0.85"
+            android:hint="@string/join_trip_code_hint">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/TripJoinInput"
                 style="@style/InputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/join_trip_code_hint"
-                android:inputType="textCapCharacters"/>
+                android:inputType="textCapCharacters"
+                android:textAlignment="center"
+                android:textSize="@dimen/text_size_title"
+                android:letterSpacing="0.15"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Join Button -->
+        <!-- JOIN BUTTON -->
         <Button
             android:id="@+id/JoinTripBtn"
             style="@style/Button.Primary"
@@ -86,7 +127,7 @@
             app:layout_constraintTop_toBottomOf="@id/TripJoinLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintWidth_percent="0.9"/>
+            app:layout_constraintWidth_percent="0.85"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
