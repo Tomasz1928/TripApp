@@ -23,7 +23,7 @@ import android.app.AlertDialog
  * Body = modal_settlement_details_body.xml (TabLayout + 4 taby z ikonkami)
  *
  * Tab 1: Ogólne (podsumowanie kwot)
- * Tab 2: Wydatki (koszty z breakdown icons)
+ * Tab 2: Wydatki (koszty z breakdown icons) — ZMIENIONE: dual-currency
  * Tab 3: Zaliczki (amountLeft + historia)
  * Tab 4: Historia rozliczeń (expandable + filtry)
  */
@@ -81,36 +81,31 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val model = detailsModel ?: run { dismissAnimated(); return }
+        val model = detailsModel ?: run { dismiss(); return }
 
         setModalTitle(getString(R.string.settlement_details_title))
         setModalSubtitle(model.participantNickname)
 
         initializeViews()
         setupTabLayout()
+
         populateSummaryTab(model)
         populateCostsTab(model)
         populatePrepaymentTab(model)
         populateHistoryTab(model)
     }
 
-    // ==========================================
-    // INITIALIZATION
-    // ==========================================
-
     private fun initializeViews() {
         val body = modalBodyContainer ?: return
-        tabLayout = body.findViewById(R.id.tabLayout)
 
+        tabLayout = body.findViewById(R.id.tabLayout)
         tabSummary = body.findViewById(R.id.tabSummary)
         allRelatedContainer = body.findViewById(R.id.allRelatedContainer)
         leftForSettledContainer = body.findViewById(R.id.leftForSettledContainer)
-
         tabCosts = body.findViewById(R.id.tabCosts)
         costsScrollView = body.findViewById(R.id.costsScrollView)
         costsListContainer = body.findViewById(R.id.costsListContainer)
         costsEmptyState = body.findViewById(R.id.costsEmptyState)
-
         tabPrepayment = body.findViewById(R.id.tabPrepayment)
         prepaymentAmountLeftLabel = body.findViewById(R.id.prepaymentAmountLeftLabel)
         prepaymentAmountLeftContainer = body.findViewById(R.id.prepaymentAmountLeftContainer)
@@ -119,13 +114,11 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         prepaymentHistoryContainer = body.findViewById(R.id.prepaymentHistoryContainer)
         prepaymentEmptyState = body.findViewById(R.id.prepaymentEmptyState)
 
-        // Tab 4
         tabHistory = body.findViewById(R.id.tabHistory)
         historyListContainer = body.findViewById(R.id.historyListContainer)
         historyEmptyState = body.findViewById(R.id.historyEmptyState)
         historyFilteredEmptyState = body.findViewById(R.id.historyFilteredEmptyState)
 
-        // Tab 4: Filter icons
         filterManualAmount = body.findViewById(R.id.filterManualAmount)
         filterManualCosts = body.findViewById(R.id.filterManualCosts)
         filterAutoPrepayment = body.findViewById(R.id.filterAutoPrepayment)
@@ -134,9 +127,6 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         filterExpenseDropdownBtn = body.findViewById(R.id.filterExpenseDropdownBtn)
     }
 
-    /**
-     * 4 taby z samymi ikonkami
-     */
     private fun setupTabLayout() {
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -187,7 +177,7 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
     }
 
     // ==========================================
-    // TAB 2: KOSZTY — breakdown icons
+    // TAB 2: KOSZTY — ZMIENIONE: dual-currency + breakdown icons
     // ==========================================
 
     private fun populateCostsTab(model: SettlementDetailsUiModel) {
@@ -212,6 +202,17 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         }
     }
 
+    /**
+     * ZMIENIONE: dual-currency w wierszu kosztu
+     *
+     * Logika wyświetlania kwoty:
+     * - isMultiCurrency = true:
+     *     → costAmount (niebieskie/primary): formattedAmountCostCurrency (waluta kosztu)
+     *     → costAmountSecondary (pomarańczowe/secondary): formattedAmountTripCurrency (waluta tripu)
+     * - isMultiCurrency = false:
+     *     → costAmount: formattedAmountTripCurrency (jedyna waluta)
+     *     → costAmountSecondary: ukryte
+     */
     private fun createCostRow(costRow: SettlementDetailCostRow): View {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_settlement_detail_cost, costsListContainer, false)
@@ -219,10 +220,27 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         view.findViewById<TextView>(R.id.costTitle).text = costRow.expenseName
 
         val costAmount = view.findViewById<TextView>(R.id.costAmount)
-        costAmount.text = costRow.formattedAmount
-        val amountColorRes = if (costRow.isAmountPositive) R.color.success else R.color.error
-        costAmount.setTextColor(ContextCompat.getColor(requireContext(), amountColorRes))
+        val costAmountSecondary = view.findViewById<TextView>(R.id.costAmountSecondary)
 
+        val amountColorRes = if (costRow.isAmountPositive) R.color.success else R.color.error
+
+        if (costRow.isMultiCurrency) {
+            // Multi-currency: niebiesko = waluta kosztu, pomarańczowo = waluta tripu
+            costAmount.text = costRow.formattedAmountCostCurrency
+            costAmount.setTextColor(ContextCompat.getColor(requireContext(), amountColorRes))
+
+            costAmountSecondary.text = costRow.formattedAmountTripCurrency
+            costAmountSecondary.setTextColor(ContextCompat.getColor(requireContext(), R.color.secondary))
+            costAmountSecondary.visibility = View.VISIBLE
+        } else {
+            // Single-currency: niebiesko = waluta tripu (jedyna)
+            costAmount.text = costRow.formattedAmountTripCurrency
+            costAmount.setTextColor(ContextCompat.getColor(requireContext(), amountColorRes))
+
+            costAmountSecondary.visibility = View.GONE
+        }
+
+        // Breakdown icons
         val mainIcon = view.findViewById<ImageView>(R.id.settlementMainIcon)
         mainIcon.setImageResource(getBreakdownIconRes(costRow.dominantType))
         mainIcon.contentDescription = getBreakdownContentDescription(costRow.dominantType)
@@ -319,6 +337,7 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         }
         amount.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
         currency.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+
         return view
     }
 
@@ -326,258 +345,184 @@ class SettlementDetailsModalFragment : BaseModalFragment() {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_prepayment_history_row, prepaymentHistoryContainer, false)
 
-        view.findViewById<TextView>(R.id.historyAmount).apply {
-            text = row.formattedAmount
-            val colorRes = when (row.direction) {
-                PrepaymentAmountDirection.TO_ME -> R.color.success
-                PrepaymentAmountDirection.FROM_ME -> R.color.error
-            }
-            setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+        val amount = view.findViewById<TextView>(R.id.historyAmount)
+        val currency = view.findViewById<TextView>(R.id.historyCurrency)
+        val date = view.findViewById<TextView>(R.id.historyDate)
+
+        amount.text = row.formattedAmount
+        currency.text = row.currency
+        date.text = row.formattedDate
+
+        val colorRes = when (row.direction) {
+            PrepaymentAmountDirection.TO_ME -> R.color.success
+            PrepaymentAmountDirection.FROM_ME -> R.color.error
         }
-        view.findViewById<TextView>(R.id.historyCurrency).apply {
-            text = row.currency
-            val colorRes = when (row.direction) {
-                PrepaymentAmountDirection.TO_ME -> R.color.success
-                PrepaymentAmountDirection.FROM_ME -> R.color.error
-            }
-            setTextColor(ContextCompat.getColor(requireContext(), colorRes))
-        }
-        view.findViewById<TextView>(R.id.historyDate).text = row.formattedDate
+        amount.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+        currency.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+
         return view
     }
 
     // ==========================================
-    // TAB 4: HISTORIA ROZLICZEŃ — z filtrami
+    // TAB 4: HISTORIA ROZLICZEŃ
     // ==========================================
 
     private fun populateHistoryTab(model: SettlementDetailsUiModel) {
+        allHistoryRows = model.settlementHistoryRows
+        historyListContainer.removeAllViews()
+
         if (!model.hasSettlementHistory) {
             historyEmptyState.visibility = View.VISIBLE
-            historyListContainer.visibility = View.GONE
-            historyFilteredEmptyState.visibility = View.GONE
-            view?.findViewById<View>(R.id.historyFilterBar)?.visibility = View.GONE
             return
         }
 
         historyEmptyState.visibility = View.GONE
 
-        allHistoryRows = model.settlementHistoryRows
-
+        // Zbierz wszystkie unikalne nazwy kosztów do filtrów
         allExpenseNames = allHistoryRows
-            .flatMap { it.relatedExpenses?.split(", ") ?: emptyList() }
+            .mapNotNull { it.relatedExpenses }
+            .flatMap { it.split(", ") }
             .distinct()
             .sorted()
 
-        selectedExpenseNames.clear()
         selectedExpenseNames.addAll(allExpenseNames)
-        showNoExpenseEntries = true
 
-        setupTypeFilters()
-        setupNoExpensesFilter()
-        setupExpenseDropdown()
-        applyFilters()
+        setupHistoryFilters()
+        applyHistoryFilters()
     }
 
-    // ─── Type filter icons ───
+    private fun setupHistoryFilters() {
+        // Type filter icons
+        setupTypeFilterIcon(filterManualAmount, SettlementHistoryEventType.MANUAL_BY_AMOUNT)
+        setupTypeFilterIcon(filterManualCosts, SettlementHistoryEventType.MANUAL_BY_COSTS)
+        setupTypeFilterIcon(filterAutoPrepayment, SettlementHistoryEventType.AUTO_PREPAYMENT)
+        setupTypeFilterIcon(filterAutoCross, SettlementHistoryEventType.AUTO_CROSS_SETTLE)
 
-    /**
-     * Konfiguruje toggle ikonek typów rozliczeń.
-     * filterAutoPrepayment kontroluje OBA typy: AUTO_PREPAYMENT i MANUAL_BY_PREPAYMENT
-     */
-    private fun setupTypeFilters() {
-        val iconMap = mapOf(
-            filterManualAmount to listOf(SettlementHistoryEventType.MANUAL_BY_AMOUNT),
-            filterManualCosts to listOf(SettlementHistoryEventType.MANUAL_BY_COSTS),
-            filterAutoPrepayment to listOf(
-                SettlementHistoryEventType.AUTO_PREPAYMENT,
-                SettlementHistoryEventType.MANUAL_BY_PREPAYMENT
-            ),
-            filterAutoCross to listOf(SettlementHistoryEventType.AUTO_CROSS_SETTLE)
-        )
-
-        iconMap.forEach { (iconView, types) ->
-            iconView.isSelected = true
-            iconView.imageTintList = null
-
-            iconView.setOnClickListener {
-                val isActive = types.all { it in activeTypeFilters }
-                if (isActive) {
-                    types.forEach { activeTypeFilters.remove(it) }
-                    iconView.isSelected = false
-                    iconView.alpha = 0.35f
-                } else {
-                    types.forEach { activeTypeFilters.add(it) }
-                    iconView.isSelected = true
-                    iconView.alpha = 1.0f
-                }
-                applyFilters()
+        filterNoExpenses.apply {
+            alpha = if (showNoExpenseEntries) 1.0f else 0.3f
+            setOnClickListener {
+                showNoExpenseEntries = !showNoExpenseEntries
+                alpha = if (showNoExpenseEntries) 1.0f else 0.3f
+                applyHistoryFilters()
             }
         }
-    }
-
-    // ─── "Bez powiązanych kosztów" toggle ───
-
-    private fun setupNoExpensesFilter() {
-        filterNoExpenses.isSelected = true
-        filterNoExpenses.imageTintList = null
-
-        filterNoExpenses.setOnClickListener {
-            showNoExpenseEntries = !showNoExpenseEntries
-            filterNoExpenses.isSelected = showNoExpenseEntries
-            filterNoExpenses.alpha = if (showNoExpenseEntries) 1.0f else 0.35f
-            applyFilters()
-        }
-    }
-
-    // ─── Expense dropdown (multi-select via AlertDialog + toggle Wszystkie/Żadne) ───
-
-    private fun setupExpenseDropdown() {
-        if (allExpenseNames.isEmpty()) {
-            filterExpenseDropdownBtn.visibility = View.GONE
-            return
-        }
-
-        updateExpenseDropdownLabel()
 
         filterExpenseDropdownBtn.setOnClickListener {
-            showExpenseMultiSelectDialog()
+            showExpenseFilterDialog()
+        }
+
+        updateExpenseFilterButtonText()
+    }
+
+    private fun setupTypeFilterIcon(icon: ImageView, type: SettlementHistoryEventType) {
+        icon.alpha = if (activeTypeFilters.contains(type)) 1.0f else 0.3f
+        icon.setOnClickListener {
+            if (activeTypeFilters.contains(type)) {
+                activeTypeFilters.remove(type)
+                icon.alpha = 0.3f
+            } else {
+                activeTypeFilters.add(type)
+                icon.alpha = 1.0f
+            }
+            applyHistoryFilters()
         }
     }
 
-    private fun showExpenseMultiSelectDialog() {
-        val names = allExpenseNames.toTypedArray()
-        val checkedItems = BooleanArray(names.size) { selectedExpenseNames.contains(names[it]) }
+    private fun showExpenseFilterDialog() {
+        val items = allExpenseNames.toTypedArray()
+        val checked = BooleanArray(items.size) { selectedExpenseNames.contains(items[it]) }
 
-        val allSelected = checkedItems.all { it }
-        val toggleLabel = if (allSelected) {
-            getString(R.string.settlement_history_filter_select_none)
-        } else {
-            getString(R.string.settlement_history_filter_select_all)
-        }
-
-        val dialog = AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.settlement_history_filter_expenses_title))
-            .setMultiChoiceItems(names, checkedItems) { _, which, isChecked ->
-                if (isChecked) {
-                    selectedExpenseNames.add(names[which])
-                } else {
-                    selectedExpenseNames.remove(names[which])
-                }
+            .setMultiChoiceItems(items, checked) { _, which, isChecked ->
+                if (isChecked) selectedExpenseNames.add(items[which])
+                else selectedExpenseNames.remove(items[which])
             }
             .setPositiveButton("OK") { _, _ ->
-                updateExpenseDropdownLabel()
-                applyFilters()
+                updateExpenseFilterButtonText()
+                applyHistoryFilters()
             }
-            .setNegativeButton(getString(R.string.modal_close), null)
-            .setNeutralButton(toggleLabel, null)
-            .create()
-
-        dialog.setOnShowListener {
-            val neutralBtn = dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-            neutralBtn.setOnClickListener {
-                val listView = dialog.listView
-                val currentlyAllSelected = selectedExpenseNames.size == allExpenseNames.size
-
-                if (currentlyAllSelected) {
-                    selectedExpenseNames.clear()
-                    for (i in names.indices) {
-                        listView.setItemChecked(i, false)
-                        checkedItems[i] = false
-                    }
-                    neutralBtn.text = getString(R.string.settlement_history_filter_select_all)
-                } else {
-                    selectedExpenseNames.clear()
-                    selectedExpenseNames.addAll(allExpenseNames)
-                    for (i in names.indices) {
-                        listView.setItemChecked(i, true)
-                        checkedItems[i] = true
-                    }
-                    neutralBtn.text = getString(R.string.settlement_history_filter_select_none)
-                }
+            .setNeutralButton(getString(R.string.settlement_history_filter_select_all)) { _, _ ->
+                selectedExpenseNames.addAll(allExpenseNames)
+                updateExpenseFilterButtonText()
+                applyHistoryFilters()
             }
-        }
-
-        dialog.show()
+            .setNegativeButton(getString(R.string.settlement_history_filter_select_none)) { _, _ ->
+                selectedExpenseNames.clear()
+                updateExpenseFilterButtonText()
+                applyHistoryFilters()
+            }
+            .show()
     }
 
-    private fun updateExpenseDropdownLabel() {
+    private fun updateExpenseFilterButtonText() {
         filterExpenseDropdownBtn.text = when {
             selectedExpenseNames.size == allExpenseNames.size ->
                 getString(R.string.settlement_history_filter_all_expenses)
             selectedExpenseNames.isEmpty() ->
                 getString(R.string.settlement_history_filter_no_expenses_selected)
-            selectedExpenseNames.size == 1 ->
-                selectedExpenseNames.first()
             else ->
-                "${selectedExpenseNames.first()} (+${selectedExpenseNames.size - 1})"
+                "${selectedExpenseNames.size}/${allExpenseNames.size}"
         }
     }
 
-    // ─── Apply filters ───
-
-    private fun applyFilters() {
-        historyListContainer.removeAllViews()
-
+    private fun applyHistoryFilters() {
         val filtered = allHistoryRows.filter { row ->
-            // 1. Filtr typu
-            val typeMatch = activeTypeFilters.contains(row.eventType)
+            // Filtr typu
+            val typeMatch = when (row.eventType) {
+                SettlementHistoryEventType.MANUAL_BY_PREPAYMENT ->
+                    activeTypeFilters.contains(SettlementHistoryEventType.AUTO_PREPAYMENT)
+                else -> activeTypeFilters.contains(row.eventType)
+            }
+            if (!typeMatch) return@filter false
 
-            // 2. Filtr kosztów
-            val hasExpenses = row.relatedExpenses != null
-
-            val expenseMatch = if (!hasExpenses) {
-                showNoExpenseEntries
-            } else if (selectedExpenseNames.size == allExpenseNames.size) {
-                true
-            } else if (selectedExpenseNames.isEmpty()) {
-                false
-            } else {
-                val rowExpenses = row.relatedExpenses?.split(", ") ?: emptyList()
-                rowExpenses.any { it in selectedExpenseNames }
+            // Filtr kosztów
+            if (row.relatedExpenses == null) {
+                return@filter showNoExpenseEntries
             }
 
-            typeMatch && expenseMatch
+            val rowExpenses = row.relatedExpenses.split(", ")
+            rowExpenses.any { selectedExpenseNames.contains(it) }
         }
 
+        historyListContainer.removeAllViews()
+
         if (filtered.isEmpty()) {
-            historyListContainer.visibility = View.GONE
             historyFilteredEmptyState.visibility = View.VISIBLE
         } else {
             historyFilteredEmptyState.visibility = View.GONE
-            historyListContainer.visibility = View.VISIBLE
             filtered.forEach { row ->
-                historyListContainer.addView(createHistoryEntryRow(row))
+                historyListContainer.addView(createHistoryRow(row))
             }
         }
     }
 
-    // ─── Tworzenie wiersza (expandable) ───
-
-    private fun createHistoryEntryRow(row: SettlementHistoryRow): View {
+    private fun createHistoryRow(row: SettlementHistoryRow): View {
         val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_settlement_history_entry, historyListContainer, false)
 
-        // Ikona typu (kolorowa, bez tint)
+        // Ikona typu
         val icon = view.findViewById<ImageView>(R.id.historyEntryIcon)
         icon.setImageResource(getHistoryEventIconRes(row.eventType))
-        icon.imageTintList = null
+        icon.clearColorFilter()
 
-        // Kwota (kolorowana)
+        // Kwota
         val amountView = view.findViewById<TextView>(R.id.historyEntryAmount)
         amountView.text = row.formattedAmount
         val colorRes = if (row.isPositive) R.color.success else R.color.error
         amountView.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
 
-        // Data + godzina
+        // Data
         view.findViewById<TextView>(R.id.historyEntryDate).text = row.formattedDate
         view.findViewById<TextView>(R.id.historyEntryTime).text = row.formattedTime
 
         // Expandable content
-        val expandableContainer = view.findViewById<LinearLayout>(R.id.historyEntryExpandable)
         val chevron = view.findViewById<ImageView>(R.id.historyEntryChevron)
+        val expandableContainer = view.findViewById<LinearLayout>(R.id.historyEntryExpandable)
 
         if (row.hasExpandableContent) {
             chevron.visibility = View.VISIBLE
+            expandableContainer.visibility = View.GONE
 
             if (row.actorNickname != null) {
                 val actorRow = view.findViewById<LinearLayout>(R.id.historyEntryActorRow)

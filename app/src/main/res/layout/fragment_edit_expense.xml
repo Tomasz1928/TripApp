@@ -589,8 +589,8 @@
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
                             android:padding="@dimen/padding_default"
-                            android:clickable="false"
-                            android:focusable="false"
+                            android:clickable="true"
+                            android:focusable="true"
                             android:foreground="?attr/selectableItemBackground">
 
                             <FrameLayout
@@ -658,6 +658,12 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="@dimen/spacing_small"
                                 android:visibility="gone"/>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
                         </LinearLayout>
 
                     </LinearLayout>

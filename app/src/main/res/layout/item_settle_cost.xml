@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Item Settle Cost - Wiersz kosztu w tabie "Per koszty"
-    Kompaktowy: CheckBox | Tytuł (ellipsize) | Kwota + Waluta
+    ZMIENIONE: dual-currency — dodano costAmountSecondary (pomarańczowy)
+
+    Kompaktowy: CheckBox | Tytuł (ellipsize) | Kwoty (primary + secondary)
     Kolory: zielony = ja płaciłem, czerwony = participant płacił
+    Secondary (pomarańczowy) = kwota w walucie tripu, widoczny tylko gdy multi-currency
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -37,13 +40,33 @@
         android:singleLine="true"
         tools:text="Hotel Berlin na 3 noce"/>
 
-    <!-- Kwota -->
-    <TextView
-        android:id="@+id/costAmount"
-        style="@style/Text.Body.Bold"
+    <!-- Kwoty (vertical: primary + optional secondary) -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/spacing_small"
-        tools:text="225,00 EUR"/>
+        android:orientation="vertical"
+        android:gravity="end"
+        android:layout_marginStart="@dimen/spacing_small">
+
+        <!-- Kwota główna (primary, always visible) -->
+        <TextView
+            android:id="@+id/costAmount"
+            style="@style/Text.Body.Bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="225,00 EUR"/>
+
+        <!-- Kwota drugorzędna (secondary, visible only when multi-currency) -->
+        <TextView
+            android:id="@+id/costAmountSecondary"
+            style="@style/Text.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="@color/secondary"
+            android:layout_marginTop="1dp"
+            android:visibility="gone"
+            tools:text="950,00 PLN"/>
+    </LinearLayout>
 
 </LinearLayout>

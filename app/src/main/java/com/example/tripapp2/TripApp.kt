@@ -1,6 +1,7 @@
 package com.example.tripapp2
 
 import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.tripapp2.data.cache.TripCacheManager
 import com.example.tripapp2.data.network.SessionManager
 import com.example.tripapp2.data.repository.CurrencyRepository
@@ -11,9 +12,10 @@ import com.example.tripapp2.data.repository.TripRepository
  * Application class — inicjalizuje singletony wymagające Context.
  *
  * KOLEJNOŚĆ INICJALIZACJI JEST WAŻNA:
- * 1. SessionManager — wymagany przez ApolloClientProvider (CookieInterceptor + WS payload)
- * 2. TripCacheManager — wymagany przez TripRepository (persystentny cache)
- * 3. TripRepository — wymaga SessionManager + TripCacheManager + tworzy GraphQLDataSource
+ * 1. AppCompatDelegate — wymuszenie trybu jasnego (przed tworzeniem Activity)
+ * 2. SessionManager — wymagany przez ApolloClientProvider (CookieInterceptor + WS payload)
+ * 3. TripCacheManager — wymagany przez TripRepository (persystentny cache)
+ * 4. TripRepository — wymaga SessionManager + TripCacheManager + tworzy GraphQLDataSource
  *
  * WAŻNE: Dodaj android:name=".TripApp" do AndroidManifest.xml:
  *
@@ -26,6 +28,10 @@ class TripApp : Application() {
         super.onCreate()
 
         // === KOLEJNOŚĆ JEST WAŻNA — patrz komentarz klasy ===
+
+        // 0. Wymuś tryb jasny — blokuje systemowy dark mode
+        //    Musi być PRZED tworzeniem jakiegokolwiek Activity
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         // 1. SessionManager — SharedPreferences z sessionId
         //    Wymagany przez: ApolloClientProvider (CookieInterceptor, WS connectionPayload)

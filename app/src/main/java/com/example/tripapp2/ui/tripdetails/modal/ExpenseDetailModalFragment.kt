@@ -14,13 +14,6 @@ import com.example.tripapp2.ui.common.baseModals.BaseModalFragment
 import com.example.tripapp2.ui.tripdetails.costs.ExpenseDetailUiModel
 import com.example.tripapp2.ui.tripdetails.costs.ShareItemUiModel
 
-/**
- * Modal ze szczegółami wydatku.
- * ZMIGOWANY na BaseModalFragment — usunięto zduplikowany boilerplate.
- *
- * ZMIENIONE: Ikonki settlement per split — zamiast ✓/✗ teraz breakdown icons
- * (identyczne jak w SettlementDetailsModalFragment)
- */
 class ExpenseDetailModalFragment : BaseModalFragment() {
 
     private var expenseDetail: ExpenseDetailUiModel? = null
@@ -43,12 +36,10 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         return createExpenseDetailBody(detail)
     }
 
-    // ==========================================
-    // LOGIKA BIZNESOWA — ZMIENIONE (breakdown icons)
-    // ==========================================
-
     private fun createExpenseDetailBody(detail: ExpenseDetailUiModel): View {
         val body = layoutInflater.inflate(R.layout.modal_expense_detail, null, false)
+
+        val isMultiCurrency = detail.currencyTrip != detail.currencyCost
 
         // Category Icon
         val iconRes = detail.categoryIconName
@@ -60,21 +51,29 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
             categoryIcon.visibility = View.GONE
         }
 
-        // Header - kwota główna (cost currency) ZAWSZE widoczna
+        // Header — nazwa
         body.findViewById<TextView>(R.id.expenseName).text = detail.name
-        body.findViewById<TextView>(R.id.expenseAmountMain).text = detail.formattedAmountCostCurrency
 
-        // Header - kwota drugorzędna (trip currency) - tylko gdy INNA niż cost currency i niepusta
+        // Header — kwoty
+        val mainAmountView = body.findViewById<TextView>(R.id.expenseAmountMain)
         val secondaryAmountView = body.findViewById<TextView>(R.id.expenseAmountSecondary)
-        if (detail.currencyTrip != detail.currencyCost && detail.formattedAmountTripCurrency.isNotEmpty()) {
+
+        if (isMultiCurrency) {
+            // Wydatek w INNEJ walucie niż trip:
+            // Niebiesko (main) = kwota w walucie wydatku (cost currency)
+            // Pomarańczowo (secondary) = kwota w walucie tripu (trip/main currency)
+            mainAmountView.text = detail.formattedAmountCostCurrency
             secondaryAmountView.text = detail.formattedAmountTripCurrency
             secondaryAmountView.visibility = View.VISIBLE
         } else {
+            // Wydatek w walucie tripu:
+            // Niebiesko (main) = kwota w walucie tripu
+            // Brak secondary
+            mainAmountView.text = detail.formattedAmountTripCurrency
             secondaryAmountView.visibility = View.GONE
         }
 
-        // Info — z labelkami z string resources
-        val descriptionLabel = getString(R.string.expense_detail_description_label)
+        // Info
         body.findViewById<TextView>(R.id.expenseDescription).text = detail.description
         body.findViewById<TextView>(R.id.expenseDate).text = detail.date
         body.findViewById<TextView>(R.id.expensePayer).text = detail.payerName
@@ -82,7 +81,7 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         // Dynamiczne nagłówki kolumn
         setupDynamicHeaders(body, detail)
 
-        // Shared With — ZMIENIONE: breakdown icons zamiast ✓/✗
+        // Shared With
         val sharedContainer = body.findViewById<LinearLayout>(R.id.sharedWithContainer)
         sharedContainer.removeAllViews()
 
@@ -91,17 +90,21 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
 
             shareRow.findViewById<TextView>(R.id.sharePerson).text = share.personName
 
-            // ZMIENIONE: breakdown icons zamiast prostego ✓/✗
             setupShareSettlementIcons(shareRow, share)
 
-            shareRow.findViewById<TextView>(R.id.shareAmountMain).text = share.formattedAmountCostCurrency
+            val shareMainAmount = shareRow.findViewById<TextView>(R.id.shareAmountMain)
+            val shareSecondaryAmount = shareRow.findViewById<TextView>(R.id.shareAmountSecondary)
 
-            val amountSecondaryView = shareRow.findViewById<TextView>(R.id.shareAmountSecondary)
-            if (detail.currencyTrip != detail.currencyCost && share.formattedAmountTripCurrency.isNotEmpty()) {
-                amountSecondaryView.text = share.formattedAmountTripCurrency
-                amountSecondaryView.visibility = View.VISIBLE
+            if (isMultiCurrency) {
+                // Niebiesko = kwota w walucie wydatku (cost currency)
+                shareMainAmount.text = share.formattedAmountCostCurrency
+                // Pomarańczowo = kwota w walucie tripu
+                shareSecondaryAmount.text = share.formattedAmountTripCurrency
+                shareSecondaryAmount.visibility = View.VISIBLE
             } else {
-                amountSecondaryView.visibility = View.GONE
+                // Niebiesko = kwota w walucie tripu (jedyna waluta)
+                shareMainAmount.text = share.formattedAmountTripCurrency
+                shareSecondaryAmount.visibility = View.GONE
             }
 
             sharedContainer.addView(shareRow)
@@ -110,22 +113,12 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         return body
     }
 
-    /**
-     * NOWE: Ustawia ikonki breakdown na wierszu share
-     *
-     * Duża ikona (24dp) = dominantType
-     * Małe ikony (16dp) = secondaryTypes (dynamicznie dodawane)
-     *
-     * Ikonki są kolorowe — NIE stosujemy tint.
-     */
     private fun setupShareSettlementIcons(shareRow: View, share: ShareItemUiModel) {
-        // Ikona dominująca (24dp)
         val mainIcon = shareRow.findViewById<ImageView>(R.id.costShareSettlementMainIcon)
         mainIcon.setImageResource(getBreakdownIconRes(share.dominantType))
         mainIcon.contentDescription = getBreakdownContentDescription(share.dominantType)
-        mainIcon.imageTintList = null  // Wyczyść tint — ikonki są kolorowe
+        mainIcon.imageTintList = null
 
-        // Małe ikony secondary (16dp)
         val secondaryContainer = shareRow.findViewById<LinearLayout>(R.id.costShareSettlementSecondaryIcons)
         secondaryContainer.removeAllViews()
 
@@ -145,10 +138,6 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         }
     }
 
-    /**
-     * Zwraca drawable resource dla danego typu breakdown.
-     * Identyczne mapowanie jak w SettlementDetailsModalFragment.
-     */
     private fun getBreakdownIconRes(type: SettlementBreakdownType): Int {
         return when (type) {
             SettlementBreakdownType.SELF              -> R.drawable.ic_breakdown_self
@@ -160,9 +149,6 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         }
     }
 
-    /**
-     * Content description dla accessibility
-     */
     private fun getBreakdownContentDescription(type: SettlementBreakdownType): String {
         return when (type) {
             SettlementBreakdownType.SELF              -> getString(R.string.breakdown_self)
@@ -178,12 +164,16 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         val headerTripCurrency = body.findViewById<TextView>(R.id.headerTripCurrency)
         val headerCostCurrency = body.findViewById<TextView>(R.id.headerCostCurrency)
 
-        headerCostCurrency.text = detail.currencyCost
-
         if (detail.currencyTrip != detail.currencyCost) {
+            // Multi-currency: pokaż obie kolumny
+            // Main (niebieska kolumna) = waluta kosztu
+            headerCostCurrency.text = detail.currencyCost
+            // Secondary (pomarańczowa kolumna) = waluta tripu
             headerTripCurrency.text = detail.currencyTrip
             headerTripCurrency.visibility = View.VISIBLE
         } else {
+            // Jedna waluta: pokaż tylko kolumnę z walutą tripu
+            headerCostCurrency.text = detail.currencyTrip
             headerTripCurrency.visibility = View.GONE
         }
     }

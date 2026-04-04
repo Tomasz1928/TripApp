@@ -14,10 +14,12 @@ object ApolloClientProvider {
     // ZMIEŃ NA SWÓJ URL
     private const val BASE_URL =
 //        "https://tripbe.onrender.com/graphql/"
-        "http://10.0.2.2:8000/graphql/"
+      //  "http://10.0.2.2:8000/graphql/"
+        "http://192.168.18.122:8000/graphql/"
     private const val WS_URL =
 //        "wss://tripbe.onrender.com/graphql/"
-        "ws://10.0.2.2:8000/graphql/"
+//        "ws://10.0.2.2:8000/graphql/"
+    "ws://192.168.18.122:8000/graphql/"
 
     private const val TAG = "ApolloClientProvider"
 

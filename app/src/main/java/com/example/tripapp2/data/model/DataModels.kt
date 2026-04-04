@@ -266,6 +266,9 @@ val SettlementRelationDto.isSettled: Boolean
 val SettlementRelationDto.mainCurrencyBalance: Float
     get() = leftForSettled.firstOrNull { it.isMainCurrency }?.amount ?: 0f
 
+val SettlementRelationDto.notMainCurrencyBalance: Float
+    get() = leftForSettled.firstOrNull { !it.isMainCurrency }?.amount ?: 0f
+
 val SettlementRelationDto.hasOutstandingAmount: Boolean
     get() = leftForSettled.any { kotlin.math.abs(it.amount) > 0.01f }
 

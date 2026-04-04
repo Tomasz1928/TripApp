@@ -18,6 +18,7 @@ import com.example.tripapp2.R
 import com.example.tripapp2.data.model.ExpenseDto
 import com.example.tripapp2.data.model.TripDto
 import com.example.tripapp2.data.model.mainCurrencyAmount
+import com.example.tripapp2.data.model.notMainCurrencyAmount
 import com.example.tripapp2.ui.common.baseModals.BaseModalFragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -30,6 +31,8 @@ import com.google.android.material.textfield.TextInputLayout
  * ZMIGOWANY na BaseModalFragment.
  *
  * Body = modal_settle_body.xml (TabLayout + 2 taby: Per wartość / Per koszty)
+ *
+ * ZMIENIONE: dual-currency w tab "Per koszty"
  *
  * FIX RADIO BUTTONÓW:
  * Radio buttony są wewnątrz MaterialCardView, więc RadioGroup ich NIE zarządza.
@@ -154,7 +157,7 @@ class SettleModalFragment : BaseModalFragment() {
         val mainOption = currencies.firstOrNull { it.isMainCurrency }
 
         if (mainOption != null) {
-            mainCurrencyLabel.text = "${mainOption.currency} (g\u0142\u00F3wna)"
+            mainCurrencyLabel.text = "${mainOption.currency} (główna)"
             mainCurrencyAmount.text = "%.2f".format(mainOption.availableAmount)
             updateDirectionIcon(mainCurrencyDirectionIcon, mainOption.direction)
 
@@ -320,7 +323,7 @@ class SettleModalFragment : BaseModalFragment() {
     }
 
     // ==========================================
-    // TAB 2: PER KOSZTY
+    // TAB 2: PER KOSZTY — ZMIENIONE: dual-currency
     // ==========================================
 
     private fun setupByCostsTab(model: SettleModalUiModel) {
@@ -328,7 +331,7 @@ class SettleModalFragment : BaseModalFragment() {
         val participantId = model.participantId
 
         costItems.clear()
-        costItems.addAll(filterExpensesForSettlement(trip.expenses, participantId))
+        costItems.addAll(filterExpensesForSettlement(trip.expenses, participantId, trip.currency))
         costsListContainer.removeAllViews()
 
         if (costItems.isEmpty()) {
@@ -352,27 +355,75 @@ class SettleModalFragment : BaseModalFragment() {
         updateCostsSummary()
     }
 
-    private fun filterExpensesForSettlement(expenses: List<ExpenseDto>, participantId: String): List<SettleCostItemUiModel> {
+    /**
+     * ZMIENIONE: dual-currency — poprawne mapowanie kwot
+     *
+     * leftForSettled zawiera List<SimpleMoneyValueDto>:
+     *   isMainCurrency=true  → kwota w walucie tripu
+     *   isMainCurrency=false → kwota w walucie kosztu (gdy inna niż trip)
+     *
+     * Logika:
+     * - Gdy expense.currency == tripCurrency: amount = mainCurrencyAmount(), currency = tripCurrency
+     * - Gdy expense.currency != tripCurrency: amount = notMainCurrencyAmount(), currency = expense.currency
+     *   + dodatkowe amountTrip/formattedAmountTrip dla secondary display
+     */
+    private fun filterExpensesForSettlement(
+        expenses: List<ExpenseDto>,
+        participantId: String,
+        tripCurrency: String
+    ): List<SettleCostItemUiModel> {
         val result = mutableListOf<SettleCostItemUiModel>()
         for (expense in expenses) {
+            val isMultiCurrency = expense.currency != tripCurrency
+
             if (expense.payerId == currentUserId) {
                 val share = expense.sharedWith.find { it.participantId == participantId && !it.isSettlement }
                 if (share != null) {
+                    val amountTrip = share.leftForSettled.mainCurrencyAmount()
+                    val amountCost = if (isMultiCurrency) share.leftForSettled.notMainCurrencyAmount() else null
+
                     result.add(SettleCostItemUiModel(
-                        expenseId = expense.id, expenseName = expense.name,
-                        amount = share.leftForSettled.mainCurrencyAmount(), currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.leftForSettled.mainCurrencyAmount(), expense.currency),
-                        payerDirection = CostPayerDirection.I_PAID, payerId = currentUserId, participantId = participantId
+                        expenseId = expense.id,
+                        expenseName = expense.name,
+                        // Kwota główna: w walucie kosztu jeśli multi, w walucie tripu jeśli single
+                        amount = if (isMultiCurrency) (amountCost ?: 0f) else amountTrip,
+                        currency = if (isMultiCurrency) expense.currency else tripCurrency,
+                        formattedAmount = if (isMultiCurrency) {
+                            "%.2f %s".format(amountCost ?: 0f, expense.currency)
+                        } else {
+                            "%.2f %s".format(amountTrip, tripCurrency)
+                        },
+                        // Dual-currency: secondary (waluta tripu) gdy multi
+                        amountTrip = if (isMultiCurrency) amountTrip else null,
+                        formattedAmountTrip = if (isMultiCurrency) "%.2f %s".format(amountTrip, tripCurrency) else null,
+                        isMultiCurrency = isMultiCurrency,
+                        payerDirection = CostPayerDirection.I_PAID,
+                        payerId = currentUserId,
+                        participantId = participantId
                     ))
                 }
             } else if (expense.payerId == participantId) {
                 val share = expense.sharedWith.find { it.participantId == currentUserId && !it.isSettlement }
                 if (share != null) {
+                    val amountTrip = share.leftForSettled.mainCurrencyAmount()
+                    val amountCost = if (isMultiCurrency) share.leftForSettled.notMainCurrencyAmount() else null
+
                     result.add(SettleCostItemUiModel(
-                        expenseId = expense.id, expenseName = expense.name,
-                        amount = share.leftForSettled.mainCurrencyAmount(), currency = expense.currency,
-                        formattedAmount = "%.2f %s".format(share.leftForSettled.mainCurrencyAmount(), expense.currency),
-                        payerDirection = CostPayerDirection.PARTICIPANT_PAID, payerId = participantId, participantId = currentUserId
+                        expenseId = expense.id,
+                        expenseName = expense.name,
+                        amount = if (isMultiCurrency) (amountCost ?: 0f) else amountTrip,
+                        currency = if (isMultiCurrency) expense.currency else tripCurrency,
+                        formattedAmount = if (isMultiCurrency) {
+                            "%.2f %s".format(amountCost ?: 0f, expense.currency)
+                        } else {
+                            "%.2f %s".format(amountTrip, tripCurrency)
+                        },
+                        amountTrip = if (isMultiCurrency) amountTrip else null,
+                        formattedAmountTrip = if (isMultiCurrency) "%.2f %s".format(amountTrip, tripCurrency) else null,
+                        isMultiCurrency = isMultiCurrency,
+                        payerDirection = CostPayerDirection.PARTICIPANT_PAID,
+                        payerId = participantId,
+                        participantId = currentUserId
                     ))
                 }
             }
@@ -380,17 +431,37 @@ class SettleModalFragment : BaseModalFragment() {
         return result
     }
 
+    /**
+     * ZMIENIONE: dual-currency w wierszu kosztu
+     *
+     * - isMultiCurrency = true:
+     *     → costAmount (niebieskie/zielone/czerwone): formattedAmount (waluta kosztu)
+     *     → costAmountSecondary (pomarańczowe): formattedAmountTrip (waluta tripu)
+     * - isMultiCurrency = false:
+     *     → costAmount: formattedAmount (waluta tripu = jedyna)
+     *     → costAmountSecondary: ukryte
+     */
     private fun createCostRow(item: SettleCostItemUiModel): View {
         val view = layoutInflater.inflate(R.layout.item_settle_cost, costsListContainer, false)
         val checkbox = view.findViewById<CheckBox>(R.id.costCheckbox)
         val nameView = view.findViewById<TextView>(R.id.costTitle)
         val amountView = view.findViewById<TextView>(R.id.costAmount)
+        val amountSecondaryView = view.findViewById<TextView>(R.id.costAmountSecondary)
 
         nameView.text = item.expenseName
-        amountView.text = "%.2f %s".format(item.amount, item.currency)
+        amountView.text = item.formattedAmount
 
         val colorRes = if (item.payerId == currentUserId) R.color.success else R.color.error
         amountView.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+
+        // Secondary amount (waluta tripu, pomarańczowo) — tylko gdy multi-currency
+        if (item.isMultiCurrency && item.formattedAmountTrip != null && amountSecondaryView != null) {
+            amountSecondaryView.text = item.formattedAmountTrip
+            amountSecondaryView.setTextColor(ContextCompat.getColor(requireContext(), R.color.secondary))
+            amountSecondaryView.visibility = View.VISIBLE
+        } else {
+            amountSecondaryView?.visibility = View.GONE
+        }
 
         checkbox.isChecked = item.isChecked
         checkbox.setOnCheckedChangeListener { _, isChecked ->
