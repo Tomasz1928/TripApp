@@ -9,6 +9,7 @@ import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.auth.login.LoginActivity
 import com.example.tripapp2.ui.common.base.BaseFragment
 import com.example.tripapp2.ui.common.baseModals.ConfirmModalFragment
+import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
 
@@ -26,6 +27,7 @@ class OptionsFragment : BaseFragment<OptionsViewModel>(R.layout.fragment_options
     override val viewModel: OptionsViewModel by viewModels()
 
     private lateinit var logoutCard: MaterialCardView
+    private lateinit var tutorialCard: MaterialCardView  // <-- DODAJ TO
     private lateinit var userAvatar: TextView
     private lateinit var userName: TextView
 
@@ -36,12 +38,16 @@ class OptionsFragment : BaseFragment<OptionsViewModel>(R.layout.fragment_options
         logoutCard = view.findViewById(R.id.logoutCard)
         userAvatar = view.findViewById(R.id.userAvatar)
         userName = view.findViewById(R.id.userName)
+        tutorialCard = view.findViewById(R.id.tutorialCard) // <-- działa bo view = requireView()
+
+        tutorialCard.setOnClickListener {
+            (activity as? DashboardActivity)?.showTutorial()
+        }
 
         logoutCard.setOnClickListener {
             showLogoutConfirmation()
         }
 
-        // Populate user card
         loadUserInfo()
     }
 

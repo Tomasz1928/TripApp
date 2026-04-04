@@ -6,6 +6,92 @@
 
     <string name="app_name">TripApp</string>
 
+
+    <!-- ========================================= -->
+    <!-- TUTORIAL — Samouczek                     -->
+    <!-- ========================================= -->
+
+    <string name="tutorial_title">Jak korzystać z aplikacji</string>
+    <string name="tutorial_hero_title">Witaj w TripApp!</string>
+    <string name="tutorial_hero_subtitle">Zarządzaj wydatkami podróży\ni rozliczaj się ze znajomymi</string>
+    <string name="tutorial_options_row_title">Jak korzystać z aplikacji</string>
+    <string name="tutorial_options_row_subtitle">Samouczek i opis funkcji</string>
+
+    <!-- Sekcje -->
+    <string name="tutorial_section_basics">Podstawy</string>
+    <string name="tutorial_section_costs">Koszty</string>
+    <string name="tutorial_section_settlements">Rozliczenia</string>
+    <string name="tutorial_section_participants">Uczestnicy</string>
+    <string name="tutorial_section_navigation">Nawigacja</string>
+
+    <!-- Utwórz podróż -->
+    <string name="tutorial_create_trip_title">Utwórz podróż</string>
+    <string name="tutorial_create_trip_short">Nadaj nazwę, daty i walutę</string>
+    <string name="tutorial_create_trip_desc">Aby stworzyć nową podróż, przejdź do zakładki \"Nowa podróż\" w dolnym pasku nawigacji.</string>
+    <string name="tutorial_create_trip_step1">Wpisz nazwę podróży (min. 3 znaki)</string>
+    <string name="tutorial_create_trip_step2">Wybierz zakres dat — kiedy zaczyna i kończy się wyjazd</string>
+    <string name="tutorial_create_trip_step3">Wybierz główną walutę, w której będą prowadzone rozliczenia</string>
+    <string name="tutorial_create_trip_step4">Po utworzeniu wyślij znajomym kod dostępu — znajdziesz go w zakładce Uczestnicy</string>
+
+    <!-- Dołącz do podróży -->
+    <string name="tutorial_join_trip_title">Dołącz do podróży</string>
+    <string name="tutorial_join_trip_short">Wpisz kod zaproszenia</string>
+    <string name="tutorial_join_trip_desc">Otrzymałeś kod zaproszenia od organizatora podróży? Oto jak dołączyć:</string>
+    <string name="tutorial_join_trip_step1">Przejdź do zakładki \"Dołącz do\" w dolnym pasku</string>
+    <string name="tutorial_join_trip_step2">Wpisz kod dostępu otrzymany od organizatora</string>
+    <string name="tutorial_join_trip_step3">Podróż pojawi się na Twoim pulpicie — możesz od razu dodawać wydatki</string>
+
+    <!-- Dodaj wydatek -->
+    <string name="tutorial_add_expense_title">Dodaj wydatek</string>
+    <string name="tutorial_add_expense_short">Kwota, kategoria, płatnik i podział</string>
+    <string name="tutorial_add_expense_desc">Formularz dodawania wydatku składa się z kilku kroków. Każde pole jest klikalne i otwiera odpowiedni picker.</string>
+    <string name="tutorial_add_expense_step1">Kwota — kliknij w górną sekcję, wpisz kwotę i wybierz walutę</string>
+    <string name="tutorial_add_expense_step2">Tytuł — krótka nazwa wydatku (np. \"Obiad w restauracji\")</string>
+    <string name="tutorial_add_expense_step3">Kategoria — wybierz z listy (jedzenie, transport, nocleg…)</string>
+    <string name="tutorial_add_expense_step4">Data i godzina — najpierw kalendarz, potem zegar</string>
+    <string name="tutorial_add_expense_step5">Kto płacił — wybierz osobę z listy uczestników</string>
+    <string name="tutorial_add_expense_step6">Podział kosztów — po równo lub ręczne kwoty</string>
+    <string name="tutorial_add_expense_note">Przycisk zapisania aktywuje się dopiero gdy wszystkie pola są poprawnie wypełnione.</string>
+
+    <!-- Podział kosztów -->
+    <string name="tutorial_split_costs_title">Podział kosztów</string>
+    <string name="tutorial_split_costs_short">Po równo lub ręczne kwoty</string>
+    <string name="tutorial_split_costs_desc">Każdy wydatek można podzielić między uczestników na dwa sposoby:\n\nPo równo — kwota dzielona równo między zaznaczonych uczestników. Reszta z dzielenia trafia do ostatniej osoby.\n\nRęcznie — sam wpisujesz kwotę dla każdego uczestnika. Suma musi się zgadzać z kwotą wydatku.</string>
+    <string name="tutorial_split_costs_note">Zaznacz checkboxami kto uczestniczy w danym koszcie. Osoby niezaznaczone nie płacą.</string>
+
+    <!-- Filtry -->
+    <string name="tutorial_filters_title">Filtruj wydatki</string>
+    <string name="tutorial_filters_short">Wszystkie, moje, płacone przez innych</string>
+    <string name="tutorial_filters_desc">Na górze listy kosztów znajdziesz przyciski filtrów:\n\nWszystkie — pełna lista wydatków w podróży\n\nMoje — tylko wydatki, w których jesteś uczestnikiem podziału\n\nPłaciłem ja — wydatki, za które zapłaciłeś\n\nPłacili inni — wydatki, za które płacili inni uczestnicy</string>
+
+    <!-- Bilans i rozliczenia -->
+    <string name="tutorial_settlements_title">Bilans i rozliczenia</string>
+    <string name="tutorial_settlements_short">Kto komu jest winien, salda</string>
+    <string name="tutorial_settlements_desc">W zakładce Szczegóły podróży zobaczysz sekcję rozliczeń. System automatycznie oblicza kto komu jest winien na podstawie wszystkich wydatków.\n\nKliknij w uczestnika, aby zobaczyć szczegóły: listę kosztów, historię rozliczeń i zaliczki.\n\nRozliczenia można wykonać na trzy sposoby:\n\nKwotą — wpisz ile oddajesz lub otrzymujesz\n\nKosztami — zaznacz konkretne wydatki do rozliczenia\n\nZaliczką — zarejestruj przelew lub wpłatę</string>
+
+    <!-- Zaliczki -->
+    <string name="tutorial_prepayments_title">Zaliczki (przedpłaty)</string>
+    <string name="tutorial_prepayments_short">Przelewy między uczestnikami</string>
+    <string name="tutorial_prepayments_desc">Zaliczki to przelewy między uczestnikami zrobione poza aplikacją (np. Blik, gotówka, przelew bankowy).\n\nRejestrując zaliczkę informujesz system, że ktoś już oddał pieniądze — salda aktualizują się automatycznie.\n\nDo mnie — ktoś oddał Ci pieniądze\n\nOde mnie — Ty oddałeś komuś pieniądze</string>
+    <string name="tutorial_prepayments_note">Zaliczki mogą automatycznie rozliczać koszty, jeśli kwota pokrywa salda.</string>
+
+    <!-- Ikony statusów -->
+    <string name="tutorial_icons_title">Ikony statusów rozliczeń</string>
+    <string name="tutorial_icons_short">Co oznaczają ikonki przy kosztach</string>
+    <string name="tutorial_icons_desc">Przy każdym koszcie widzisz ikony informujące o statusie rozliczenia:</string>
+    <string name="tutorial_icons_note">Jeśli koszt jest częściowo rozliczony, zobaczysz dużą ikonę głównego statusu i małe ikonki metod, którymi część już rozliczono.</string>
+
+    <!-- Uczestnicy -->
+    <string name="tutorial_participants_title">Zarządzaj uczestnikami</string>
+    <string name="tutorial_participants_short">Dodawaj, odłączaj, usuwaj</string>
+    <string name="tutorial_participants_desc">W zakładce Uczestnicy widzisz listę wszystkich osób w podróży. Tylko właściciel podróży może zarządzać uczestnikami.\n\nDodaj — utwórz placeholder uczestnika z nickiem i kodem dostępu, który możesz przekazać znajomemu\n\nOdłącz — uczestnik traci dostęp do podróży, ale jego wydatki zostają w systemie\n\nUsuń — trwałe usunięcie uczestnika i wszystkich jego powiązań z wydatkami</string>
+    <string name="tutorial_participants_note">Kod dostępu znajdziesz przy każdym uczestniku — kliknij w niego, aby skopiować.</string>
+
+    <!-- Nawigacja -->
+    <string name="tutorial_navigation_title">Dolny pasek nawigacji</string>
+    <string name="tutorial_navigation_short">Zakładki i przełączanie widoków</string>
+    <string name="tutorial_navigation_desc">Aplikacja ma dwa paski nawigacji:\n\nPasek główny (pulpit):\n• Pulpit — lista Twoich podróży\n• Nowa podróż — formularz tworzenia\n• Dołącz do — wpisanie kodu zaproszenia\n• Opcje — ustawienia i wylogowanie\n\nPasek podróży (po wejściu w trip):\n• Szczegóły — podsumowanie, kategorie, rozliczenia\n• Koszty — lista wydatków z filtrami\n• Uczestnicy — lista osób i zarządzanie</string>
+
     <!-- ========================================= -->
     <!-- PATCH: Dodaj te stringi do strings.xml   -->
     <!-- Wklej PRZED zamykającym tagiem </resources> -->

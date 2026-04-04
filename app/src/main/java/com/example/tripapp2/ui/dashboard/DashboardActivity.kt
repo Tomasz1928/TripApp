@@ -18,6 +18,7 @@ import com.example.tripapp2.ui.common.TripNotificationManager
 import com.example.tripapp2.data.repository.TripRepository
 import androidx.lifecycle.lifecycleScope
 import com.example.tripapp2.ui.dashboard.options.OptionsFragment
+import com.example.tripapp2.ui.dashboard.tutorial.TutorialFragment
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -259,4 +260,22 @@ class DashboardActivity : AppCompatActivity() {
             tripBottomNav.selectedItemId = R.id.menu_overview
         }
     }
+    // =====================================================
+// TUTORIAL FLOW (bez bottom nav)
+// =====================================================
+    fun showTutorial() {
+        dashboardBottomNav.visibility = View.GONE
+
+        val fragment = TutorialFragment.newInstance()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.dashboardContainer, fragment, "tutorial")
+            .commit()
+    }
+
+    fun closeTutorial() {
+        dashboardBottomNav.visibility = View.VISIBLE
+        showDashboardFragment(R.id.menu_settings)
+        dashboardBottomNav.selectedItemId = R.id.menu_settings
+    }
+
 }

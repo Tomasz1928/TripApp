@@ -634,6 +634,14 @@
                                     android:layout_marginTop="2dp"
                                     android:text="@string/add_expense_split_hint"
                                     android:textColor="@color/text_secondary"/>
+
+                                <TextView
+                                    android:id="@+id/splitError"
+                                    style="@style/Text.Error"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:visibility="gone"/>
                             </LinearLayout>
 
                             <!-- Ukryty przycisk split (zachowuje kompatybilność) -->
@@ -651,21 +659,12 @@
                                 android:orientation="horizontal"
                                 android:layout_marginEnd="@dimen/spacing_small"/>
 
-                            <TextView
-                                android:id="@+id/splitError"
-                                style="@style/Text.Error"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="@dimen/spacing_small"
-                                android:visibility="gone"/>
-
                             <ImageView
                                 android:layout_width="@dimen/icon_size_small"
                                 android:layout_height="@dimen/icon_size_small"
                                 android:src="@drawable/ic_chevron_right"
                                 android:contentDescription="@null"/>
                         </LinearLayout>
-
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
