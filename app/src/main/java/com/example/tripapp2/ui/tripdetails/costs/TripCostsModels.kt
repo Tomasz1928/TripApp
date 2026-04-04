@@ -7,6 +7,7 @@ import com.example.tripapp2.data.model.ExpenseDto
 import com.example.tripapp2.data.model.ShareDto
 import com.example.tripapp2.data.model.SettlementBreakdownType
 import com.example.tripapp2.data.model.mainCurrencyAmount
+import com.example.tripapp2.data.model.notMainCurrencyAmount
 import com.example.tripapp2.ui.common.extension.toShortDateString
 
 /**
@@ -116,10 +117,8 @@ fun ExpenseDto.toDetailUiModel(
             // Główna waluta (isMainCurrency=true) = kwota w cost currency
             // Dodatkowe waluty = przeliczenia (np. trip currency)
 
-            val shareCostCurrencyAmount = share.splitValue.mainCurrencyAmount()
-            val shareTripCurrencyValue = share.splitValue.firstOrNull {
-                !it.isMainCurrency && it.currency == mainCurrency
-            }
+            val shareTripCurrencyValue = share.splitValue.mainCurrencyAmount()
+            val shareCostCurrencyAmount = share.splitValue.notMainCurrencyAmount()
 
             // NOWE: oblicz ikony breakdown
             val (dominant, secondary) = resolveShareBreakdownIcons(share)
@@ -128,16 +127,11 @@ fun ExpenseDto.toDetailUiModel(
                 isSettlement = share.isSettlement,
                 personName = share.participantNickname,
 
-                // Kwota w cost currency - z isMainCurrency=true
                 amountCostCurrency = shareCostCurrencyAmount,
-                formattedAmountCostCurrency = "%.2f".format(shareCostCurrencyAmount),
+                formattedAmountCostCurrency ="%.2f".format(shareCostCurrencyAmount),
 
-                amountTripCurrency = shareTripCurrencyValue?.amount ?: 0f,
-                formattedAmountTripCurrency = if (shareTripCurrencyValue != null) {
-                    "%.2f".format(shareTripCurrencyValue.amount)
-                } else {
-                    ""
-                },
+                amountTripCurrency = shareTripCurrencyValue,
+                formattedAmountTripCurrency = "%.2f".format(shareTripCurrencyValue),
 
                 // NOWE: breakdown icons
                 dominantType = dominant,
