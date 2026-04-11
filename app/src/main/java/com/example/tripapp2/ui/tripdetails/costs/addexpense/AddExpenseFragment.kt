@@ -639,6 +639,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
 
         picker.addOnPositiveButtonClickListener { selection ->
             viewModel.onDateSelected(selection)
+            showTimePicker()
         }
 
         picker.show(parentFragmentManager, "DATE_PICKER")

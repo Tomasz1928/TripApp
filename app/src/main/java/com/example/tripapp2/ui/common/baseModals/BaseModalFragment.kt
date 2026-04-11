@@ -17,7 +17,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.example.tripapp2.R
-
 /**
  * BaseModalFragment — bazowy komponent dla WSZYSTKICH modali w aplikacji.
  *
@@ -85,8 +84,7 @@ open class BaseModalFragment : DialogFragment() {
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT
             )
-            // Pozwól na overlay click przez MATCH_PARENT
-            setDimAmount(0f) // Mamy własny overlay
+            setDimAmount(0.5f)
         }
     }
 
@@ -144,18 +142,16 @@ open class BaseModalFragment : DialogFragment() {
     // ==========================================
 
     private fun playEnterAnimation() {
-        modalOverlay?.alpha = 0f
         modalCard?.alpha = 0f
         modalCard?.scaleX = 0.95f
         modalCard?.scaleY = 0.95f
 
-        val overlayFade = ObjectAnimator.ofFloat(modalOverlay, "alpha", 0f, 1f)
         val cardFade = ObjectAnimator.ofFloat(modalCard, "alpha", 0f, 1f)
         val cardScaleX = ObjectAnimator.ofFloat(modalCard, "scaleX", 0.95f, 1f)
         val cardScaleY = ObjectAnimator.ofFloat(modalCard, "scaleY", 0.95f, 1f)
 
         AnimatorSet().apply {
-            playTogether(overlayFade, cardFade, cardScaleX, cardScaleY)
+            playTogether(cardFade, cardScaleX, cardScaleY)
             duration = animationDurationMs
             interpolator = DecelerateInterpolator()
             start()
@@ -163,13 +159,12 @@ open class BaseModalFragment : DialogFragment() {
     }
 
     protected fun dismissAnimated() {
-        val overlayFade = ObjectAnimator.ofFloat(modalOverlay, "alpha", 1f, 0f)
         val cardFade = ObjectAnimator.ofFloat(modalCard, "alpha", 1f, 0f)
         val cardScaleX = ObjectAnimator.ofFloat(modalCard, "scaleX", 1f, 0.95f)
         val cardScaleY = ObjectAnimator.ofFloat(modalCard, "scaleY", 1f, 0.95f)
 
         AnimatorSet().apply {
-            playTogether(overlayFade, cardFade, cardScaleX, cardScaleY)
+            playTogether(cardFade, cardScaleX, cardScaleY)
             duration = animationDurationMs
             interpolator = DecelerateInterpolator()
             start()

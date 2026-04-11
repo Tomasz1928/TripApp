@@ -653,15 +653,13 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
     }
 
     private fun showDatePicker() {
-        val currentDate = viewModel.dateTime.value?.first ?: System.currentTimeMillis()
-
         val picker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(getString(R.string.add_expense_date_hint))
-            .setSelection(currentDate)
             .build()
 
         picker.addOnPositiveButtonClickListener { selection ->
             viewModel.onDateSelected(selection)
+            showTimePicker()
         }
 
         picker.show(parentFragmentManager, "DATE_PICKER")
