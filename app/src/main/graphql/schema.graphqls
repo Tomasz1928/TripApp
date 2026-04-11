@@ -209,6 +209,7 @@ type TripDetailType {
     imOwner: Boolean!
     myParticipantId: Int!
     myCost: [SimpleMoneyValueType!]!
+    totalTripCost: [SimpleMoneyValueType!]!
     expenses: [ExpenseDetailType!]!
     participants: [ParticipantDetailType!]!
     settlement: SettlementType

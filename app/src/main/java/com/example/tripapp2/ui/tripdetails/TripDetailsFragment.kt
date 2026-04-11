@@ -46,9 +46,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
     private lateinit var myCostCurrency: TextView
     private lateinit var myCostCard: MaterialCardView          // NOWE: referencja do karty myCost
 
-    // Section rows
-    private lateinit var rowExpensesByCurrency: View
-    private lateinit var currencyCount: TextView
     private lateinit var rowSettlements: View
     private lateinit var settlementsStatus: TextView
 
@@ -85,9 +82,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         myCostCurrency = view.findViewById(R.id.myCostCurrency)
         myCostCard = view.findViewById(R.id.myCostCard)        // NOWE
 
-        // Section rows
-        rowExpensesByCurrency = view.findViewById(R.id.rowExpensesByCurrency)
-        currencyCount = view.findViewById(R.id.currencyCount)
         rowSettlements = view.findViewById(R.id.rowSettlements)
         settlementsStatus = view.findViewById(R.id.settlementsStatus)
 
@@ -108,11 +102,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         // NOWE: Kliknięcie w kartę "Mój koszt" → modal z MOIMI kosztami
         myCostCard.setOnClickListener {
             showMyExpensesModal()
-        }
-
-        // Row: wydatki wg waluty → modal z WSZYSTKIMI kosztami
-        rowExpensesByCurrency.setOnClickListener {
-            showTotalExpensesModal()
         }
 
         // Row: rozliczenia → ekran rozliczeń
@@ -161,12 +150,6 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
             myCostAmount.text = "0,00"
             myCostCurrency.text = details.tripTotalCurrency
         }
-
-        // Currency count — łączna liczba walut w wycieczce
-        val allCurrencies = (details.tripExpensesBreakdown.map { it.currency } +
-                details.myExpensesBreakdown.map { it.currency }).distinct()
-        currencyCount.text = "${allCurrencies.size} walut"
-
         // Settlements status (uproszczony — rozbuduj wg potrzeb)
         settlementsStatus.text = "Zobacz szczegóły"
     }

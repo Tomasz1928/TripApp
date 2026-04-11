@@ -106,22 +106,7 @@ fun TripDto.toDetailsUiModel(): TripDetailsUiModel {
  * Główna waluta (isMainCurrency) jest pierwsza.
  */
 private fun TripDto.calculateTripExpenses(): List<CurrencyExpenseUiModel> {
-    // Zbierz wszystkie wydatki z expenses (totalExpense per expense)
-    val currencyMap = mutableMapOf<String, Float>()
-
-    // Użyj TripDto.totalExpenses jako sumę w głównej walucie
-    currencyMap[currency] = totalExpenses
-
-    // Dodaj rozbicie na inne waluty z expenses
-    expenses.forEach { expense ->
-        if (expense.currency != currency) {
-            // Dodaj kwotę w walucie wydatku
-            currencyMap[expense.currency] =
-                (currencyMap[expense.currency] ?: 0f) + expense.amount
-        }
-    }
-
-    if (currencyMap.isEmpty()) {
+    if (totalTripCost.isEmpty()) {
         return listOf(
             CurrencyExpenseUiModel(
                 currency = currency,
@@ -131,15 +116,13 @@ private fun TripDto.calculateTripExpenses(): List<CurrencyExpenseUiModel> {
         )
     }
 
-    // Sortuj: główna waluta pierwsza, reszta alfabetycznie
-    return currencyMap.entries
-        .sortedWith(compareByDescending<Map.Entry<String, Float>> { it.key == currency }
-            .thenBy { it.key })
-        .map { (cur, amount) ->
+    return totalTripCost
+        .sortedByDescending { it.isMainCurrency }
+        .map { money ->
             CurrencyExpenseUiModel(
-                currency = cur,
-                amount = amount,
-                formattedAmount = "%.2f %s".format(amount, cur)
+                currency = money.currency,
+                amount = money.amount,
+                formattedAmount = "%.2f %s".format(money.amount, money.currency)
             )
         }
 }

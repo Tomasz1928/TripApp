@@ -55,6 +55,11 @@ query TripDetailsQuery($tripId: Int!) {
             currency
             isMainCurrency
         }
+        totalTripCost {
+            amount
+            currency
+            isMainCurrency
+        }
         ownerId
         participants {
             accessCode

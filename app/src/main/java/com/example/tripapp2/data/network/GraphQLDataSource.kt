@@ -507,6 +507,7 @@ class GraphQLDataSource() {
             ownerId = data.ownerId.toString(),
             imOwner = data.imOwner,
             myCost = data.myCost.map { mapMoney(it) },
+            totalTripCost = data.totalTripCost.map { mapMoney(it) },
             expenses = data.expenses.map { mapExpense(it) },
             participants = data.participants.map { mapParticipant(it) },
             settlement = data.settlement?.let { mapSettlement(it) },
@@ -690,6 +691,14 @@ class GraphQLDataSource() {
     }
 
     private fun mapMoney(m: TripDetailsQuery.Values): SimpleMoneyValueDto {
+        return SimpleMoneyValueDto(
+            isMainCurrency = m.isMainCurrency,
+            currency = m.currency,
+            amount = m.amount.toFloat()
+        )
+    }
+
+    private fun mapMoney(m: TripDetailsQuery.TotalTripCost): SimpleMoneyValueDto {
         return SimpleMoneyValueDto(
             isMainCurrency = m.isMainCurrency,
             currency = m.currency,
