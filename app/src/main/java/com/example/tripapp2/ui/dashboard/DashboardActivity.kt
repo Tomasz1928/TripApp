@@ -5,7 +5,6 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.tripapp2.R
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.AddExpenseFragment
-import com.example.tripapp2.ui.common.setupIconsInOriginalColor
 import com.example.tripapp2.ui.dashboard.create.CreateTripFragment
 import com.example.tripapp2.ui.dashboard.join.JoinTripFragment
 import com.example.tripapp2.ui.tripdetails.costs.editexpense.EditExpenseFragment
@@ -17,6 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.example.tripapp2.ui.common.TripNotificationManager
 import com.example.tripapp2.data.repository.TripRepository
 import androidx.lifecycle.lifecycleScope
+import com.example.tripapp2.ui.common.extension.setupIconsInOriginalColor
 import com.example.tripapp2.ui.dashboard.options.OptionsFragment
 import com.example.tripapp2.ui.dashboard.tutorial.TutorialFragment
 

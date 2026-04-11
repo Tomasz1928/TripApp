@@ -237,7 +237,7 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
         // Dane
         nicknameText.text = participant.nickname
         if (participant.isPlaceholder) {
-            nicknameText.text = "${participant.nickname} (placeholder)"
+            nicknameText.text = "${participant.nickname} (oczekujący)"
         }
 
         // Balans i kolor
