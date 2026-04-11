@@ -10,6 +10,7 @@ import com.example.tripapp2.data.model.UpdateExpenseRequest
 import com.example.tripapp2.data.model.mainCurrencyAmount
 import com.example.tripapp2.data.model.notMainCurrencyAmount
 import com.example.tripapp2.data.repository.TripRepository
+import com.example.tripapp2.data.repository.CurrencyRepository
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.ExpenseCategories
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitParticipant
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitType
@@ -58,6 +59,9 @@ class EditExpenseViewModel(
 
     private val _expenseSplit = MutableLiveData<ExpenseSplit>()
     val expenseSplit: LiveData<ExpenseSplit> = _expenseSplit
+
+    private val _tripCurrency = MutableLiveData<String>()
+    val tripCurrency: LiveData<String> = _tripCurrency
 
     // Błędy walidacji
     private val _titleError = MutableLiveData<Int?>()
@@ -113,6 +117,8 @@ class EditExpenseViewModel(
         viewModelScope.launch {
             setLoading(true)
 
+            CurrencyRepository.getInstance().ensureLoaded()
+
             val trip = tripRepository.getTripDetails(tripId)
 
             if (trip == null) {
@@ -120,6 +126,8 @@ class EditExpenseViewModel(
                 setLoading(false)
                 return@launch
             }
+
+            _tripCurrency.value = trip.currency
 
             val expense = trip.expenses.find { it.id == expenseId }
 
@@ -260,7 +268,8 @@ class EditExpenseViewModel(
 
     private fun buildUpdateExpenseRequest(): UpdateExpenseRequest {
         val amount = _amount.value?.toFloatOrNull() ?: 0f
-        val currency = _currency.value ?: "PLN"
+        // ZMIANA: fallback na tripCurrency zamiast hardcoded "PLN"
+        val currency = _currency.value ?: _tripCurrency.value ?: "PLN"
         val payerId = _selectedPayer.value ?: ""
         val split = _expenseSplit.value
 
@@ -345,5 +354,8 @@ class EditExpenseViewModel(
         }
 
         return isValid
+    }
+    fun getCurrencies(): List<String> {
+        return CurrencyRepository.getInstance().getCurrencies()
     }
 }

@@ -28,7 +28,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import com.example.tripapp2.data.repository.CurrencyRepository
+// USUNIĘTO: import com.example.tripapp2.data.repository.CurrencyRepository — nie potrzebny, idzie przez ViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -41,6 +41,9 @@ import java.util.*
  * - Pre-populacja pól z istniejącego wydatku
  * - Payer i Split row-y są NIEEDYTOWALNE (tylko wyświetlają dane)
  * - Wywołuje updateExpense zamiast addExpense
+ *
+ * ZMIANA vs oryginał:
+ * - setupCurrencyDropdown() ujednolicony: R.layout.item_dropdown, threshold=1, lista z viewModel.getCurrencies()
  */
 class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout.fragment_edit_expense) {
 
@@ -354,16 +357,26 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
     }
 
     // ================================================================
-    // CURRENCY DROPDOWN
+    // CURRENCY DROPDOWN — ZMIENIONE (ujednolicone)
     // ================================================================
 
     private fun setupCurrencyDropdown() {
-        val currencies = CurrencyRepository.getInstance().getCurrencies()
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, currencies)
+        // ZMIANA: Lista z ViewModel (który bierze z CurrencyRepository)
+        // ZMIANA: R.layout.item_dropdown zamiast android.R.layout.simple_dropdown_item_1line
+        val currencies = viewModel.getCurrencies()
+        val adapter = ArrayAdapter(
+            requireContext(),
+            R.layout.item_dropdown,
+            currencies
+        )
         currencyInput.setAdapter(adapter)
+        // ZMIANA: Dodany threshold = 1 (autocomplete od pierwszego znaku)
+        currencyInput.threshold = 1
 
-        currencyInput.setOnItemClickListener { _, _, position, _ ->
-            viewModel.onCurrencySelected(currencies[position])
+        currencyInput.setOnItemClickListener { parent, _, position, _ ->
+            val selected = parent.getItemAtPosition(position) as String
+            viewModel.onCurrencySelected(selected)
+            currencyDisplay.text = selected
         }
     }
 
@@ -470,7 +483,6 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
                     payerAvatar.text = it.name.take(2).uppercase()
                     payerAvatar.visibility = View.VISIBLE
                 }
-                // Aktualizuj ukryty przycisk (kompatybilność)
                 payerButton.text = participant?.name ?: getString(R.string.error_payer_required)
             } else {
                 payerDisplay.text = null
@@ -540,98 +552,26 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
                 } else {
                     message
                 }
-
-                Toast.makeText(requireContext(), displayMessage, Toast.LENGTH_SHORT).show()
-
-                if (message.startsWith("EXPENSE_UPDATED_SUCCESS_RES_ID:")) {
-                    navigateBackToCosts()
-                }
+                showMessage(displayMessage)
+                navigateBackToCosts()
             }
         }
     }
 
     // ================================================================
-    // AVATAR STACK
-    // ================================================================
-
-    private fun updateSplitAvatarStack(participants: List<SplitParticipant>) {
-        splitAvatarStack.removeAllViews()
-
-        val avatarColors = intArrayOf(
-            ContextCompat.getColor(requireContext(), R.color.primary),
-            ContextCompat.getColor(requireContext(), R.color.category_food),
-            ContextCompat.getColor(requireContext(), R.color.category_transport),
-            ContextCompat.getColor(requireContext(), R.color.category_shopping),
-            ContextCompat.getColor(requireContext(), R.color.category_entertainment),
-            ContextCompat.getColor(requireContext(), R.color.category_other)
-        )
-
-        val density = resources.displayMetrics.density
-        val sizePx = (22 * density).toInt()
-        val overlapPx = (-6 * density).toInt()
-        val borderPx = (2 * density).toInt()
-
-        participants.take(5).forEachIndexed { index, participant ->
-            val avatar = TextView(requireContext()).apply {
-                layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
-                    if (index > 0) marginStart = overlapPx
-                }
-                gravity = Gravity.CENTER
-                textSize = 7f
-                setTextColor(Color.WHITE)
-                typeface = Typeface.DEFAULT_BOLD
-                text = participant.name.take(2).uppercase()
-
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(avatarColors[index % avatarColors.size])
-                    setStroke(borderPx, Color.WHITE)
-                }
-            }
-            splitAvatarStack.addView(avatar)
-        }
-
-        // Jeśli więcej niż 5 → pokaż "+N"
-        if (participants.size > 5) {
-            val moreLabel = TextView(requireContext()).apply {
-                layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
-                    marginStart = overlapPx
-                }
-                gravity = Gravity.CENTER
-                textSize = 7f
-                setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
-                typeface = Typeface.DEFAULT_BOLD
-                text = "+${participants.size - 5}"
-
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(ContextCompat.getColor(requireContext(), R.color.background))
-                    setStroke(borderPx, ContextCompat.getColor(requireContext(), R.color.divider))
-                }
-            }
-            splitAvatarStack.addView(moreLabel)
-        }
-    }
-
-    // ================================================================
-    // POPULATE FIELDS — wypełnia display views po załadowaniu danych
+    // POPULATE FIELDS FROM VIEWMODEL
     // ================================================================
 
     private fun populateFieldsFromViewModel() {
-        // Tytuł i opis → display views
+        // Tytuł i opis
         val title = viewModel.title.value ?: ""
         val desc = viewModel.description.value ?: ""
-
         titleDisplay.text = title.ifEmpty { null }
-        titleDisplay.hint = if (title.isEmpty()) getString(R.string.add_expense_title_hint) else null
         descriptionDisplay.text = desc.ifEmpty { null }
-        descriptionDisplay.hint = if (desc.isEmpty()) getString(R.string.add_expense_description_hint) else null
-
-        // Ukryte inputy (kompatybilność)
         titleInput.setText(title)
         descriptionInput.setText(desc)
 
-        // Kwota → hero amount display + input
+        // Kwota → display + input
         val amount = viewModel.amount.value ?: ""
         amountInput.setText(amount)
         updateAmountDisplay(amount)
@@ -640,6 +580,54 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
         val currency = viewModel.currency.value ?: ""
         currencyDisplay.text = currency
         currencyInput.setText(currency, false)
+    }
+
+    // ================================================================
+    // SPLIT AVATARS
+    // ================================================================
+
+    private fun updateSplitAvatarStack(participants: List<SplitParticipant>) {
+        splitAvatarStack.removeAllViews()
+        val maxAvatars = 4
+        val density = resources.displayMetrics.density
+
+        participants.take(maxAvatars).forEachIndexed { index, participant ->
+            val avatar = TextView(requireContext()).apply {
+                text = participant.name.take(1).uppercase()
+                setTextColor(Color.WHITE)
+                textSize = 10f
+                typeface = Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
+
+                val size = (24 * density).toInt()
+                val lp = LinearLayout.LayoutParams(size, size)
+                if (index > 0) lp.marginStart = (-6 * density).toInt()
+                layoutParams = lp
+
+                val bg = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                    setStroke((1.5 * density).toInt(), Color.WHITE)
+                }
+                background = bg
+            }
+            splitAvatarStack.addView(avatar)
+        }
+
+        if (participants.size > maxAvatars) {
+            val moreLabel = TextView(requireContext()).apply {
+                text = "+${participants.size - maxAvatars}"
+                setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
+                textSize = 11f
+                val lp = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                lp.marginStart = (4 * density).toInt()
+                layoutParams = lp
+            }
+            splitAvatarStack.addView(moreLabel)
+        }
     }
 
     // ================================================================

@@ -14,8 +14,10 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import com.example.tripapp2.R
 import com.example.tripapp2.ui.common.KeyboardAwareFragment
+import com.example.tripapp2.ui.common.baseModals.ListPickerModalFragment
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -24,24 +26,14 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import java.text.SimpleDateFormat
 import java.util.*
-import com.example.tripapp2.ui.common.baseModals.ListPickerModalFragment
 
 /**
- * Fragment dodawania wydatku — Propozycja C: Floating Sections
+ * Fragment dodawania wydatku
  *
- * Struktura layoutu:
- * - TopBar: back + tytuł + przycisk "Zapisz" (zastępuje header image + bottom CTA)
- * - Hero Amount: kwota wyeksponowana centralnie (32sp), kliknięcie expand-uje inputy
- * - Sections Card: 5 wierszy settings-style (tytuł, kategoria, data, płacący, podział)
- *
- * Kluczowe różnice vs stary layout:
- * - Brak header image (25% ekranu odzyskane)
- * - CTA w toolbarze (nie trzeba scrollować)
- * - Pola formularza jako klikalne wiersze z ikonami
- * - Tytuł/opis edytowane przez BottomSheet
- * - Avatar stack w wierszu podziału kosztów
- *
- * ViewModel pozostaje BEZ ZMIAN — ukryte widoki zachowują oryginalne ID.
+ * ZMIANA vs oryginał:
+ * - Usunięto setDefaultCurrency() z hardcoded "PLN"
+ * - Dodano obserwer viewModel.tripCurrency w setupCustomObservers()
+ *   który ustawia domyślną walutę na trip.currency
  */
 class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.fragment_add_expense) {
 
@@ -125,7 +117,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         setupCurrencyDropdown()
         setupRowClickListeners()
         setupHeroAmountListeners()
-        setDefaultCurrency()
+        // ZMIANA: Usunięto setDefaultCurrency() — zastąpione obserwatorem tripCurrency
         setupBackButton()
     }
 
@@ -356,7 +348,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
     }
 
     // ================================================================
-    // CURRENCY DROPDOWN
+    // CURRENCY DROPDOWN (ujednolicone)
     // ================================================================
 
     private fun setupCurrencyDropdown() {
@@ -375,11 +367,8 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         }
     }
 
-    private fun setDefaultCurrency() {
-        currencyInput.setText("PLN", false)
-        currencyDisplay.text = "PLN"
-        viewModel.onCurrencySelected("PLN")
-    }
+    // USUNIĘTO: setDefaultCurrency() z hardcoded "PLN"
+    // Zastąpione obserwatorem tripCurrency w setupCustomObservers()
 
     // ================================================================
     // OBSERVERS — aktualizacja display views
@@ -451,11 +440,9 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
                 val dateStr = dateFormat.format(Date(date))
                 val timeStr = timeFormat.format(Date(time))
 
-                // Aktualizuj display views
                 dateDisplay.text = dateStr
                 timeDisplay.text = timeStr
 
-                // Aktualizuj ukryte inputy (kompatybilność)
                 dateInput.setText(dateStr)
                 timeInput.setText(timeStr)
             }
@@ -467,8 +454,16 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
             if (!currency.isNullOrBlank()) {
                 currencyDisplay.text = currency
             }
-            if (currency.isNullOrBlank()) {
-                currencyLayout.error = null
+        }
+
+        // --- NOWE: Trip currency → ustaw domyślną walutę ---
+
+        viewModel.tripCurrency.observe(viewLifecycleOwner) { tripCurrency ->
+            // Ustaw tylko jeśli użytkownik jeszcze nie wybrał waluty
+            if (viewModel.currency.value.isNullOrBlank()) {
+                currencyInput.setText(tripCurrency, false)
+                currencyDisplay.text = tripCurrency
+                viewModel.onCurrencySelected(tripCurrency)
             }
         }
 
@@ -484,42 +479,29 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
                     payerAvatar.text = it.name.take(2).uppercase()
                     payerAvatar.visibility = View.VISIBLE
                 }
-                // Aktualizuj ukryty przycisk (kompatybilność)
                 payerButton.text = participant?.name ?: getString(R.string.error_payer_required)
             } else {
                 payerDisplay.text = null
                 payerDisplay.hint = getString(R.string.add_expense_payer_hint)
                 payerAvatar.text = "?"
-                payerButton.text = getString(R.string.add_expense_payer_hint)
             }
         }
 
-        // --- Podział → aktualizacja wiersza + avatar stack ---
+        // --- Split → aktualizacja wiersza ---
 
         viewModel.expenseSplit.observe(viewLifecycleOwner) { split ->
-            val selectedParticipants = split.getSelectedParticipants()
-            val selectedCount = selectedParticipants.size
-
-            if (selectedCount > 0) {
-                val typeLabel = when (split.splitType) {
-                    SplitType.EQUAL -> "Po równo"
-                    SplitType.MANUAL -> "Ręcznie"
-                }
-                splitDisplay.text = "$typeLabel · $selectedCount os."
-                splitDisplay.hint = null
-                splitButton.text = "$selectedCount os."
-
-                // Buduj avatar stack
-                updateSplitAvatarStack(selectedParticipants)
+            val selected = split?.getSelectedParticipants() ?: emptyList()
+            if (selected.isNotEmpty()) {
+                splitDisplay.text = "${selected.size} osób"
+                updateSplitAvatars(selected)
             } else {
                 splitDisplay.text = null
-                splitDisplay.hint = "Kliknij aby ustawić podział"
-                splitButton.text = getString(R.string.add_expense_split_hint)
+                splitDisplay.hint = getString(R.string.add_expense_split_hint)
                 splitAvatarStack.removeAllViews()
             }
         }
 
-        // --- Eventy (identyczne jak w oryginale) ---
+        // --- Eventy ---
 
         viewModel.showCategoryPickerEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let {
@@ -560,70 +542,55 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
     }
 
     // ================================================================
-    // AVATAR STACK — dynamiczne tworzenie awatarów w wierszu podziału
+    // SPLIT AVATARS (mini awatary w wierszu podziału)
     // ================================================================
 
-    private fun updateSplitAvatarStack(participants: List<SplitParticipant>) {
+    private fun updateSplitAvatars(participants: List<SplitParticipant>) {
         splitAvatarStack.removeAllViews()
-
-        val avatarColors = intArrayOf(
-            ContextCompat.getColor(requireContext(), R.color.primary),
-            ContextCompat.getColor(requireContext(), R.color.category_food),
-            ContextCompat.getColor(requireContext(), R.color.category_transport),
-            ContextCompat.getColor(requireContext(), R.color.category_shopping),
-            ContextCompat.getColor(requireContext(), R.color.category_entertainment),
-            ContextCompat.getColor(requireContext(), R.color.category_other)
-        )
-
+        val maxAvatars = 4
         val density = resources.displayMetrics.density
-        val sizePx = (22 * density).toInt()
-        val overlapPx = (-6 * density).toInt()
-        val borderPx = (2 * density).toInt()
 
-        participants.take(5).forEachIndexed { index, participant ->
+        participants.take(maxAvatars).forEachIndexed { index, participant ->
             val avatar = TextView(requireContext()).apply {
-                layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
-                    if (index > 0) marginStart = overlapPx
-                }
-                gravity = Gravity.CENTER
-                textSize = 7f
+                text = participant.name.take(1).uppercase()
                 setTextColor(Color.WHITE)
+                textSize = 10f
                 typeface = Typeface.DEFAULT_BOLD
-                text = participant.name.take(2).uppercase()
+                gravity = Gravity.CENTER
 
-                background = GradientDrawable().apply {
+                val size = (24 * density).toInt()
+                val lp = LinearLayout.LayoutParams(size, size)
+                if (index > 0) lp.marginStart = (-6 * density).toInt()
+                layoutParams = lp
+
+                val bg = GradientDrawable().apply {
                     shape = GradientDrawable.OVAL
-                    setColor(avatarColors[index % avatarColors.size])
-                    setStroke(borderPx, Color.WHITE)
+                    setColor(ContextCompat.getColor(requireContext(), R.color.primary))
+                    setStroke((1.5 * density).toInt(), Color.WHITE)
                 }
+                background = bg
             }
             splitAvatarStack.addView(avatar)
         }
 
-        // Jeśli więcej niż 5 → pokaż "+N"
-        if (participants.size > 5) {
+        if (participants.size > maxAvatars) {
             val moreLabel = TextView(requireContext()).apply {
-                layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
-                    marginStart = overlapPx
-                }
-                gravity = Gravity.CENTER
-                textSize = 7f
+                text = "+${participants.size - maxAvatars}"
                 setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary))
-                typeface = Typeface.DEFAULT_BOLD
-                text = "+${participants.size - 5}"
-
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(ContextCompat.getColor(requireContext(), R.color.background))
-                    setStroke(borderPx, ContextCompat.getColor(requireContext(), R.color.divider))
-                }
+                textSize = 11f
+                val lp = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                lp.marginStart = (4 * density).toInt()
+                layoutParams = lp
             }
             splitAvatarStack.addView(moreLabel)
         }
     }
 
     // ================================================================
-    // DIALOGS / MODALS (identyczne jak oryginał)
+    // DIALOGS / MODALS
     // ================================================================
 
     private fun showCategoryPicker() {

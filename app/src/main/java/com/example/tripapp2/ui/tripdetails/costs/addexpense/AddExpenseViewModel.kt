@@ -44,6 +44,9 @@ class AddExpenseViewModel(
     private val _expenseSplit = MutableLiveData<ExpenseSplit>()
     val expenseSplit: LiveData<ExpenseSplit> = _expenseSplit
 
+    private val _tripCurrency = MutableLiveData<String>()
+    val tripCurrency: LiveData<String> = _tripCurrency
+
     private val _titleError = MutableLiveData<Int?>()
     val titleError: LiveData<Int?> = _titleError
 
@@ -88,7 +91,12 @@ class AddExpenseViewModel(
 
     private fun loadParticipants() {
         viewModelScope.launch {
+            CurrencyRepository.getInstance().ensureLoaded()
+
             val result = tripRepository.getTripDetails(tripId)
+            if (result != null) {
+                _tripCurrency.value = result.currency
+            }
             if (result?.participants != null) {
                 val splitParticipants = result.participants.map {
                     SplitParticipant(
@@ -198,7 +206,7 @@ class AddExpenseViewModel(
 
     private fun buildAddExpenseRequest(): AddExpenseRequest {
         val amount = _amount.value?.toFloatOrNull() ?: 0f
-        val currency = _currency.value ?: "PLN"
+        val currency = _currency.value ?: _tripCurrency.value ?: "PLN"
         val payerId = _selectedPayer.value ?: ""
         val split = _expenseSplit.value
 
@@ -232,11 +240,9 @@ class AddExpenseViewModel(
         }
     }
 
-
     private fun validateForm(): Boolean {
         var isValid = true
 
-        // ✅ ZMIANA: Bez .toString(), przekazujemy resource ID
         if (_title.value.isNullOrBlank()) {
             _titleError.value = R.string.error_title_required
             isValid = false
@@ -274,19 +280,21 @@ class AddExpenseViewModel(
 
         val split = _expenseSplit.value
         val amountFloat = _amount.value?.toFloatOrNull() ?: 0f
-        if (split == null || !split.isValid(amountFloat)) {
-            _splitError.value = when {
-                split == null -> R.string.error_split_required
-                split.getSelectedParticipants().isEmpty() -> R.string.error_split_no_participants
-                split.splitType == SplitType.MANUAL -> R.string.error_split_invalid
-                else -> R.string.error_split_required
-            }
+
+        if (split == null || split.getSelectedParticipants().isEmpty()) {
+            _splitError.value = R.string.error_split_required
+            isValid = false
+        } else if (!split.isValid(amountFloat)) {
+            _splitError.value = R.string.error_split_invalid
             isValid = false
         }
 
         return isValid
     }
 
+    /**
+     * Lista dostępnych walut z CurrencyRepository (cache/API)
+     */
     fun getCurrencies(): List<String> {
         return CurrencyRepository.getInstance().getCurrencies()
     }

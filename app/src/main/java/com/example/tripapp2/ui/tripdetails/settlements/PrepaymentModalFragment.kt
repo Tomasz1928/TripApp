@@ -26,6 +26,9 @@ import com.google.android.material.textfield.TextInputLayout
  * Z BaseModalFragment korzysta z: animacji, overlay click, back button.
  *
  * Logika biznesowa — BEZ ZMIAN.
+ *
+ * ZMIANA vs oryginał:
+ * - setupCurrencyDropdown() ujednolicony: R.layout.item_dropdown, threshold=1
  */
 class PrepaymentModalFragment : BaseModalFragment() {
 
@@ -120,15 +123,23 @@ class PrepaymentModalFragment : BaseModalFragment() {
         selectDirection(defaultDirection)
     }
 
+    // ================================================================
+    // CURRENCY DROPDOWN — ZMIENIONE (ujednolicone)
+    // ================================================================
+
     private fun setupCurrencyDropdown(model: PrepaymentUiModel) {
         val currencies = model.availableCurrencies
+        // ZMIANA: R.layout.item_dropdown zamiast android.R.layout.simple_dropdown_item_1line
         val adapter = ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
+            R.layout.item_dropdown,
             currencies
         )
         currencyDropdown.setAdapter(adapter)
+        // ZMIANA: Dodany threshold = 1 (autocomplete od pierwszego znaku)
+        currencyDropdown.threshold = 1
 
+        // Domyślna waluta = pierwsza na liście (= trip.currency)
         if (currencies.isNotEmpty()) {
             selectedCurrency = currencies.first()
             currencyDropdown.setText(selectedCurrency, false)
