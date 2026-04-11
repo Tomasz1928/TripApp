@@ -2,7 +2,6 @@ package com.example.tripapp2.ui.tripdetails.settlements
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -16,7 +15,8 @@ import com.example.tripapp2.ui.common.extension.show
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-
+import android.view.View
+import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
 /**
  * Fragment rozliczeń — Propozycja C: Floating Sections
  *
@@ -56,6 +56,7 @@ class TripSettlementsFragment : BaseFragment<TripSettlementsViewModel>(R.layout.
     private lateinit var balanceSummaryCard: MaterialCardView
 
     override fun setupUI() {
+        requireView().findViewById<View>(R.id.topBar).applyStatusBarInsets()
         initializeViews()
         setupClickListeners()
     }

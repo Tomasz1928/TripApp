@@ -12,6 +12,8 @@ import com.example.tripapp2.ui.common.baseModals.ConfirmModalFragment
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
+import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
+import android.view.View
 
 /**
  * Fragment ustawień — Propozycja C: Floating Sections
@@ -35,6 +37,7 @@ class OptionsFragment : BaseFragment<OptionsViewModel>(R.layout.fragment_options
 
     override fun setupUI() {
         val view = requireView()
+        view.findViewById<View>(R.id.topBar).applyStatusBarInsets()
         logoutCard = view.findViewById(R.id.logoutCard)
         userAvatar = view.findViewById(R.id.userAvatar)
         userName = view.findViewById(R.id.userName)

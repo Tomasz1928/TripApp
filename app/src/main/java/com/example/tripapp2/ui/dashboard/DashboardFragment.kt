@@ -10,6 +10,8 @@ import com.example.tripapp2.ui.common.base.NavigationCommand
 import com.example.tripapp2.ui.common.extension.hide
 import com.example.tripapp2.ui.common.extension.show
 import com.example.tripapp2.ui.dashboard.adapter.TripAdapter
+import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
+import android.view.View
 
 class DashboardFragment : BaseFragment<DashboardViewModel>(R.layout.fragment_dashboard) {
 
@@ -23,6 +25,7 @@ class DashboardFragment : BaseFragment<DashboardViewModel>(R.layout.fragment_das
     }
 
     override fun setupUI() {
+        requireView().findViewById<View>(R.id.topSection).applyStatusBarInsets()
         setupRecyclerView()
     }
 

@@ -12,8 +12,9 @@ import com.example.tripapp2.ui.common.extension.show
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.example.tripapp2.ui.tripdetails.costs.adapter.ExpenseAdapter
 import com.example.tripapp2.ui.tripdetails.modal.ExpenseDetailModalFragment
-import com.example.tripapp2.ui.tripdetails.participants.ParticipantUiModel
 import com.google.android.material.button.MaterialButton
+import android.view.View
+import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
 
 /**
  * Fragment kosztów wycieczki — Propozycja C: Floating Sections
@@ -45,6 +46,7 @@ class TripCostsFragment : BaseFragment<TripCostsViewModel>(R.layout.fragment_tri
     private lateinit var filterPaidByOthers: MaterialButton
 
     override fun setupUI() {
+        requireView().findViewById<View>(R.id.topBar).applyStatusBarInsets()
         initializeViews()
         setupAdapter()
         setupFilters()

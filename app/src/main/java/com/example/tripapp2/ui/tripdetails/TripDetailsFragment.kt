@@ -1,8 +1,5 @@
 package com.example.tripapp2.ui.tripdetails
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -15,6 +12,7 @@ import com.example.tripapp2.ui.common.base.NavigationCommand
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.example.tripapp2.ui.tripdetails.modal.ExpensesListModalFragment
 import com.google.android.material.card.MaterialCardView
+import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
 
 /**
  * Fragment szczegółów wycieczki — Propozycja C: Floating Sections
@@ -58,6 +56,7 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
     private lateinit var settlementsCard: MaterialCardView
 
     override fun setupUI() {
+        requireView().findViewById<View>(R.id.topBar).applyStatusBarInsets()
         initializeViews()
         setupClickListeners()
     }

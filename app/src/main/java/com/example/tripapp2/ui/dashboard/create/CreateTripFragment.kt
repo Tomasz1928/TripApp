@@ -14,6 +14,7 @@ import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
 
 class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.fragment_create_trip) {
 
@@ -38,6 +39,7 @@ class CreateTripFragment : KeyboardAwareFragment<CreateTripViewModel>(R.layout.f
     }
 
     override fun setupUI() {
+        requireView().findViewById<View>(R.id.topBar).applyStatusBarInsets()
         initializeViews()
         setupCurrencyDropdown()
         setupInputListeners()

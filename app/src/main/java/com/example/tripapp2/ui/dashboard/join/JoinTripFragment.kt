@@ -1,6 +1,4 @@
 package com.example.tripapp2.ui.dashboard.join
-
-import android.view.View
 import android.widget.Button
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
@@ -10,6 +8,8 @@ import com.example.tripapp2.ui.common.base.NavigationCommand
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import android.view.View
+import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
 
 class JoinTripFragment : KeyboardAwareFragment<JoinTripViewModel>(R.layout.fragment_join_trip) {
 
@@ -25,6 +25,7 @@ class JoinTripFragment : KeyboardAwareFragment<JoinTripViewModel>(R.layout.fragm
     }
 
     override fun setupUI() {
+        requireView().findViewById<View>(R.id.topBar).applyStatusBarInsets()
         initializeViews()
         setupInputListeners()
     }

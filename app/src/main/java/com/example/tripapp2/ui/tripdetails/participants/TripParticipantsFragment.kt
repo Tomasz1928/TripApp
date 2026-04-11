@@ -4,7 +4,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
-import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.viewModels
@@ -18,6 +17,8 @@ import com.example.tripapp2.ui.common.widget.AvatarStackHelper
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import android.view.View
+import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
 
 /**
  * Fragment listy uczestników — Propozycja C: Floating Sections
@@ -57,6 +58,7 @@ class TripParticipantsFragment : BaseFragment<TripParticipantsViewModel>(R.layou
     private lateinit var actionDelete: MaterialButton
 
     override fun setupUI() {
+        requireView().findViewById<View>(R.id.topBar).applyStatusBarInsets()
         initializeViews()
         setupActions()
         setupBottomPadding()
