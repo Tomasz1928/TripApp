@@ -19,6 +19,13 @@ class AddExpenseViewModel(
     private val tripRepository: TripRepository = TripRepository.getInstance()
 ) : BaseViewModel() {
 
+    // ==========================================
+    // NOWE: currentUserId (myParticipantId)
+    // ==========================================
+    private var currentUserId: String = ""
+
+    fun getCurrentUserId(): String = currentUserId
+
     // Pola formularza
     private val _title = MutableLiveData<String>()
     val title: LiveData<String> = _title
@@ -43,6 +50,9 @@ class AddExpenseViewModel(
 
     private val _expenseSplit = MutableLiveData<ExpenseSplit>()
     val expenseSplit: LiveData<ExpenseSplit> = _expenseSplit
+
+    private val _tripCurrency = MutableLiveData<String>()
+    val tripCurrency: LiveData<String> = _tripCurrency
 
     private val _titleError = MutableLiveData<Int?>()
     val titleError: LiveData<Int?> = _titleError
@@ -86,10 +96,26 @@ class AddExpenseViewModel(
         loadParticipants()
     }
 
+    // ==========================================
+    // ZMIENIONE: loadParticipants
+    // - zapisuje currentUserId (myParticipantId)
+    // - domyślnie ustawia siebie jako płatnika
+    // ==========================================
     private fun loadParticipants() {
         viewModelScope.launch {
             val result = tripRepository.getTripDetails(tripId)
             if (result?.participants != null) {
+                // NOWE: zapisz myParticipantId
+                currentUserId = result.myParticipantId.toString()
+
+                // NOWE: zapisz walutę tripu
+                _tripCurrency.value = result.currency
+
+                // NOWE: domyślnie ustaw siebie jako płatnika
+                if (_selectedPayer.value == null) {
+                    _selectedPayer.value = currentUserId
+                }
+
                 val splitParticipants = result.participants.map {
                     SplitParticipant(
                         id = it.id,
@@ -217,49 +243,48 @@ class AddExpenseViewModel(
     }
 
     private fun buildSharedWithList(split: ExpenseSplit): List<ShareRequest> {
-        return split.getSelectedParticipants().map { participant ->
-            ShareRequest(
-                participantId = participant.id,
-                participantNickname = participant.name,
-                splitValue = listOf(
-                    SimpleMoneyValueDto(
-                        isMainCurrency = true,
-                        currency = _currency.value ?: "",
-                        amount = participant.amount
+        val currency = _currency.value ?: "PLN"
+        return split.participants
+            .filter { it.isSelected }
+            .map { participant ->
+                ShareRequest(
+                    participantId = participant.id,
+                    participantNickname = participant.name,
+                    splitValue = listOf(
+                        SimpleMoneyValueDto(
+                            isMainCurrency = false,
+                            currency = currency,
+                            amount = participant.amount
+                        )
                     )
                 )
-            )
-        }
+            }
     }
 
+    fun getCurrencies(): List<String> {
+        return CurrencyRepository.getInstance().getCurrencies()
+    }
 
     private fun validateForm(): Boolean {
         var isValid = true
 
-        // ✅ ZMIANA: Bez .toString(), przekazujemy resource ID
         if (_title.value.isNullOrBlank()) {
             _titleError.value = R.string.error_title_required
             isValid = false
-        } else if (_title.value!!.length > 40) {
+        } else if ((_title.value?.length ?: 0) > 40) {
             _titleError.value = R.string.error_title_too_long
+            isValid = false
+        }
+
+        val amount = _amount.value?.toFloatOrNull()
+        if (amount == null || amount <= 0) {
+            _amountError.value = R.string.error_amount_required
             isValid = false
         }
 
         if (_selectedCategory.value == null) {
             _categoryError.value = R.string.error_category_required
             isValid = false
-        }
-
-        val amountStr = _amount.value
-        if (amountStr.isNullOrBlank()) {
-            _amountError.value = R.string.error_amount_required
-            isValid = false
-        } else {
-            val amountFloat = amountStr.toFloatOrNull()
-            if (amountFloat == null || amountFloat <= 0) {
-                _amountError.value = R.string.error_amount_invalid
-                isValid = false
-            }
         }
 
         if (_dateTime.value == null) {
@@ -273,21 +298,14 @@ class AddExpenseViewModel(
         }
 
         val split = _expenseSplit.value
-        val amountFloat = _amount.value?.toFloatOrNull() ?: 0f
-        if (split == null || !split.isValid(amountFloat)) {
-            _splitError.value = when {
-                split == null -> R.string.error_split_required
-                split.getSelectedParticipants().isEmpty() -> R.string.error_split_no_participants
-                split.splitType == SplitType.MANUAL -> R.string.error_split_invalid
-                else -> R.string.error_split_required
-            }
+        if (split == null || split.getSelectedParticipants().isEmpty()) {
+            _splitError.value = R.string.error_split_required
+            isValid = false
+        } else if (amount != null && !split.isValid(amount)) {
+            _splitError.value = R.string.error_split_amount_mismatch
             isValid = false
         }
 
         return isValid
-    }
-
-    fun getCurrencies(): List<String> {
-        return CurrencyRepository.getInstance().getCurrencies()
     }
 }

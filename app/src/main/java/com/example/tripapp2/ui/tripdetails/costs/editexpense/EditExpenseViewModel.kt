@@ -10,6 +10,7 @@ import com.example.tripapp2.data.model.UpdateExpenseRequest
 import com.example.tripapp2.data.model.mainCurrencyAmount
 import com.example.tripapp2.data.model.notMainCurrencyAmount
 import com.example.tripapp2.data.repository.TripRepository
+import com.example.tripapp2.data.repository.CurrencyRepository
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.ExpenseCategories
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitParticipant
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitType
@@ -23,16 +24,20 @@ import java.util.Calendar
 /**
  * ViewModel dla edycji wydatku
  *
- * Różnice od AddExpenseViewModel:
- * - Ładuje istniejący wydatek i pre-populuje pola
- * - Wywołuje updateExpense zamiast addExpense
- * - Emituje expenseUpdatedEvent zamiast expenseAddedEvent
+ * ZMIENIONE: dodano getCurrentUserId() dla PayerSplitModalFragment
  */
 class EditExpenseViewModel(
     private val tripId: String,
     private val expenseId: String,
     private val tripRepository: TripRepository = TripRepository.getInstance()
 ) : BaseViewModel() {
+
+    // ==========================================
+    // NOWE: currentUserId (myParticipantId)
+    // ==========================================
+    private var currentUserId: String = ""
+
+    fun getCurrentUserId(): String = currentUserId
 
     // Pola formularza
     private val _title = MutableLiveData<String>()
@@ -108,6 +113,7 @@ class EditExpenseViewModel(
 
     /**
      * Ładuje dane wydatku i uczestników
+     * ZMIENIONE: zapisuje currentUserId
      */
     private fun loadExpenseData() {
         viewModelScope.launch {
@@ -120,6 +126,9 @@ class EditExpenseViewModel(
                 setLoading(false)
                 return@launch
             }
+
+            // NOWE: zapisz myParticipantId
+            currentUserId = trip.myParticipantId.toString()
 
             val expense = trip.expenses.find { it.id == expenseId }
 
@@ -147,22 +156,20 @@ class EditExpenseViewModel(
             _amount.value = expense.amount.toString()
             _currency.value = expense.currency
             _selectedPayer.value = expense.payerId
+            _dateTime.value = expense.date to expense.date
 
             // Kategoria
             val category = ExpenseCategories.getById(expense.categoryId)
             _selectedCategory.value = category
 
-            // Data i czas
-            _dateTime.value = expense.date to expense.date
-
-            // Podział kosztów
+            // Split
             _expenseSplit.value = ExpenseSplit(
-                splitType = SplitType.MANUAL,
+                splitType = SplitType.MANUAL, // Edycja zawsze zaczyna jako manual (zachowane kwoty)
                 participants = splitParticipants
             )
 
-            _dataLoaded.value = true
             setLoading(false)
+            _dataLoaded.value = true
         }
     }
 
@@ -280,19 +287,26 @@ class EditExpenseViewModel(
     }
 
     private fun buildSharedWithList(split: ExpenseSplit): List<ShareRequest> {
-        return split.getSelectedParticipants().map { participant ->
-            ShareRequest(
-                participantId = participant.id,
-                participantNickname = participant.name,
-                splitValue = listOf(
-                    SimpleMoneyValueDto(
-                        isMainCurrency = true,
-                        currency = _currency.value ?: "",
-                        amount = participant.amount
+        val currency = _currency.value ?: "PLN"
+        return split.participants
+            .filter { it.isSelected }
+            .map { participant ->
+                ShareRequest(
+                    participantId = participant.id,
+                    participantNickname = participant.name,
+                    splitValue = listOf(
+                        SimpleMoneyValueDto(
+                            isMainCurrency = false,
+                            currency = currency,
+                            amount = participant.amount
+                        )
                     )
                 )
-            )
-        }
+            }
+    }
+
+    fun getCurrencies(): List<String> {
+        return CurrencyRepository.getInstance().getCurrencies()
     }
 
     private fun validateForm(): Boolean {
@@ -301,26 +315,20 @@ class EditExpenseViewModel(
         if (_title.value.isNullOrBlank()) {
             _titleError.value = R.string.error_title_required
             isValid = false
-        } else if (_title.value!!.length > 40) {
+        } else if ((_title.value?.length ?: 0) > 40) {
             _titleError.value = R.string.error_title_too_long
+            isValid = false
+        }
+
+        val amount = _amount.value?.toFloatOrNull()
+        if (amount == null || amount <= 0) {
+            _amountError.value = R.string.error_amount_required
             isValid = false
         }
 
         if (_selectedCategory.value == null) {
             _categoryError.value = R.string.error_category_required
             isValid = false
-        }
-
-        val amountStr = _amount.value
-        if (amountStr.isNullOrBlank()) {
-            _amountError.value = R.string.error_amount_required
-            isValid = false
-        } else {
-            val amountFloat = amountStr.toFloatOrNull()
-            if (amountFloat == null || amountFloat <= 0) {
-                _amountError.value = R.string.error_amount_invalid
-                isValid = false
-            }
         }
 
         if (_dateTime.value == null) {
@@ -334,13 +342,11 @@ class EditExpenseViewModel(
         }
 
         val split = _expenseSplit.value
-        val amountFloat = _amount.value?.toFloatOrNull() ?: 0f
-
         if (split == null || split.getSelectedParticipants().isEmpty()) {
             _splitError.value = R.string.error_split_required
             isValid = false
-        } else if (!split.isValid(amountFloat)) {
-            _splitError.value = R.string.error_split_invalid
+        } else if (amount != null && !split.isValid(amount)) {
+            _splitError.value = R.string.error_split_amount_mismatch
             isValid = false
         }
 

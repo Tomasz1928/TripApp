@@ -3,6 +3,10 @@
     Prepayment Body — wydzielona treść z modal_prepayment.xml
     (usunięto CardView + header + separator — te są teraz w BaseModalFragment)
     Owrapowane w ScrollView bo formularz może być długi.
+
+    ZMIANA vs oryginał:
+    - currencyInputLayout: style InputLayout + endIconMode="dropdown_menu"
+    - currencyDropdown: style InputEditText.Dropdown + inputType="text" (dla autocomplete)
 -->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -56,40 +60,45 @@
                 android:id="@+id/currentBalance"
                 style="@style/Text.Body.Bold"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_tiny"
-                android:textColor="@color/success"/>
+                android:layout_height="wrap_content"/>
         </LinearLayout>
 
         <!-- Separator -->
         <View
-            style="@style/Divider"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/divider"
             android:layout_marginVertical="@dimen/spacing_medium"/>
 
-        <!-- Kierunek: Pieniądze trafiają do mnie -->
+        <!-- Kierunek: Do mnie -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/directionToMeCard"
-            style="@style/Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_small"
-            app:strokeWidth="2dp"
-            app:strokeColor="@color/divider"
+            android:layout_marginBottom="@dimen/spacing_small"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="?attr/selectableItemBackground">
+            app:cardCornerRadius="@dimen/corner_radius_medium"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/divider"
+            app:strokeWidth="2dp"
+            app:cardBackgroundColor="@color/surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="@dimen/padding_tiny"
+                android:padding="@dimen/padding_small"
                 android:gravity="center_vertical">
 
                 <RadioButton
                     android:id="@+id/directionToMeRadio"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/primary"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:contentDescription="@string/settlements_prepayment_to_me"/>
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -115,34 +124,39 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_arrow_downward"
-                    app:tint="@color/success"/>
+                    app:tint="@color/success"
+                    android:contentDescription="@string/settlements_prepayment_to_me"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Kierunek: Ja daję pieniądze -->
+        <!-- Kierunek: Ode mnie -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/directionFromMeCard"
-            style="@style/Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_small"
-            app:strokeWidth="2dp"
-            app:strokeColor="@color/divider"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="?attr/selectableItemBackground">
+            app:cardCornerRadius="@dimen/corner_radius_medium"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/divider"
+            app:strokeWidth="2dp"
+            app:cardBackgroundColor="@color/surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="@dimen/padding_tiny"
+                android:padding="@dimen/padding_small"
                 android:gravity="center_vertical">
 
                 <RadioButton
                     android:id="@+id/directionFromMeRadio"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:buttonTint="@color/primary"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:contentDescription="@string/settlements_prepayment_from_me"/>
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -168,7 +182,8 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_arrow_upward"
-                    app:tint="@color/error"/>
+                    app:tint="@color/error"
+                    android:contentDescription="@string/settlements_prepayment_from_me"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -198,20 +213,23 @@
                     android:maxLines="1"/>
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- ZMIANA: style InputLayout + endIconMode + InputEditText.Dropdown + inputType="text" -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/currencyInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                style="@style/InputLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="4"
-                android:hint="@string/settlements_prepayment_currency_hint">
+                android:hint="@string/settlements_prepayment_currency_hint"
+                app:endIconMode="dropdown_menu">
 
                 <AutoCompleteTextView
                     android:id="@+id/currencyDropdown"
+                    style="@style/InputEditText.Dropdown"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:padding="@dimen/padding_medium"/>
+                    android:inputType="text"
+                    android:maxLines="1"/>
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 

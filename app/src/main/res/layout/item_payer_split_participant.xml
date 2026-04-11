@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Item Split Participant v2 — wiersz uczestnika w podziale kosztów.
+    Zastępuje item_split_participant.xml.
+
+    Struktura: [CheckBox] [Avatar] [Imię + badge (ty)] [Kwota read-only lub EditText]
+    Użytkownik "ja" ma wyróżniony awatar (niebieska ramka).
+    Niezaznaczeni są wygaszeni (opacity).
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="8dp"
+    android:paddingHorizontal="@dimen/padding_small"
+    android:minHeight="48dp">
+
+    <!-- Checkbox -->
+    <CheckBox
+        android:id="@+id/participantCheckbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:minHeight="0dp"/>
+
+    <!-- Avatar kółko z inicjałami -->
+    <TextView
+        android:id="@+id/participantAvatar"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:gravity="center"
+        android:textSize="@dimen/text_size_tiny"
+        android:textColor="@color/primary"
+        android:textStyle="bold"
+        android:background="@drawable/bg_avatar_circle"
+        android:layout_marginStart="@dimen/spacing_small"
+        tools:text="MK"/>
+
+    <!-- Imię -->
+    <TextView
+        android:id="@+id/participantName"
+        style="@style/Text.Body"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="@dimen/spacing_small"
+        android:textStyle="bold"
+        android:ellipsize="end"
+        android:maxLines="1"
+        tools:text="Marek (ty)"/>
+
+    <!-- Kwota (read-only, tryb "po równo") -->
+    <TextView
+        android:id="@+id/participantAmountLabel"
+        style="@style/Text.Body"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_secondary"
+        android:visibility="gone"
+        tools:text="50.00"/>
+
+    <!-- Kwota (editable, tryb "ręcznie") -->
+    <EditText
+        android:id="@+id/participantAmountInput"
+        android:layout_width="80dp"
+        android:layout_height="36dp"
+        android:hint="0.00"
+        android:inputType="numberDecimal"
+        android:gravity="end|center_vertical"
+        android:visibility="gone"
+        android:background="@drawable/bg_input_outlined"
+        android:paddingHorizontal="@dimen/padding_small"
+        android:textSize="@dimen/text_size_body"
+        android:textColor="@color/text_primary"
+        android:importantForAutofill="no"/>
+
+</LinearLayout>

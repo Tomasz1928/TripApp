@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    PayerSplitModal Body — połączony modal: Kto płacił + Podział kosztów.
+    Zastępuje osobne modale: ListPickerModalFragment (payer) + SplitExpenseModalFragment (split).
+    Używana przez PayerSplitModalFragment.onCreateBodyView().
+
+    Struktura:
+    1. Kwota wydatku (label na górze)
+    2. Kto płacił? — dropdown z autocomplete (domyślnie: ja)
+    3. Podział kosztów — toggle po równo/ręcznie + scrollowalna lista checkboxów
+    4. Pasek sumy + przycisk Zapisz
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- ================================== -->
+    <!-- KWOTA WYDATKU                      -->
+    <!-- ================================== -->
+    <TextView
+        android:id="@+id/totalExpenseLabel"
+        style="@style/Text.Body.Bold"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/success"
+        tools:text="Kwota: 150.00 PLN"/>
+
+    <!-- ================================== -->
+    <!-- SEKCJA: KTO PŁACIŁ?               -->
+    <!-- ================================== -->
+    <TextView
+        style="@style/Text.Caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:text="@string/payer_split_payer_label"
+        android:textColor="@color/text_hint"
+        android:textAllCaps="true"
+        android:letterSpacing="0.05"/>
+
+    <!-- Dropdown payer — klikalne pole z wybranym uczestnikiem -->
+    <LinearLayout
+        android:id="@+id/payerDropdownField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="@dimen/padding_small"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:background="@drawable/bg_input_outlined"
+        android:clickable="true"
+        android:focusable="true">
+
+        <!-- Awatar wybranego płatnika -->
+        <TextView
+            android:id="@+id/payerSelectedAvatar"
+            android:layout_width="@dimen/icon_size_large"
+            android:layout_height="@dimen/icon_size_large"
+            android:gravity="center"
+            android:textSize="@dimen/text_size_caption"
+            android:textColor="@color/primary"
+            android:textStyle="bold"
+            android:background="@drawable/bg_avatar_circle"
+            tools:text="TY"/>
+
+        <!-- Imię wybranego płatnika -->
+        <TextView
+            android:id="@+id/payerSelectedName"
+            style="@style/Text.Body"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_small"
+            android:textStyle="bold"
+            tools:text="Marek (ty)"/>
+
+        <!-- Chevron -->
+        <ImageView
+            android:id="@+id/payerDropdownChevron"
+            android:layout_width="@dimen/icon_size_small"
+            android:layout_height="@dimen/icon_size_small"
+            android:src="@drawable/ic_chevron_down"
+            android:contentDescription="@null"/>
+    </LinearLayout>
+
+    <!-- Rozwijana lista payer (domyślnie GONE) -->
+    <LinearLayout
+        android:id="@+id/payerDropdownList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="@dimen/spacing_tiny"
+        android:background="@drawable/bg_input_outlined"
+        android:visibility="gone">
+
+        <!-- Pole szukania -->
+        <EditText
+            android:id="@+id/payerSearchInput"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:hint="@string/payer_split_search_hint"
+            android:textSize="@dimen/text_size_body"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:background="@color/background"
+            android:paddingHorizontal="@dimen/padding_medium"
+            android:inputType="textPersonName"
+            android:importantForAutofill="no"
+            android:singleLine="true"
+            android:maxLines="1"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/divider"/>
+
+        <!-- Kontener na filtrowane wyniki -->
+        <ScrollView
+            android:id="@+id/payerResultsScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/payerResultsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+        </ScrollView>
+    </LinearLayout>
+
+    <!-- ================================== -->
+    <!-- SEPARATOR                          -->
+    <!-- ================================== -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/divider"
+        android:layout_marginTop="@dimen/spacing_medium"/>
+
+    <!-- ================================== -->
+    <!-- SEKCJA: PODZIAŁ KOSZTÓW            -->
+    <!-- ================================== -->
+
+    <!-- Header: label + Wszyscy | Nikt -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/spacing_medium">
+
+        <TextView
+            style="@style/Text.Caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/payer_split_split_label"
+            android:textColor="@color/text_hint"
+            android:textAllCaps="true"
+            android:letterSpacing="0.05"/>
+
+        <TextView
+            android:id="@+id/selectAllButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/payer_split_select_all"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/primary"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingHorizontal="@dimen/padding_tiny"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="|"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/text_hint"
+            android:paddingHorizontal="@dimen/padding_tiny"/>
+
+        <TextView
+            android:id="@+id/selectNoneButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/payer_split_select_none"
+            android:textSize="@dimen/text_size_small"
+            android:textColor="@color/primary"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingHorizontal="@dimen/padding_tiny"/>
+    </LinearLayout>
+
+    <!-- Toggle: Po równo / Ręcznie -->
+    <LinearLayout
+        android:id="@+id/splitToggleContainer"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:background="@drawable/bg_toggle_container"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:padding="3dp">
+
+        <TextView
+            android:id="@+id/toggleEqual"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/split_type_equal"
+            android:textSize="@dimen/text_size_small"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:background="@drawable/bg_toggle_active"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <TextView
+            android:id="@+id/toggleManual"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/split_type_manual"
+            android:textSize="@dimen/text_size_small"
+            android:textStyle="bold"
+            android:textColor="@color/text_hint"
+            android:clickable="true"
+            android:focusable="true"/>
+    </LinearLayout>
+
+    <!-- Lista uczestników (scrollowalna, max 5 widocznych) -->
+    <ScrollView
+        android:id="@+id/splitParticipantsScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false">
+
+        <LinearLayout
+            android:id="@+id/splitParticipantsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+    </ScrollView>
+
+    <!-- ================================== -->
+    <!-- PASEK SUMY + ZAPISZ               -->
+    <!-- ================================== -->
+
+    <!-- Suma i różnica -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:paddingTop="@dimen/spacing_small">
+
+        <TextView
+            android:id="@+id/totalLabel"
+            style="@style/Text.Caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/text_secondary"
+            tools:text="Suma: 150.00"/>
+
+        <TextView
+            android:id="@+id/differenceLabel"
+            style="@style/Text.Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/success"
+            tools:text="Różnica: 0.00"/>
+    </LinearLayout>
+
+    <!-- Przycisk zapisu -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/saveButton"
+        style="@style/Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:text="@string/split_save_button"/>
+
+</LinearLayout>

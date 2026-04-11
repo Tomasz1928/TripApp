@@ -207,7 +207,7 @@
     <string name="trip_details_your_expenses">Twoje wydatki</string>
     <string name="trip_details_date">Termin</string>
     <string name="trip_details_access_code">Kod dostępu</string>
-    <string name="trip_details_total_expenses_label">TWOJE WYDATKI</string>
+    <string name="trip_details_total_expenses_label">CAŁKOWITE WYDATKI</string>
     <string name="trip_details_date_label">TERMIN</string>
     <string name="trip_details_access_code_label">KOD DOSTĘPU</string>
     <string name="error_trip_details_load_failed">Nie udało się załadować szczegółów wycieczki</string>
@@ -554,7 +554,17 @@
     <string name="copied_to_clipboard">Skopiowano do schowka</string>
     <string name="access_code_copied">Skopiowano kod dostępu</string>
 
+    <!-- ========================================= -->
+    <!-- PAYER + SPLIT MODAL (połączony)           -->
+    <!-- ========================================= -->
 
+    <string name="payer_split_modal_title">Kto płacił i podział</string>
+    <string name="payer_split_payer_label">Kto płacił?</string>
+    <string name="payer_split_split_label">Podział kosztów</string>
+    <string name="payer_split_search_hint">Szukaj uczestnika…</string>
+    <string name="payer_split_select_all">Wszyscy</string>
+    <string name="payer_split_select_none">Nikt</string>
+    <string name="payer_split_me_badge">(ty)</string>
 
     <!-- ========================================= -->
     <!-- PARTICIPANTS ACTION BAR -->
@@ -563,7 +573,7 @@
     <string name="participants_action_all">Wszyscy uczestnicy</string>
     <string name="participants_action_add">Dodaj uczestnika</string>
     <string name="participants_action_detach">Odłącz konto</string>
-    <string name="participants_action_delete">Usuń placeholdera</string>
+    <string name="participants_action_delete">Usuń Oczekującego</string>
 
     <!-- ========================================= -->
     <!-- PARTICIPANTS EMPTY STATES -->
