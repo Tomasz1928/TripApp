@@ -554,7 +554,17 @@
     <string name="copied_to_clipboard">Skopiowano do schowka</string>
     <string name="access_code_copied">Skopiowano kod dostępu</string>
 
+    <!-- ========================================= -->
+    <!-- PAYER + SPLIT MODAL (połączony)           -->
+    <!-- ========================================= -->
 
+    <string name="payer_split_modal_title">Kto płacił i podział</string>
+    <string name="payer_split_payer_label">Kto płacił?</string>
+    <string name="payer_split_split_label">Podział kosztów</string>
+    <string name="payer_split_search_hint">Szukaj uczestnika…</string>
+    <string name="payer_split_select_all">Wszyscy</string>
+    <string name="payer_split_select_none">Nikt</string>
+    <string name="payer_split_me_badge">(ty)</string>
 
     <!-- ========================================= -->
     <!-- PARTICIPANTS ACTION BAR -->

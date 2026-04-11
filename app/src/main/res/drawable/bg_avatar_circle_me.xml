@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    bg_avatar_circle_me — awatar "ja" z niebieską ramką.
+    Wyróżnia bieżącego użytkownika w listach uczestników.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#E6F0FD"/>
+    <stroke
+        android:width="2dp"
+        android:color="@color/primary"/>
+    <size
+        android:width="32dp"
+        android:height="32dp"/>
+</shape>

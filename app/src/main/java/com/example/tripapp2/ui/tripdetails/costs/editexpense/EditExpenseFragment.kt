@@ -20,6 +20,7 @@ import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitParticipant
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitType
 import com.example.tripapp2.ui.common.KeyboardAwareFragment
 import com.example.tripapp2.ui.dashboard.DashboardActivity
+import com.example.tripapp2.ui.tripdetails.costs.addexpense.PayerSplitModalFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -267,7 +268,7 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
     // ================================================================
 
     private fun setupRowClickListeners() {
-        // Row 1: Tytuł + Opis → BottomSheet z inputami
+        // Row 1: Tytuł + Opis → BottomSheet
         rowTitle.setOnClickListener {
             showTitleInputBottomSheet()
         }
@@ -282,14 +283,18 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
             viewModel.onDateFieldClicked()
         }
 
-        // Row 4: Kto płacił → NIEEDYTOWALNY (nie podpinamy click listenera)
-        // rowPayer jest clickable=false w XML
+        // ZMIENIONE: Row 4 jest teraz klikalne → PayerSplitModal
+        rowPayer.isClickable = true
+        rowPayer.isFocusable = true
+        rowPayer.setOnClickListener {
+            showPayerSplitModal()
+        }
 
-        // Row 5: Podział → edytowalny (kwota może się zmienić, więc podział też)
+        // Row 5: Podział → PayerSplitModal (ten sam modal)
         rowSplit.isClickable = true
         rowSplit.isFocusable = true
         rowSplit.setOnClickListener {
-            viewModel.onSplitFieldClicked()
+            showPayerSplitModal()
         }
     }
 
@@ -539,7 +544,7 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
 
         viewModel.showSplitModalEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { split ->
-                showSplitModal(split)
+                showPayerSplitModal()
             }
         }
 
@@ -631,7 +636,7 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
     }
 
     // ================================================================
-    // DIALOGS / MODALS
+    // DIALOGS / MODALS — ZMIENIONE
     // ================================================================
 
     private fun showCategoryPicker() {
@@ -673,7 +678,8 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
         picker.show(parentFragmentManager, "TIME_PICKER")
     }
 
-    private fun showSplitModal(split: ExpenseSplit) {
+    private fun showPayerSplitModal() {
+        val split = viewModel.expenseSplit.value ?: return
         val amount = viewModel.amount.value?.toFloatOrNull() ?: 0f
 
         if (amount <= 0) {
@@ -681,10 +687,26 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
             return
         }
 
-        val modal = SplitExpenseModalFragment.newInstance(split, amount) { updatedSplit ->
-            viewModel.onExpenseSplitUpdated(updatedSplit)
+        val participants = viewModel.participants.value ?: emptyList()
+        if (participants.isEmpty()) {
+            showMessage(getString(R.string.error_no_participants))
+            return
         }
-        modal.show(parentFragmentManager, "SPLIT_MODAL")
+
+        val currentUserId = viewModel.getCurrentUserId()
+        val currentPayerId = viewModel.selectedPayer.value
+
+        val modal = PayerSplitModalFragment.newInstance(
+            split = split,
+            totalAmount = amount,
+            currentUserId = currentUserId,
+            selectedPayerId = currentPayerId,
+            onResult = { payerId, updatedSplit ->
+                viewModel.onPayerSelected(payerId)
+                viewModel.onExpenseSplitUpdated(updatedSplit)
+            }
+        )
+        modal.show(parentFragmentManager, "PAYER_SPLIT_MODAL")
     }
 
     // ================================================================

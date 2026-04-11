@@ -263,7 +263,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
             showTitleInputBottomSheet()
         }
 
-        // Row 2: Kategoria → CategoryPicker (jak w oryginalnym kodzie)
+        // Row 2: Kategoria → CategoryPicker
         rowCategory.setOnClickListener {
             viewModel.onCategoryFieldClicked()
         }
@@ -273,14 +273,15 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
             viewModel.onDateFieldClicked()
         }
 
-        // Row 4: Kto płacił → PayerModal
+        // ZMIENIONE: Row 4 i Row 5 otwierają ten sam połączony modal
+        // Row 4: Kto płacił → PayerSplitModal
         rowPayer.setOnClickListener {
-            showPayerModal()
+            showPayerSplitModal()
         }
 
-        // Row 5: Podział → SplitModal
+        // Row 5: Podział kosztów → PayerSplitModal
         rowSplit.setOnClickListener {
-            viewModel.onSplitFieldClicked()
+            showPayerSplitModal()
         }
     }
 
@@ -523,7 +524,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
 
         viewModel.showSplitModalEvent.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { split ->
-                showSplitModal(split)
+                showPayerSplitModal()
             }
         }
 
@@ -590,7 +591,7 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
     }
 
     // ================================================================
-    // DIALOGS / MODALS
+    // DIALOGS / MODALS — ZMIENIONE
     // ================================================================
 
     private fun showCategoryPicker() {
@@ -628,7 +629,8 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
         picker.show(parentFragmentManager, "TIME_PICKER")
     }
 
-    private fun showSplitModal(split: ExpenseSplit) {
+    private fun showPayerSplitModal() {
+        val split = viewModel.expenseSplit.value ?: return
         val amount = amountInput.text.toString().toFloatOrNull() ?: 0f
 
         if (amount <= 0) {
@@ -636,27 +638,26 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
             return
         }
 
-        val modal = SplitExpenseModalFragment.newInstance(split, amount) { updatedSplit ->
-            viewModel.onExpenseSplitUpdated(updatedSplit)
-        }
-        modal.show(parentFragmentManager, "SPLIT_MODAL")
-    }
-
-    private fun showPayerModal() {
         val participants = viewModel.participants.value ?: emptyList()
         if (participants.isEmpty()) {
             showMessage(getString(R.string.error_no_participants))
             return
         }
 
-        ListPickerModalFragment.newInstance(
-            title = getString(R.string.add_expense_payer_hint),
-            items = participants.map { it.name },
-            onItemSelected = { index ->
-                val selected = participants[index]
-                viewModel.onPayerSelected(selected.id)
+        val currentUserId = viewModel.getCurrentUserId()
+        val currentPayerId = viewModel.selectedPayer.value
+
+        val modal = PayerSplitModalFragment.newInstance(
+            split = split,
+            totalAmount = amount,
+            currentUserId = currentUserId,
+            selectedPayerId = currentPayerId,
+            onResult = { payerId, updatedSplit ->
+                viewModel.onPayerSelected(payerId)
+                viewModel.onExpenseSplitUpdated(updatedSplit)
             }
-        ).show(parentFragmentManager, "payer_picker")
+        )
+        modal.show(parentFragmentManager, "PAYER_SPLIT_MODAL")
     }
 
     // ================================================================
