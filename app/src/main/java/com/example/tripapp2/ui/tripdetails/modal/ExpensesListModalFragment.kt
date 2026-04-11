@@ -14,23 +14,34 @@ import com.example.tripapp2.ui.tripdetails.CurrencyExpenseUiModel
  * Modal z listą wydatków w różnych walutach.
  * ZMIGOWANY na BaseModalFragment — usunięto zduplikowany boilerplate.
  *
- * Logika biznesowa (createExpensesBody) bez zmian.
+ * ZMIENIONE: Dodano parametr `title` aby rozróżnić modal
+ * "Łączne wydatki" od "Moje koszty".
  */
 class ExpensesListModalFragment : BaseModalFragment() {
 
     private var expenses: List<CurrencyExpenseUiModel>? = null
+    private var customTitle: String? = null
 
     companion object {
-        fun newInstance(expenses: List<CurrencyExpenseUiModel>): ExpensesListModalFragment {
+        /**
+         * ZMIENIONE: Dodano opcjonalny parametr title.
+         * - "Łączne wydatki" → modal z WSZYSTKIMI kosztami wycieczki
+         * - "Moje koszty" → modal z kosztami zalogowanego użytkownika
+         */
+        fun newInstance(
+            expenses: List<CurrencyExpenseUiModel>,
+            title: String? = null
+        ): ExpensesListModalFragment {
             return ExpensesListModalFragment().apply {
                 this.expenses = expenses
+                this.customTitle = title
             }
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setModalTitle(getString(R.string.modal_expenses_title))
+        setModalTitle(customTitle ?: getString(R.string.modal_expenses_title))
     }
 
     override fun onCreateBodyView(inflater: LayoutInflater, container: ViewGroup?): View? {

@@ -9,13 +9,24 @@ import com.example.tripapp2.ui.common.extension.toDateRange
 
 /**
  * Model szczegółów wycieczki dla UI
+ *
+ * ZMIENIONE: Rozdzielono totalExpenses (suma WSZYSTKICH kosztów wycieczki)
+ * od myExpenses (koszty zalogowanego użytkownika).
  */
 data class TripDetailsUiModel(
     val id: String,
     val title: String,
     val description: String,
-    val dateRange: String,              // "12.08 - 18.08.2024"
-    val myTotalExpenses: String,        // "450,00 PLN"
+    val dateRange: String,                                  // "12.08 - 18.08.2024"
+
+    // --- Total trip expenses (wszystkich uczestników) ---
+    val tripTotalExpenses: String,                          // "4 500,00 PLN" (sformatowana suma)
+    val tripTotalExpensesAmount: Float,                     // 4500.00 (surowa kwota)
+    val tripTotalCurrency: String,                          // "PLN" (główna waluta tripu)
+    val tripExpensesBreakdown: List<CurrencyExpenseUiModel>, // Rozbicie na waluty (wszystkie koszty)
+
+    // --- My expenses (koszty zalogowanego użytkownika) ---
+    val myTotalExpenses: String,                            // "450,00 PLN"
     val myExpensesBreakdown: List<CurrencyExpenseUiModel>
 )
 
@@ -51,18 +62,32 @@ data class CopyAccessCodeEvent(
 
 /**
  * Konwertuje TripDto na TripDetailsUiModel
+ *
+ * ZMIENIONE: Osobno oblicza total trip expenses (z participants.totalExpenses)
+ * i my expenses (z myCost).
  */
 fun TripDto.toDetailsUiModel(): TripDetailsUiModel {
-    // Oblicz wydatki użytkownika
+    // --- Moje wydatki (bez zmian) ---
     val myExpenses = calculateUserExpenses()
-    val totalInBaseCurrency = myExpenses.sumOf { it.amount.toDouble() }.toFloat()
+    val myTotalInBaseCurrency = myExpenses.sumOf { it.amount.toDouble() }.toFloat()
+
+    // --- Łączne wydatki wycieczki (NOWE) ---
+    val tripBreakdown = calculateTripExpenses()
 
     return TripDetailsUiModel(
         id = id,
         title = title,
         description = description.toString(),
         dateRange = (dateStart to dateEnd).toDateRange(),
-        myTotalExpenses = "%.2f %s".format(totalInBaseCurrency, currency),
+
+        // Total trip expenses
+        tripTotalExpenses = "%.2f %s".format(totalExpenses, currency),
+        tripTotalExpensesAmount = totalExpenses,
+        tripTotalCurrency = currency,
+        tripExpensesBreakdown = tripBreakdown,
+
+        // My expenses
+        myTotalExpenses = "%.2f %s".format(myTotalInBaseCurrency, currency),
         myExpensesBreakdown = myExpenses.map { expense ->
             CurrencyExpenseUiModel(
                 currency = expense.currency,
@@ -71,6 +96,52 @@ fun TripDto.toDetailsUiModel(): TripDetailsUiModel {
             )
         }
     )
+}
+
+/**
+ * Oblicza łączne wydatki wycieczki ze WSZYSTKICH uczestników,
+ * pogrupowane po walutach.
+ *
+ * Zbiera participants.totalExpenses i agreguje po currency.
+ * Główna waluta (isMainCurrency) jest pierwsza.
+ */
+private fun TripDto.calculateTripExpenses(): List<CurrencyExpenseUiModel> {
+    // Zbierz wszystkie wydatki z expenses (totalExpense per expense)
+    val currencyMap = mutableMapOf<String, Float>()
+
+    // Użyj TripDto.totalExpenses jako sumę w głównej walucie
+    currencyMap[currency] = totalExpenses
+
+    // Dodaj rozbicie na inne waluty z expenses
+    expenses.forEach { expense ->
+        if (expense.currency != currency) {
+            // Dodaj kwotę w walucie wydatku
+            currencyMap[expense.currency] =
+                (currencyMap[expense.currency] ?: 0f) + expense.amount
+        }
+    }
+
+    if (currencyMap.isEmpty()) {
+        return listOf(
+            CurrencyExpenseUiModel(
+                currency = currency,
+                amount = 0f,
+                formattedAmount = "0,00 %s".format(currency)
+            )
+        )
+    }
+
+    // Sortuj: główna waluta pierwsza, reszta alfabetycznie
+    return currencyMap.entries
+        .sortedWith(compareByDescending<Map.Entry<String, Float>> { it.key == currency }
+            .thenBy { it.key })
+        .map { (cur, amount) ->
+            CurrencyExpenseUiModel(
+                currency = cur,
+                amount = amount,
+                formattedAmount = "%.2f %s".format(amount, cur)
+            )
+        }
 }
 
 /**

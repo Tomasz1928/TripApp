@@ -19,12 +19,9 @@ import com.google.android.material.card.MaterialCardView
 /**
  * Fragment szczegółów wycieczki — Propozycja C: Floating Sections
  *
- * Zmiany vs oryginał:
- * - Brak header image (top bar z back button)
- * - Hero sekcja: nazwa + opis + data wycieczki
- * - Metric cards: łączne wydatki + mój koszt obok siebie
- * - Floating rows: wydatki wg waluty + rozliczenia (settings-style)
- * - settlementsCard zastąpiony przez rowSettlements (ukryty settlementsCard dla kompatybilności)
+ * ZMIENIONE: totalExpenses i myCost pokazują RÓŻNE dane:
+ * - totalExpenses = suma WSZYSTKICH kosztów wycieczki (klik → modal z rozbiciem na waluty)
+ * - myCost = suma MOICH kosztów (klik → modal z rozbiciem moich kosztów na waluty)
  */
 class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment_trip_details) {
 
@@ -49,6 +46,7 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
     private lateinit var totalExpensesCard: MaterialCardView
     private lateinit var myCostAmount: TextView
     private lateinit var myCostCurrency: TextView
+    private lateinit var myCostCard: MaterialCardView          // NOWE: referencja do karty myCost
 
     // Section rows
     private lateinit var rowExpensesByCurrency: View
@@ -86,6 +84,7 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         totalExpensesCard = view.findViewById(R.id.totalExpensesCard)
         myCostAmount = view.findViewById(R.id.myCostAmount)
         myCostCurrency = view.findViewById(R.id.myCostCurrency)
+        myCostCard = view.findViewById(R.id.myCostCard)        // NOWE
 
         // Section rows
         rowExpensesByCurrency = view.findViewById(R.id.rowExpensesByCurrency)
@@ -102,14 +101,19 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
             viewModel.onBackClicked()
         }
 
-        // Kliknięcie w kartę łącznych wydatków → modal walutowy
+        // Kliknięcie w kartę łącznych wydatków → modal z WSZYSTKIMI kosztami
         totalExpensesCard.setOnClickListener {
-            showExpensesModal()
+            showTotalExpensesModal()
         }
 
-        // Row: wydatki wg waluty → modal walutowy
+        // NOWE: Kliknięcie w kartę "Mój koszt" → modal z MOIMI kosztami
+        myCostCard.setOnClickListener {
+            showMyExpensesModal()
+        }
+
+        // Row: wydatki wg waluty → modal z WSZYSTKIMI kosztami
         rowExpensesByCurrency.setOnClickListener {
-            showExpensesModal()
+            showTotalExpensesModal()
         }
 
         // Row: rozliczenia → ekran rozliczeń
@@ -134,6 +138,9 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
 
     /**
      * Wyświetla dane wycieczki w nowym layoucie
+     *
+     * ZMIENIONE: totalExpenses pokazuje sumę WSZYSTKICH kosztów,
+     * myCost pokazuje sumę MOICH kosztów.
      */
     private fun displayTripDetails(details: TripDetailsUiModel) {
         // Hero
@@ -141,32 +148,55 @@ class TripDetailsFragment : BaseFragment<TripDetailsViewModel>(R.layout.fragment
         tripSubtitle.text = details.description
         tripDate.text = details.dateRange
 
-        // Metric cards — rozdziel kwotę i walutę
-        val breakdown = details.myExpensesBreakdown
-        if (breakdown.isNotEmpty()) {
-            val mainExpense = breakdown.first()
-            totalExpenses.text = "%.2f".format(mainExpense.amount)
-            totalExpensesCurrency.text = mainExpense.currency
-            myCostAmount.text = "%.2f".format(mainExpense.amount)
-            myCostCurrency.text = mainExpense.currency
+        // --- TOTAL EXPENSES CARD (wszystkie koszty wycieczki) ---
+        totalExpenses.text = "%.2f".format(details.tripTotalExpensesAmount)
+        totalExpensesCurrency.text = details.tripTotalCurrency
+
+        // --- MY COST CARD (moje koszty) ---
+        val myBreakdown = details.myExpensesBreakdown
+        if (myBreakdown.isNotEmpty()) {
+            val mainMyExpense = myBreakdown.first()
+            myCostAmount.text = "%.2f".format(mainMyExpense.amount)
+            myCostCurrency.text = mainMyExpense.currency
         } else {
-            totalExpenses.text = details.myTotalExpenses
+            myCostAmount.text = "0,00"
+            myCostCurrency.text = details.tripTotalCurrency
         }
 
-        // Currency count
-        currencyCount.text = "${breakdown.size} walut"
+        // Currency count — łączna liczba walut w wycieczce
+        val allCurrencies = (details.tripExpensesBreakdown.map { it.currency } +
+                details.myExpensesBreakdown.map { it.currency }).distinct()
+        currencyCount.text = "${allCurrencies.size} walut"
 
         // Settlements status (uproszczony — rozbuduj wg potrzeb)
         settlementsStatus.text = "Zobacz szczegóły"
     }
 
-    private fun showExpensesModal() {
+    /**
+     * Modal z WSZYSTKIMI kosztami wycieczki (rozbicie na waluty)
+     */
+    private fun showTotalExpensesModal() {
         val state = viewModel.tripDetailsState.value
         if (state is TripDetailsState.Success) {
             val modal = ExpensesListModalFragment.newInstance(
-                state.details.myExpensesBreakdown
+                expenses = state.details.tripExpensesBreakdown,
+                title = "Łączne wydatki"
             )
-            modal.show(parentFragmentManager, "expenses_modal")
+            modal.show(parentFragmentManager, "total_expenses_modal")
+        }
+    }
+
+    /**
+     * NOWE: Modal z MOIMI kosztami (rozbicie na waluty)
+     */
+    private fun showMyExpensesModal() {
+        val state = viewModel.tripDetailsState.value
+        if (state is TripDetailsState.Success) {
+            val modal = ExpensesListModalFragment.newInstance(
+                expenses = state.details.myExpensesBreakdown,
+                title = "Moje koszty"
+            )
+            modal.show(parentFragmentManager, "my_expenses_modal")
         }
     }
 
