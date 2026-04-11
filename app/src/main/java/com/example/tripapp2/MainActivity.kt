@@ -11,13 +11,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // --- UKRYCIE GÓRNEJ BELKI ---
+    // Edge-to-edge ze spójnym status barem
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        val controller = WindowInsetsControllerCompat(window, window.decorView)
-        controller.hide(android.view.WindowInsets.Type.statusBars())
-        controller.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        // --- KONIEC ---
 
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)

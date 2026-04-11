@@ -14,24 +14,21 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import com.example.tripapp2.R
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.CategoryPickerModalFragment
-import com.example.tripapp2.ui.tripdetails.costs.addexpense.ExpenseSplit
-import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitExpenseModalFragment
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitParticipant
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.SplitType
 import com.example.tripapp2.ui.common.KeyboardAwareFragment
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.example.tripapp2.ui.tripdetails.costs.addexpense.PayerSplitModalFragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-// USUNIĘTO: import com.example.tripapp2.data.repository.CurrencyRepository — nie potrzebny, idzie przez ViewModel
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.*import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
+
 
 /**
  * Fragment edycji wydatku
@@ -124,6 +121,7 @@ class EditExpenseFragment : KeyboardAwareFragment<EditExpenseViewModel>(R.layout
     }
 
     override fun setupUI() {
+        requireView().findViewById<View>(R.id.topBar).applyStatusBarInsets()
         initializeViews()
         setupCurrencyDropdown()
         setupRowClickListeners()

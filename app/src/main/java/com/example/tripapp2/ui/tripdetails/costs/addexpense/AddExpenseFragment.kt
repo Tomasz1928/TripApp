@@ -14,10 +14,8 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import com.example.tripapp2.R
 import com.example.tripapp2.ui.common.KeyboardAwareFragment
-import com.example.tripapp2.ui.common.baseModals.ListPickerModalFragment
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -26,6 +24,7 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
 
 /**
  * Fragment dodawania wydatku
@@ -113,11 +112,11 @@ class AddExpenseFragment : KeyboardAwareFragment<AddExpenseViewModel>(R.layout.f
     }
 
     override fun setupUI() {
+        requireView().findViewById<View>(R.id.topBar).applyStatusBarInsets()
         initializeViews()
         setupCurrencyDropdown()
         setupRowClickListeners()
         setupHeroAmountListeners()
-        // ZMIANA: Usunięto setDefaultCurrency() — zastąpione obserwatorem tripCurrency
         setupBackButton()
     }
 

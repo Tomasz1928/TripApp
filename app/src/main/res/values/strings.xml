@@ -261,6 +261,11 @@
     <string name="expense_action_edit">Edytuj</string>
     <string name="expense_action_delete">Usuń</string>
 
+    <!-- Exit dialog -->
+    <string name="exit_dialog_title">Wyjście</string>
+    <string name="exit_dialog_message">Czy na pewno chcesz wyjść z aplikacji?</string>
+    <string name="exit_dialog_confirm">Wyjdź</string>
+
     <!-- Kategorie -->
     <string name="category_accommodation">Nocleg</string>
     <string name="category_activities">Aktywności</string>

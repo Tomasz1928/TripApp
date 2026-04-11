@@ -17,6 +17,7 @@
         android:paddingBottom="@dimen/bottom_nav_padding">
 
         <LinearLayout
+            android:id="@+id/topBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">

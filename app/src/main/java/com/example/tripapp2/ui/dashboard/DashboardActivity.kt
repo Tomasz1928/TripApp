@@ -19,6 +19,9 @@ import androidx.lifecycle.lifecycleScope
 import com.example.tripapp2.ui.common.extension.setupIconsInOriginalColor
 import com.example.tripapp2.ui.dashboard.options.OptionsFragment
 import com.example.tripapp2.ui.dashboard.tutorial.TutorialFragment
+import androidx.core.view.WindowCompat
+import androidx.activity.OnBackPressedCallback
+import com.example.tripapp2.ui.common.baseModals.ConfirmModalFragment
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -28,9 +31,26 @@ class DashboardActivity : AppCompatActivity() {
 
     private var currentTripId: String? = null
 
+    private var currentScreen: Screen = Screen.DASHBOARD
+
+    enum class Screen {
+        DASHBOARD,
+        CREATE_TRIP,
+        JOIN_TRIP,
+        OPTIONS,
+        TUTORIAL,
+        TRIP_DETAILS,
+        TRIP_COSTS,
+        TRIP_PARTICIPANTS,
+        TRIP_SETTLEMENTS,
+        ADD_EXPENSE,
+        EDIT_EXPENSE
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         dashboardBottomNav = findViewById(R.id.dashboardBottomNav)
         tripBottomNav = findViewById(R.id.tripBottomNav)
@@ -61,6 +81,78 @@ class DashboardActivity : AppCompatActivity() {
             repository = TripRepository.getInstance(),
         )
         notificationManager.start()
+        setupBackNavigation()
+
+    }
+
+    private fun setupBackNavigation() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                when (currentScreen) {
+                    // === DASHBOARD — dialog wyjścia ===
+                    Screen.DASHBOARD -> {
+                        showExitDialog()
+                    }
+
+                    // === Dashboard tabs → Dashboard ===
+                    Screen.CREATE_TRIP,
+                    Screen.JOIN_TRIP,
+                    Screen.OPTIONS -> {
+                        showDashboardFragment(R.id.menu_dashboard)
+                        dashboardBottomNav.selectedItemId = R.id.menu_dashboard
+                    }
+
+                    // === Tutorial → Options ===
+                    Screen.TUTORIAL -> {
+                        closeTutorial()
+                    }
+
+                    // === Trip Details → Dashboard ===
+                    Screen.TRIP_DETAILS -> {
+                        closeTripDetails()
+                    }
+
+                    // === Trip tabs → Trip Details ===
+                    Screen.TRIP_COSTS,
+                    Screen.TRIP_PARTICIPANTS -> {
+                        currentTripId?.let { tripId ->
+                            showTripFragment(R.id.menu_overview, tripId)
+                            tripBottomNav.selectedItemId = R.id.menu_overview
+                        }
+                    }
+
+                    // === Settlements → Trip Details ===
+                    Screen.TRIP_SETTLEMENTS -> {
+                        closeSettlements()
+                    }
+
+                    // === Add Expense → Costs ===
+                    Screen.ADD_EXPENSE -> {
+                        currentTripId?.let { tripId ->
+                            closeAddExpenseAndShowCosts(tripId)
+                        }
+                    }
+
+                    // === Edit Expense → Costs ===
+                    Screen.EDIT_EXPENSE -> {
+                        currentTripId?.let { tripId ->
+                            closeEditExpenseAndShowCosts(tripId)
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    private fun showExitDialog() {
+        ConfirmModalFragment.newInstance(
+            title = getString(R.string.exit_dialog_title),
+            message = getString(R.string.exit_dialog_message),
+            confirmText = getString(R.string.exit_dialog_confirm),
+            onConfirm = {
+                finish()
+            }
+        ).show(supportFragmentManager, "exit_confirm")
     }
 
     override fun onDestroy() {
@@ -72,6 +164,14 @@ class DashboardActivity : AppCompatActivity() {
     // DASHBOARD FLOW
     // =====================================================
     fun showDashboardFragment(itemId: Int) {
+        currentScreen = when (itemId) {
+            R.id.menu_dashboard -> Screen.DASHBOARD
+            R.id.menu_add_trip -> Screen.CREATE_TRIP
+            R.id.menu_join_trip -> Screen.JOIN_TRIP
+            R.id.menu_settings -> Screen.OPTIONS
+            else -> Screen.DASHBOARD
+        }
+
         val fragmentTag = when (itemId) {
             R.id.menu_dashboard -> "dashboard"
             R.id.menu_add_trip -> "createTrip"
@@ -99,6 +199,7 @@ class DashboardActivity : AppCompatActivity() {
     // =====================================================
     fun openTripDetails(tripId: String) {
         // Zapisz aktualny tripId
+        currentScreen = Screen.TRIP_DETAILS
         currentTripId = tripId
 
         // Pokaż trip container i ukryj dashboard
@@ -115,6 +216,7 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     fun closeTripDetails() {
+        currentScreen = Screen.DASHBOARD
         currentTripId = null
 
         listOf("tripDetails", "addExpense", "tripCosts", "tripParticipants", "tripSettlements").forEach { tag ->
@@ -146,6 +248,7 @@ class DashboardActivity : AppCompatActivity() {
 // OTWÓRZ TRIP COSTS (lista kosztów) z dashboardu
 // =====================================================
     fun openTripCosts(tripId: String) {
+        currentScreen = Screen.TRIP_COSTS
         currentTripId = tripId
 
         // Pokaż trip container i ukryj dashboard
@@ -163,6 +266,7 @@ class DashboardActivity : AppCompatActivity() {
 // OTWÓRZ ADD EXPENSE (formularz dodawania) z dashboardu
 // =====================================================
     fun openTripAddExpense(tripId: String) {
+        currentScreen = Screen.ADD_EXPENSE
         currentTripId = tripId
 
         // Pokaż trip container i ukryj dashboard
@@ -178,6 +282,13 @@ class DashboardActivity : AppCompatActivity() {
     // TRIP BOTTOM NAVIGATION FLOW
     // =====================================================
     private fun showTripFragment(itemId: Int, tripId: String) {
+        currentScreen = when (itemId) {
+            R.id.menu_overview -> Screen.TRIP_DETAILS
+            R.id.menu_costs -> Screen.TRIP_COSTS
+            R.id.menu_participants -> Screen.TRIP_PARTICIPANTS
+            else -> Screen.TRIP_DETAILS
+        }
+
         val fragmentTag = when (itemId) {
             R.id.menu_overview -> "tripDetails"
             R.id.menu_costs -> "tripCosts"
@@ -203,6 +314,7 @@ class DashboardActivity : AppCompatActivity() {
     // =====================================================
 
     fun showAddExpenseFromCosts(tripId: String) {
+        currentScreen = Screen.ADD_EXPENSE
         tripBottomNav.visibility = View.GONE
 
         val fragment = AddExpenseFragment.newInstance(tripId)
@@ -212,6 +324,7 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     fun closeAddExpenseAndShowCosts(tripId: String) {
+        currentScreen = Screen.TRIP_COSTS
         tripBottomNav.visibility = View.VISIBLE
         showTripFragment(R.id.menu_costs, tripId)
         tripBottomNav.selectedItemId = R.id.menu_costs
@@ -222,6 +335,7 @@ class DashboardActivity : AppCompatActivity() {
 // =====================================================
 
     fun showEditExpenseFromCosts(tripId: String, expenseId: String) {
+        currentScreen = Screen.EDIT_EXPENSE
         tripBottomNav.visibility = View.GONE
 
         val fragment = EditExpenseFragment.newInstance(tripId, expenseId)
@@ -231,6 +345,7 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     fun closeEditExpenseAndShowCosts(tripId: String) {
+        currentScreen = Screen.TRIP_COSTS
         tripBottomNav.visibility = View.VISIBLE
         showTripFragment(R.id.menu_costs, tripId)
         tripBottomNav.selectedItemId = R.id.menu_costs
@@ -240,7 +355,7 @@ class DashboardActivity : AppCompatActivity() {
     // SETTLEMENTS FLOW (bez bottom nav)
     // =====================================================
     fun showSettlements(tripId: String) {
-        // NAJPIERW schowaj bottom nav
+        currentScreen = Screen.TRIP_SETTLEMENTS
         tripBottomNav.visibility = View.GONE
 
         // POTEM zmień fragment
@@ -254,6 +369,7 @@ class DashboardActivity : AppCompatActivity() {
     // HELPER - powrót z settlements do trip details
     // =====================================================
     fun closeSettlements() {
+        currentScreen = Screen.TRIP_DETAILS
         currentTripId?.let { tripId ->
             tripBottomNav.visibility = View.VISIBLE
             showTripFragment(R.id.menu_overview, tripId)
@@ -264,6 +380,7 @@ class DashboardActivity : AppCompatActivity() {
 // TUTORIAL FLOW (bez bottom nav)
 // =====================================================
     fun showTutorial() {
+        currentScreen = Screen.TUTORIAL
         dashboardBottomNav.visibility = View.GONE
 
         val fragment = TutorialFragment.newInstance()
@@ -273,6 +390,7 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     fun closeTutorial() {
+        currentScreen = Screen.OPTIONS
         dashboardBottomNav.visibility = View.VISIBLE
         showDashboardFragment(R.id.menu_settings)
         dashboardBottomNav.selectedItemId = R.id.menu_settings
