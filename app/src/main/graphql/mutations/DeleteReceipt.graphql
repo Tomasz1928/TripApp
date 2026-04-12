@@ -1,0 +1,6 @@
+mutation DeleteReceiptMutation($expenseId: Int!) {
+    deleteReceipt(expenseId: $expenseId) {
+        success
+        message
+    }
+}

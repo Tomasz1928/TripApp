@@ -56,10 +56,20 @@ data class CategoryDto(
     val totalAmount: Float
 )
 
+data class ReceiptDto(
+    val expenseId: String,
+    val imageData: String,
+    val uploadedByNickname: String,
+    val receiptHash: String? = null,
+    val createdAt: Long
+)
+
 data class ExpenseDto(
     val id: String,
     val name: String,
     val description: String? = null,
+    val hasReceipt: Boolean = false,
+    val receiptHash: String? = null,
     val totalExpense: List<SimpleMoneyValueDto>,
     val amount: Float,
     val currency: String,

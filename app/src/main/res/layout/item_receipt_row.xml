@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="@dimen/spacing_small"
+    android:gravity="center_vertical">
+
+    <!-- Label -->
+    <TextView
+        style="@style/Text.Caption"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:text="@string/receipt_label"
+        android:textColor="@color/text_hint"/>
+
+    <!-- Content area -->
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <!-- Stan 1: Dodaj rachunek -->
+        <TextView
+            android:id="@+id/receiptAddButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/receipt_add"
+            android:textSize="12sp"
+            android:textColor="@color/primary"
+            android:background="@drawable/bg_receipt_button_add"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"
+            tools:visibility="visible"/>
+
+        <!-- Stan 2: Zobacz rachunek + hint -->
+        <LinearLayout
+            android:id="@+id/receiptViewContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/receiptViewButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/receipt_view"
+                android:textSize="12sp"
+                android:textColor="@color/success"
+                android:background="@drawable/bg_receipt_button_view"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/receiptLongPressHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/receipt_long_press_hint"
+                android:textSize="9sp"
+                android:textColor="@color/text_hint"
+                android:fontFamily="@font/plus_jakarta_sans"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <!-- Stan 3: Zobacz + Zmień + Usuń -->
+        <LinearLayout
+            android:id="@+id/receiptActionsContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/receiptViewButtonSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/receipt_view_short"
+                android:textSize="10sp"
+                android:textColor="@color/success"
+                android:background="@drawable/bg_receipt_button_view"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/receiptChangeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/receipt_change"
+                android:textSize="10sp"
+                android:textColor="@color/warning"
+                android:background="@drawable/bg_receipt_button_change"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:layout_marginStart="4dp"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/receiptDeleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/receipt_delete"
+                android:textSize="10sp"
+                android:textColor="@color/error"
+                android:background="@drawable/bg_receipt_button_delete"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:layout_marginStart="4dp"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
+
+        <!-- Loading -->
+        <ProgressBar
+            android:id="@+id/receiptProgress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:visibility="gone"/>
+
+    </FrameLayout>
+</LinearLayout>

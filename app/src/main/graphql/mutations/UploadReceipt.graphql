@@ -1,0 +1,6 @@
+mutation UploadReceiptMutation($expenseId: Int!, $imageData: String!) {
+    uploadReceipt(expenseId: $expenseId, imageData: $imageData) {
+        success
+        message
+    }
+}

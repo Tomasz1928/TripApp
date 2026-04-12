@@ -21,6 +21,8 @@ query TripDetailsQuery($tripId: Int!) {
             payerNickname
             name
             payerId
+            hasReceipt
+            receiptHash
             sharedWith {
                 participantId
                 participantNickname

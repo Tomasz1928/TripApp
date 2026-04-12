@@ -96,6 +96,7 @@
         <!-- INFO ROWS (settings-style)         -->
         <!-- ================================== -->
         <LinearLayout
+            android:id="@+id/infoSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -182,6 +183,18 @@
                     android:layout_weight="1"
                     tools:text="Marek"/>
             </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/divider"/>
+
+            <!-- Receipt (dynamically managed by ReceiptHandler) -->
+            <FrameLayout
+                android:id="@+id/receiptRowContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
         </LinearLayout>
 
         <View
