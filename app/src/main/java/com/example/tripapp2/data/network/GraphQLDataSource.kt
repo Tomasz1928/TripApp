@@ -544,6 +544,8 @@ class GraphQLDataSource() {
             categoryId = e.categoryId.toString(),
             payerId = e.payerId.toString(),
             payerNickname = e.payerNickname,
+            hasReceipt = e.hasReceipt,
+            receiptHash = e.receiptHash,
             sharedWith = e.sharedWith.map { s ->
                 ShareDto(
                     participantId = s.participantId.toString(),
@@ -609,6 +611,66 @@ class GraphQLDataSource() {
                 )
             }
         )
+    }
+
+    // ==========================================
+// RECEIPT OPERATIONS
+// ==========================================
+
+    suspend fun getExpenseReceipt(expenseId: Int): Result<ReceiptDto?> {
+        return try {
+            val response = client.query(ExpenseReceiptQuery(expenseId)).execute()
+            val data = response.data?.expenseReceipt
+
+            if (data == null) {
+                Result.success(null)
+            } else {
+                Result.success(
+                    ReceiptDto(
+                        expenseId = data.expenseId.toString(),
+                        imageData = data.imageData,
+                        receiptHash = data.receiptHash,
+                        uploadedByNickname = data.uploadedByNickname?:"",
+                        createdAt = data.createdAt.toLong()
+                    )
+                )
+            }
+        } catch (e: ApolloException) {
+            Log.e(TAG, "GetExpenseReceipt error", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun uploadReceipt(expenseId: Int, imageData: String): Result<SuccessDto> {
+        return try {
+            val response = client.mutation(
+                UploadReceiptMutation(expenseId, imageData)
+            ).execute()
+
+            val data = response.data?.uploadReceipt
+                ?: return Result.failure(Exception("Upload receipt failed"))
+
+            Result.success(SuccessDto(success = data.success, message = data.message))
+        } catch (e: ApolloException) {
+            Log.e(TAG, "UploadReceipt error", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteReceipt(expenseId: Int): Result<SuccessDto> {
+        return try {
+            val response = client.mutation(
+                DeleteReceiptMutation(expenseId)
+            ).execute()
+
+            val data = response.data?.deleteReceipt
+                ?: return Result.failure(Exception("Delete receipt failed"))
+
+            Result.success(SuccessDto(success = data.success, message = data.message))
+        } catch (e: ApolloException) {
+            Log.e(TAG, "DeleteReceipt error", e)
+            Result.failure(e)
+        }
     }
 
     private fun mapBreakdownType(

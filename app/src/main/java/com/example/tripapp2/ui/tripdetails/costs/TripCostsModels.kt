@@ -24,6 +24,8 @@ data class ExpenseDetailUiModel(
     @StringRes val category: Int,
     @DrawableRes val categoryIconName: Int,
     val description: String,
+    val hasReceipt: Boolean = false,
+    val receiptHash: String? = null,
     val date: String,
     val payerId: String,
     val payerName: String,
@@ -99,6 +101,8 @@ fun ExpenseDto.toDetailUiModel(
         date = date.toShortDateString(),
         payerId = payerId,
         payerName = payerNickname,
+        hasReceipt = this.hasReceipt,
+        receiptHash = this.receiptHash,
 
         // Cost currency (waluta wydatku)
         amountCostCurrency = amount,

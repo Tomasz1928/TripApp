@@ -79,6 +79,7 @@ dependencies {
 // OkHttp (transport + cookies)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation(libs.androidx.exifinterface)
 
     // Testing
     testImplementation(libs.junit)

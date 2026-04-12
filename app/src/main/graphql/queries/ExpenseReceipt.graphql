@@ -1,0 +1,9 @@
+query ExpenseReceiptQuery($expenseId: Int!) {
+    expenseReceipt(expenseId: $expenseId) {
+        expenseId
+        imageData
+        uploadedByNickname
+        createdAt
+        receiptHash
+    }
+}

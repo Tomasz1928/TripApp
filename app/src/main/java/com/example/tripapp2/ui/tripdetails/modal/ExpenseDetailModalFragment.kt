@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -11,18 +12,36 @@ import androidx.core.content.ContextCompat
 import com.example.tripapp2.R
 import com.example.tripapp2.data.model.SettlementBreakdownType
 import com.example.tripapp2.ui.common.baseModals.BaseModalFragment
+import com.example.tripapp2.ui.receipt.ReceiptHandler
 import com.example.tripapp2.ui.tripdetails.costs.ExpenseDetailUiModel
 import com.example.tripapp2.ui.tripdetails.costs.ShareItemUiModel
 
 class ExpenseDetailModalFragment : BaseModalFragment() {
 
     private var expenseDetail: ExpenseDetailUiModel? = null
+    private var receiptHandler: ReceiptHandler? = null
 
     companion object {
         fun newInstance(detail: ExpenseDetailUiModel): ExpenseDetailModalFragment {
             return ExpenseDetailModalFragment().apply {
                 expenseDetail = detail
             }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        expenseDetail?.let { detail ->
+            receiptHandler = ReceiptHandler(
+                fragment = this,
+                expenseId = detail.id,
+                expenseName = detail.name,
+                hasReceipt = detail.hasReceipt,
+                canManageReceipt = detail.isMine,
+                receiptHash = detail.receiptHash
+            )
+            receiptHandler?.registerLaunchers(this)
         }
     }
 
@@ -59,24 +78,30 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         val secondaryAmountView = body.findViewById<TextView>(R.id.expenseAmountSecondary)
 
         if (isMultiCurrency) {
-            // Wydatek w INNEJ walucie niż trip:
-            // Niebiesko (main) = kwota w walucie wydatku (cost currency)
-            // Pomarańczowo (secondary) = kwota w walucie tripu (trip/main currency)
             mainAmountView.text = detail.formattedAmountCostCurrency
             secondaryAmountView.text = detail.formattedAmountTripCurrency
             secondaryAmountView.visibility = View.VISIBLE
         } else {
-            // Wydatek w walucie tripu:
-            // Niebiesko (main) = kwota w walucie tripu
-            // Brak secondary
             mainAmountView.text = detail.formattedAmountTripCurrency
             secondaryAmountView.visibility = View.GONE
         }
 
-        // Info
+        // Info rows
         body.findViewById<TextView>(R.id.expenseDescription).text = detail.description
         body.findViewById<TextView>(R.id.expenseDate).text = detail.date
         body.findViewById<TextView>(R.id.expensePayer).text = detail.payerName
+
+        // === RECEIPT ROW ===
+        val receiptContainer = body.findViewById<FrameLayout>(R.id.receiptRowContainer)
+        receiptHandler?.let { handler ->
+            if (handler.shouldShowRow()) {
+                val receiptRow = handler.createReceiptRow()
+                receiptContainer.addView(receiptRow)
+                receiptContainer.visibility = View.VISIBLE
+            } else {
+                receiptContainer.visibility = View.GONE
+            }
+        }
 
         // Dynamiczne nagłówki kolumn
         setupDynamicHeaders(body, detail)
@@ -96,13 +121,10 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
             val shareSecondaryAmount = shareRow.findViewById<TextView>(R.id.shareAmountSecondary)
 
             if (isMultiCurrency) {
-                // Niebiesko = kwota w walucie wydatku (cost currency)
                 shareMainAmount.text = share.formattedAmountCostCurrency
-                // Pomarańczowo = kwota w walucie tripu
                 shareSecondaryAmount.text = share.formattedAmountTripCurrency
                 shareSecondaryAmount.visibility = View.VISIBLE
             } else {
-                // Niebiesko = kwota w walucie tripu (jedyna waluta)
                 shareMainAmount.text = share.formattedAmountTripCurrency
                 shareSecondaryAmount.visibility = View.GONE
             }
@@ -165,14 +187,10 @@ class ExpenseDetailModalFragment : BaseModalFragment() {
         val headerCostCurrency = body.findViewById<TextView>(R.id.headerCostCurrency)
 
         if (detail.currencyTrip != detail.currencyCost) {
-            // Multi-currency: pokaż obie kolumny
-            // Main (niebieska kolumna) = waluta kosztu
             headerCostCurrency.text = detail.currencyCost
-            // Secondary (pomarańczowa kolumna) = waluta tripu
             headerTripCurrency.text = detail.currencyTrip
             headerTripCurrency.visibility = View.VISIBLE
         } else {
-            // Jedna waluta: pokaż tylko kolumnę z walutą tripu
             headerCostCurrency.text = detail.currencyTrip
             headerTripCurrency.visibility = View.GONE
         }
