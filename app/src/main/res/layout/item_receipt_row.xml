@@ -70,54 +70,73 @@
                 android:layout_marginTop="2dp"/>
         </LinearLayout>
 
-        <!-- Stan 3: Zobacz + Zmień + Usuń -->
+        <!-- Stan 3: Ikony kwadratowe 36x36 -->
         <LinearLayout
             android:id="@+id/receiptActionsContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:visibility="gone">
 
-            <TextView
+            <!-- Zobacz -->
+            <FrameLayout
                 android:id="@+id/receiptViewButtonSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/receipt_view_short"
-                android:textSize="10sp"
-                android:textColor="@color/success"
-                android:background="@drawable/bg_receipt_button_view"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="3dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_receipt_icon_view"
                 android:clickable="true"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:contentDescription="@string/receipt_view_short">
 
-            <TextView
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_receipt_view"
+                    app:tint="@color/success"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"/>
+            </FrameLayout>
+
+            <!-- Zmień -->
+            <FrameLayout
                 android:id="@+id/receiptChangeButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/receipt_change"
-                android:textSize="10sp"
-                android:textColor="@color/warning"
-                android:background="@drawable/bg_receipt_button_change"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="3dp"
-                android:layout_marginStart="4dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_receipt_icon_change"
                 android:clickable="true"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:contentDescription="@string/receipt_change">
 
-            <TextView
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_receipt_change"
+                    app:tint="@color/warning"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"/>
+            </FrameLayout>
+
+            <!-- Usuń -->
+            <FrameLayout
                 android:id="@+id/receiptDeleteButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/receipt_delete"
-                android:textSize="10sp"
-                android:textColor="@color/error"
-                android:background="@drawable/bg_receipt_button_delete"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="3dp"
-                android:layout_marginStart="4dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_receipt_icon_delete"
                 android:clickable="true"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:contentDescription="@string/receipt_delete">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_receipt_delete"
+                    app:tint="@color/error"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"/>
+            </FrameLayout>
         </LinearLayout>
 
         <!-- Loading -->

@@ -53,9 +53,9 @@ class ReceiptHandler(
     private var viewButton: TextView? = null
     private var longPressHint: TextView? = null
     private var actionsContainer: LinearLayout? = null
-    private var viewButtonSmall: TextView? = null
-    private var changeButton: TextView? = null
-    private var deleteButton: TextView? = null
+    private var viewButtonSmall: View? = null
+    private var changeButton: View? = null
+    private var deleteButton: View? = null
     private var progressBar: ProgressBar? = null
 
     private var cameraPhotoUri: Uri? = null
