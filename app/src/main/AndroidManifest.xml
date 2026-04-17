@@ -55,6 +55,11 @@
              android:theme="@style/Theme.TripApp"
              android:screenOrientation="unspecified"/>
 
+        <activity
+            android:name=".ui.auth.forgotpassword.ForgotPasswordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
+
          <provider
              android:name="androidx.core.content.FileProvider"
              android:authorities="${applicationId}.provider"

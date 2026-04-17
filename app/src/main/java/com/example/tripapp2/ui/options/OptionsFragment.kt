@@ -15,21 +15,13 @@ import kotlinx.coroutines.launch
 import com.example.tripapp2.ui.common.extension.applyStatusBarInsets
 import android.view.View
 
-/**
- * Fragment ustawień — Propozycja C: Floating Sections
- *
- * Zmiany vs oryginał:
- * - Brak header image (top bar z tytułem)
- * - User card na górze (awatar + nickname)
- * - Logout card z czerwoną ikoną w settings-style
- * - logoutCard zachowuje ID (kompatybilność z ViewModel)
- */
 class OptionsFragment : BaseFragment<OptionsViewModel>(R.layout.fragment_options) {
 
     override val viewModel: OptionsViewModel by viewModels()
 
     private lateinit var logoutCard: MaterialCardView
-    private lateinit var tutorialCard: MaterialCardView  // <-- DODAJ TO
+    private lateinit var tutorialCard: MaterialCardView
+    private lateinit var myDataCard: MaterialCardView
     private lateinit var userAvatar: TextView
     private lateinit var userName: TextView
 
@@ -39,12 +31,17 @@ class OptionsFragment : BaseFragment<OptionsViewModel>(R.layout.fragment_options
         val view = requireView()
         view.findViewById<View>(R.id.topBar).applyStatusBarInsets()
         logoutCard = view.findViewById(R.id.logoutCard)
+        tutorialCard = view.findViewById(R.id.tutorialCard)
+        myDataCard = view.findViewById(R.id.myDataCard)
         userAvatar = view.findViewById(R.id.userAvatar)
         userName = view.findViewById(R.id.userName)
-        tutorialCard = view.findViewById(R.id.tutorialCard) // <-- działa bo view = requireView()
 
         tutorialCard.setOnClickListener {
             (activity as? DashboardActivity)?.showTutorial()
+        }
+
+        myDataCard.setOnClickListener {
+            (activity as? DashboardActivity)?.showMyData()
         }
 
         logoutCard.setOnClickListener {
@@ -67,9 +64,6 @@ class OptionsFragment : BaseFragment<OptionsViewModel>(R.layout.fragment_options
         logoutCard.alpha = if (isLoading) 0.5f else 1.0f
     }
 
-    /**
-     * Ładuje dane użytkownika i wypełnia user card
-     */
     private fun loadUserInfo() {
         lifecycleScope.launch {
             try {
@@ -88,9 +82,7 @@ class OptionsFragment : BaseFragment<OptionsViewModel>(R.layout.fragment_options
             title = getString(R.string.options_logout_confirm_title),
             message = getString(R.string.options_logout_confirm_message),
             confirmText = getString(R.string.options_logout),
-            onConfirm = {
-                viewModel.onLogoutClicked()
-            }
+            onConfirm = { viewModel.onLogoutClicked() }
         ).show(parentFragmentManager, "logout_confirm")
     }
 

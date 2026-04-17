@@ -114,6 +114,11 @@
     <string name="options_logout">Wyloguj sie</string>
     <string name="options_logout_confirm_title">Wylogowanie</string>
     <string name="options_logout_confirm_message">Czy na pewno chcesz sie wylogowac?</string>
+    <string name="options_section_account">Konto</string>
+    <string name="options_section_help">Pomoc</string>
+    <string name="options_section_session">Sesja</string>
+    <string name="options_my_data_title">Moje dane</string>
+    <string name="options_my_data_subtitle">Email i hasło</string>
 
     <!-- ========================================= -->
     <!-- TRIP NOTIFICATIONS (Snackbar) -->
@@ -145,6 +150,7 @@
     <string name="login_no_account">Nie masz konta?</string>
     <string name="login_create_account">Załóż konto</string>
     <string name="error_login_invalid_credentials">Nieprawidłowa nazwa użytkownika lub hasło</string>
+    <string name="login_forgot_password">Zapomniałem hasła</string>
 
     <!-- Register -->
     <string name="register_title">Załóż konto</string>
@@ -158,6 +164,36 @@
     <string name="error_register_failed">Nie udało się utworzyć konta</string>
     <string name="error_username_too_short">Nazwa użytkownika musi mieć min. 3 znaki</string>
     <string name="error_password_too_short">Hasło musi mieć min. 6 znaków</string>
+    <string name="register_email_hint">Adres email</string>
+
+
+    <!-- ========================================= -->
+    <!-- FORGOT PASSWORD -->
+    <!-- ========================================= -->
+    <string name="forgot_password_title">Odzyskaj hasło</string>
+    <string name="forgot_password_info_title">Zresetuj hasło</string>
+    <string name="forgot_password_info_desc">Podaj nazwę użytkownika i adres email przypisany do konta. Wyślemy nowe hasło na Twoją skrzynkę.</string>
+    <string name="forgot_password_button">Wyślij nowe hasło</string>
+    <string name="forgot_password_button_loading">Wysyłanie…</string>
+    <string name="forgot_password_success_title">Hasło wysłane!</string>
+    <string name="forgot_password_success_desc">Sprawdź swoją skrzynkę email. Zaloguj się nowym hasłem i zmień je w sekcji Opcje → Moje dane.</string>
+    <string name="forgot_password_back_to_login">Wróć do logowania</string>
+
+    <!-- ========================================= -->
+    <!-- MY DATA -->
+    <!-- ========================================= -->
+    <string name="my_data_title">Moje dane</string>
+    <string name="my_data_account_active">Konto aktywne</string>
+    <string name="my_data_section_account">Konto</string>
+    <string name="my_data_email_label">Adres email</string>
+    <string name="my_data_email_not_set">Nie ustawiono</string>
+    <string name="my_data_password_label">Hasło</string>
+    <string name="my_data_password_sub">Zmień hasło do konta</string>
+    <string name="my_data_change_email_title">Zmień email</string>
+    <string name="my_data_new_email_hint">Nowy adres email</string>
+    <string name="my_data_change_password_title">Zmień hasło</string>
+    <string name="my_data_new_password_hint">Nowe hasło</string>
+    <string name="my_data_confirm_password_hint">Powtórz nowe hasło</string>
 
     <!-- ========================================= -->
     <!-- DASHBOARD -->
@@ -590,6 +626,10 @@
     <string name="error_code_required">Podaj kod dostępu</string>
     <string name="error_generic">Wystąpił błąd</string>
     <string name="error_unknown">Wystąpił nieznany błąd</string>
+    <string name="error_email_required">Podaj adres email</string>
+    <string name="error_email_invalid">Podaj prawidłowy adres email</string>
+    <string name="error_password_confirm_required">Powtórz nowe hasło</string>
+    <string name="error_passwords_not_match">Hasła nie są identyczne</string>
 
     <!-- ========================================= -->
     <!-- MISC -->

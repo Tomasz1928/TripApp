@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Trzon i zęby klucza -->
+    <path
+        android:strokeWidth="1.8"
+        android:strokeColor="@color/text_primary"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M10.874,12.594 L12,14 L13.5,12.5 L15,14 L17,12 L15.5,10.5 L17,9 L21,5 L19,3 L13,8.2"/>
+
+    <!-- Kółko klucza -->
+    <path
+        android:strokeWidth="1.8"
+        android:strokeColor="@color/text_primary"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M10,10 A3,3 0,1,1 4,10 A3,3 0,0,1 10,10 Z"/>
+
+</vector>

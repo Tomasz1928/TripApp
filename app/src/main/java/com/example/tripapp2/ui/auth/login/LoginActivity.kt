@@ -14,6 +14,7 @@ import com.example.tripapp2.data.repository.TripRepository
 import com.example.tripapp2.ui.auth.register.RegisterActivity
 import com.example.tripapp2.ui.dashboard.DashboardActivity
 import kotlinx.coroutines.launch
+import com.example.tripapp2.ui.auth.forgotpassword.ForgotPasswordActivity
 
 /**
  * Activity logowania
@@ -48,6 +49,11 @@ class LoginActivity : AppCompatActivity() {
 
         binding.registerRedirect.setOnClickListener {
             viewModel.onRegisterClicked()
+        }
+
+        binding.forgotPasswordLink.setOnClickListener {
+            val intent = Intent(this, ForgotPasswordActivity::class.java)
+            startActivity(intent)
         }
     }
 

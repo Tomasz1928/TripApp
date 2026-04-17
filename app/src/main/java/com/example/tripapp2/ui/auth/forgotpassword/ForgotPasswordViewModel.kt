@@ -1,4 +1,4 @@
-package com.example.tripapp2.ui.auth.register
+package com.example.tripapp2.ui.auth.forgotpassword
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,12 +9,11 @@ import com.example.tripapp2.ui.common.base.BaseViewModel
 import com.example.tripapp2.ui.common.base.Event
 import kotlinx.coroutines.launch
 
-class RegisterViewModel : BaseViewModel() {
+class ForgotPasswordViewModel : BaseViewModel() {
     private val tripRepository = TripRepository.getInstance()
 
     private val _username = MutableLiveData<String>()
     private val _email = MutableLiveData<String>()
-    private val _password = MutableLiveData<String>()
 
     private val _usernameError = MutableLiveData<Int?>()
     val usernameError: LiveData<Int?> = _usernameError
@@ -22,14 +21,8 @@ class RegisterViewModel : BaseViewModel() {
     private val _emailError = MutableLiveData<Int?>()
     val emailError: LiveData<Int?> = _emailError
 
-    private val _passwordError = MutableLiveData<Int?>()
-    val passwordError: LiveData<Int?> = _passwordError
-
-    private val _registerSuccessEvent = MutableLiveData<Event<Unit>>()
-    val registerSuccessEvent: LiveData<Event<Unit>> = _registerSuccessEvent
-
-    private val _navigateToLoginEvent = MutableLiveData<Event<Unit>>()
-    val navigateToLoginEvent: LiveData<Event<Unit>> = _navigateToLoginEvent
+    private val _successEvent = MutableLiveData<Event<Unit>>()
+    val successEvent: LiveData<Event<Unit>> = _successEvent
 
     fun onUsernameChanged(username: String) {
         _username.value = username
@@ -41,32 +34,22 @@ class RegisterViewModel : BaseViewModel() {
         _emailError.value = null
     }
 
-    fun onPasswordChanged(password: String) {
-        _password.value = password
-        _passwordError.value = null
-    }
-
-    fun onRegisterClicked() {
+    fun onResetClicked() {
         if (!validateForm()) return
 
         viewModelScope.launch {
             setLoading(true)
-            val result = tripRepository.register(
+            val result = tripRepository.resetPassword(
                 username = _username.value!!.trim(),
-                password = _password.value!!,
                 email = _email.value!!.trim()
             )
             result.onSuccess { auth ->
-                if (auth.success) _registerSuccessEvent.value = Event(Unit)
+                if (auth.success) _successEvent.value = Event(Unit)
                 else showError(auth.message)
             }
-            result.onFailure { showError(it.message ?: getString(R.string.error_generic)) }
+            result.onFailure { showError(it.message ?: "Błąd połączenia") }
             setLoading(false)
         }
-    }
-
-    fun onLoginClicked() {
-        _navigateToLoginEvent.value = Event(Unit)
     }
 
     private fun validateForm(): Boolean {
@@ -75,9 +58,6 @@ class RegisterViewModel : BaseViewModel() {
         val username = _username.value?.trim()
         if (username.isNullOrBlank()) {
             _usernameError.value = R.string.error_username_required
-            isValid = false
-        } else if (username.length < 3) {
-            _usernameError.value = R.string.error_username_too_short
             isValid = false
         }
 
@@ -90,18 +70,6 @@ class RegisterViewModel : BaseViewModel() {
             isValid = false
         }
 
-        val password = _password.value
-        if (password.isNullOrBlank()) {
-            _passwordError.value = R.string.error_password_required
-            isValid = false
-        } else if (password.length < 6) {
-            _passwordError.value = R.string.error_password_too_short
-            isValid = false
-        }
-
         return isValid
     }
-
-    private fun getString(resId: Int): String =
-        android.app.Application().getString(resId)
 }

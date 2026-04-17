@@ -35,6 +35,10 @@ class RegisterActivity : AppCompatActivity() {
             viewModel.onUsernameChanged(text.toString())
         }
 
+        binding.emailInput.addTextChangedListener { text ->
+            viewModel.onEmailChanged(text.toString())
+        }
+
         binding.passwordInput.addTextChangedListener { text ->
             viewModel.onPasswordChanged(text.toString())
         }
@@ -62,6 +66,10 @@ class RegisterActivity : AppCompatActivity() {
             binding.usernameLayout.error = errorResId?.let { getString(it) }
         }
 
+        viewModel.emailError.observe(this) { errorResId ->
+            binding.emailLayout.error = errorResId?.let { getString(it) }
+        }
+
         viewModel.passwordError.observe(this) { errorResId ->
             binding.passwordLayout.error = errorResId?.let { getString(it) }
         }
@@ -86,19 +94,15 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun navigateToDashboard() {
-        // POPRAWKA: resetAndRebuild() + stopAllSubscriptions() przed loadInitialData
         ApolloClientProvider.resetAndRebuild()
         repository.stopAllSubscriptions()
 
         lifecycleScope.launch {
             try {
-                // loadInitialData() automatycznie startuje subskrypcje WS
-                // (po rejestracji prawdopodobnie 0 tripów, więc 0 subskrypcji — OK)
                 repository.loadInitialData()
             } catch (e: Exception) {
                 Log.w("RegisterActivity", "loadInitialData failed", e)
             }
-
             val intent = Intent(this@RegisterActivity, DashboardActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)

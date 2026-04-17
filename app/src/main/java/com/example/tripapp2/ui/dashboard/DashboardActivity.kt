@@ -22,6 +22,7 @@ import com.example.tripapp2.ui.dashboard.tutorial.TutorialFragment
 import androidx.core.view.WindowCompat
 import androidx.activity.OnBackPressedCallback
 import com.example.tripapp2.ui.common.baseModals.ConfirmModalFragment
+import com.example.tripapp2.ui.dashboard.mydata.MyDataFragment
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -44,7 +45,8 @@ class DashboardActivity : AppCompatActivity() {
         TRIP_PARTICIPANTS,
         TRIP_SETTLEMENTS,
         ADD_EXPENSE,
-        EDIT_EXPENSE
+        EDIT_EXPENSE,
+        MY_DATA
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,6 +108,8 @@ class DashboardActivity : AppCompatActivity() {
                     Screen.TUTORIAL -> {
                         closeTutorial()
                     }
+
+                    Screen.MY_DATA -> closeMyData()
 
                     // === Trip Details → Dashboard ===
                     Screen.TRIP_DETAILS -> {
@@ -390,6 +394,24 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     fun closeTutorial() {
+        currentScreen = Screen.OPTIONS
+        dashboardBottomNav.visibility = View.VISIBLE
+        showDashboardFragment(R.id.menu_settings)
+        dashboardBottomNav.selectedItemId = R.id.menu_settings
+    }
+
+
+    fun showMyData() {
+        currentScreen = Screen.MY_DATA
+        dashboardBottomNav.visibility = View.GONE
+
+        val fragment = MyDataFragment.newInstance()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.dashboardContainer, fragment, "myData")
+            .commit()
+    }
+
+    fun closeMyData() {
         currentScreen = Screen.OPTIONS
         dashboardBottomNav.visibility = View.VISIBLE
         showDashboardFragment(R.id.menu_settings)
