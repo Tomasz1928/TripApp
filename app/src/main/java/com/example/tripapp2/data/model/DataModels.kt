@@ -181,7 +181,8 @@ data class SettlementResultDto(
 
 data class UserInfoDto(
     val id: String,
-    val nickname: String
+    val nickname: String,
+    val email: String? = null
 )
 
 data class SuccessDto(

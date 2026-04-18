@@ -1,827 +1,849 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:scrollbars="none"
     android:background="@color/background">
 
+    <!-- ================================== -->
+    <!-- TOP BAR: STICKY Back + Tytuł      -->
+    <!-- ================================== -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="@dimen/bottom_nav_padding">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/padding_default"
+        android:paddingVertical="@dimen/padding_default"
+        android:background="@color/surface"
+        android:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- ================================== -->
-        <!-- TOP BAR: Back + Tytuł             -->
-        <!-- ================================== -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="@dimen/icon_size_xxlarge"
+            android:layout_height="@dimen/icon_size_xxlarge"
+            android:padding="@dimen/padding_small"
+            android:src="@drawable/ic_back_arrow"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_back_button"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <TextView
+            style="@style/Text.Body.Bold"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="@dimen/padding_default"
-            android:paddingVertical="@dimen/padding_default"
-            android:background="@color/surface"
-            android:elevation="2dp">
-
-            <ImageView
-                android:id="@+id/backButton"
-                android:layout_width="@dimen/icon_size_xxlarge"
-                android:layout_height="@dimen/icon_size_xxlarge"
-                android:padding="@dimen/padding_small"
-                android:src="@drawable/ic_back_arrow"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/cd_back_button"
-                android:clickable="true"
-                android:focusable="true"/>
-
-            <TextView
-                style="@style/Text.Body.Bold"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_small"
-                android:text="@string/tutorial_title"
-                android:textSize="@dimen/text_size_body_large"/>
-        </LinearLayout>
-
-        <!-- ================================== -->
-        <!-- HERO SECTION                      -->
-        <!-- ================================== -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="@dimen/spacing_xlarge"
-            android:background="@color/surface">
-
-            <FrameLayout
-                android:layout_width="56dp"
-                android:layout_height="56dp">
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/bg_icon_rounded_blue"
-                    android:scaleType="fitXY"/>
-                <ImageView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_lightning"
-                    android:contentDescription="@string/tutorial_title"/>
-            </FrameLayout>
-
-            <TextView
-                style="@style/Text.Body.Bold"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:text="@string/tutorial_hero_title"
-                android:textSize="@dimen/text_size_body_large"/>
-
-            <TextView
-                style="@style/Text.Caption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_tiny"
-                android:text="@string/tutorial_hero_subtitle"
-                android:textColor="@color/text_secondary"
-                android:gravity="center"/>
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider"/>
-
-        <!-- ================================== -->
-        <!-- TUTORIAL SECTIONS                 -->
-        <!-- ================================== -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/padding_medium">
-
-            <!-- ============================== -->
-            <!-- SEKCJA: Podstawy               -->
-            <!-- ============================== -->
-            <TextView
-                style="@style/Text.Caption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_tiny"
-                android:layout_marginBottom="@dimen/spacing_small"
-                android:text="@string/tutorial_section_basics"
-                android:textColor="@color/text_secondary"
-                android:textAllCaps="true"
-                android:letterSpacing="0.05"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_default"
-                app:cardCornerRadius="@dimen/corner_radius_medium"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp"
-                app:cardBackgroundColor="@color/surface">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:divider="@drawable/divider_horizontal_inset"
-                    android:showDividers="middle">
-
-                    <!-- Row: Utwórz podróż -->
-                    <LinearLayout
-                        android:id="@+id/rowCreateTrip"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_blue"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_add_trip"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_create_trip_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_create_trip_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                    <!-- Row: Dołącz do podróży -->
-                    <LinearLayout
-                        android:id="@+id/rowJoinTrip"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_green"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_join_trip"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_join_trip_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_join_trip_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ============================== -->
-            <!-- SEKCJA: Koszty                 -->
-            <!-- ============================== -->
-            <TextView
-                style="@style/Text.Caption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_tiny"
-                android:layout_marginBottom="@dimen/spacing_small"
-                android:text="@string/tutorial_section_costs"
-                android:textColor="@color/text_secondary"
-                android:textAllCaps="true"
-                android:letterSpacing="0.05"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_default"
-                app:cardCornerRadius="@dimen/corner_radius_medium"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp"
-                app:cardBackgroundColor="@color/surface">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:divider="@drawable/divider_horizontal_inset"
-                    android:showDividers="middle">
-
-                    <!-- Row: Dodaj wydatek -->
-                    <LinearLayout
-                        android:id="@+id/rowAddExpense"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_amber"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_cost"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_add_expense_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_add_expense_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                    <!-- Row: Podział kosztów -->
-                    <LinearLayout
-                        android:id="@+id/rowSplitCosts"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_purple"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_people"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_split_costs_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_split_costs_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                    <!-- Row: Filtry -->
-                    <LinearLayout
-                        android:id="@+id/rowFilters"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_green"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_filter"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_filters_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_filters_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ============================== -->
-            <!-- SEKCJA: Rozliczenia            -->
-            <!-- ============================== -->
-            <TextView
-                style="@style/Text.Caption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_tiny"
-                android:layout_marginBottom="@dimen/spacing_small"
-                android:text="@string/tutorial_section_settlements"
-                android:textColor="@color/text_secondary"
-                android:textAllCaps="true"
-                android:letterSpacing="0.05"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_default"
-                app:cardCornerRadius="@dimen/corner_radius_medium"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp"
-                app:cardBackgroundColor="@color/surface">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:divider="@drawable/divider_horizontal_inset"
-                    android:showDividers="middle">
-
-                    <!-- Row: Bilans i rozliczenia -->
-                    <LinearLayout
-                        android:id="@+id/rowSettlements"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_amber"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_wallet"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_settlements_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_settlements_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                    <!-- Row: Zaliczki -->
-                    <LinearLayout
-                        android:id="@+id/rowPrepayments"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_green"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_trending_up"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_prepayments_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_prepayments_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                    <!-- Row: Ikony statusów -->
-                    <LinearLayout
-                        android:id="@+id/rowIcons"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_purple"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_help"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_icons_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_icons_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ============================== -->
-            <!-- SEKCJA: Uczestnicy             -->
-            <!-- ============================== -->
-            <TextView
-                style="@style/Text.Caption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_tiny"
-                android:layout_marginBottom="@dimen/spacing_small"
-                android:text="@string/tutorial_section_participants"
-                android:textColor="@color/text_secondary"
-                android:textAllCaps="true"
-                android:letterSpacing="0.05"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_default"
-                app:cardCornerRadius="@dimen/corner_radius_medium"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp"
-                app:cardBackgroundColor="@color/surface">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <!-- Row: Zarządzaj uczestnikami -->
-                    <LinearLayout
-                        android:id="@+id/rowParticipants"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_red"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_trip_participant"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_participants_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_participants_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ============================== -->
-            <!-- SEKCJA: Nawigacja              -->
-            <!-- ============================== -->
-            <TextView
-                style="@style/Text.Caption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_tiny"
-                android:layout_marginBottom="@dimen/spacing_small"
-                android:text="@string/tutorial_section_navigation"
-                android:textColor="@color/text_secondary"
-                android:textAllCaps="true"
-                android:letterSpacing="0.05"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="@dimen/corner_radius_medium"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/divider"
-                app:strokeWidth="1dp"
-                app:cardBackgroundColor="@color/surface">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <!-- Row: Nawigacja -->
-                    <LinearLayout
-                        android:id="@+id/rowNavigation"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="@dimen/padding_default"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground">
-
-                        <FrameLayout
-                            android:layout_width="@dimen/icon_size_large"
-                            android:layout_height="@dimen/icon_size_large">
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:src="@drawable/bg_icon_rounded_blue"
-                                android:scaleType="fitXY"/>
-                            <ImageView
-                                android:layout_width="@dimen/icon_size_large"
-                                android:layout_height="@dimen/icon_size_large"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_grid"/>
-                        </FrameLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="@dimen/spacing_medium">
-                            <TextView
-                                style="@style/Text.Body"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/tutorial_navigation_title"
-                                android:textStyle="bold"/>
-                            <TextView
-                                style="@style/Text.Caption"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/tutorial_navigation_short"
-                                android:textColor="@color/text_secondary"/>
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="@dimen/icon_size_small"
-                            android:layout_height="@dimen/icon_size_small"
-                            android:src="@drawable/ic_chevron_right"
-                            android:contentDescription="@null"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
+            android:layout_marginStart="@dimen/spacing_small"
+            android:text="@string/tutorial_title"
+            android:textSize="@dimen/text_size_body_large"/>
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+
+    <!-- ================================== -->
+    <!-- SCROLLABLE CONTENT                -->
+    <!-- ================================== -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollViewTutorial"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/bottom_nav_padding"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ================================== -->
+            <!-- HERO SECTION                      -->
+            <!-- ================================== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingVertical="@dimen/spacing_xlarge"
+                android:background="@color/surface">
+
+                <FrameLayout
+                    android:layout_width="56dp"
+                    android:layout_height="56dp">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/bg_icon_rounded_blue"
+                        android:scaleType="fitXY"/>
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_lightning"
+                        android:contentDescription="@string/tutorial_title"/>
+                </FrameLayout>
+
+                <TextView
+                    style="@style/Text.Body.Bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:text="@string/tutorial_hero_title"
+                    android:textSize="@dimen/text_size_body_large"/>
+
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:text="@string/tutorial_hero_subtitle"
+                    android:textColor="@color/text_secondary"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider"/>
+
+            <!-- ================================== -->
+            <!-- TUTORIAL SECTIONS                 -->
+            <!-- ================================== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/padding_medium">
+
+                <!-- ============================== -->
+                <!-- SEKCJA: Podstawy               -->
+                <!-- ============================== -->
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_tiny"
+                    android:layout_marginBottom="@dimen/spacing_small"
+                    android:text="@string/tutorial_section_basics"
+                    android:textColor="@color/text_secondary"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.05"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_default"
+                    app:cardCornerRadius="@dimen/corner_radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:divider="@drawable/divider_horizontal_inset"
+                        android:showDividers="middle">
+
+                        <!-- Row: Utwórz podróż -->
+                        <LinearLayout
+                            android:id="@+id/rowCreateTrip"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_blue"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_add_trip"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_create_trip_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_create_trip_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                        <!-- Row: Dołącz do podróży -->
+                        <LinearLayout
+                            android:id="@+id/rowJoinTrip"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_green"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_join_trip"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_join_trip_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_join_trip_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ============================== -->
+                <!-- SEKCJA: Wydatki                -->
+                <!-- ============================== -->
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_tiny"
+                    android:layout_marginBottom="@dimen/spacing_small"
+                    android:text="@string/tutorial_section_costs"
+                    android:textColor="@color/text_secondary"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.05"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_default"
+                    app:cardCornerRadius="@dimen/corner_radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:divider="@drawable/divider_horizontal_inset"
+                        android:showDividers="middle">
+
+                        <!-- Row: Dodaj wydatek -->
+                        <LinearLayout
+                            android:id="@+id/rowAddExpense"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_amber"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_cost"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_add_expense_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_add_expense_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                        <!-- Row: Podział kosztów -->
+                        <LinearLayout
+                            android:id="@+id/rowSplitCosts"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_purple"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_people"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_split_costs_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_split_costs_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                        <!-- Row: Filtry -->
+                        <LinearLayout
+                            android:id="@+id/rowFilters"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_blue"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_filter"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_filters_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_filters_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ============================== -->
+                <!-- SEKCJA: Rozliczenia            -->
+                <!-- ============================== -->
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_tiny"
+                    android:layout_marginBottom="@dimen/spacing_small"
+                    android:text="@string/tutorial_section_settlements"
+                    android:textColor="@color/text_secondary"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.05"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_default"
+                    app:cardCornerRadius="@dimen/corner_radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:divider="@drawable/divider_horizontal_inset"
+                        android:showDividers="middle">
+
+                        <!-- Row: Rozliczenia -->
+                        <LinearLayout
+                            android:id="@+id/rowSettlements"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_green"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_wallet"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_settlements_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_settlements_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                        <!-- Row: Zaliczki -->
+                        <LinearLayout
+                            android:id="@+id/rowPrepayments"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_green"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_trending_up"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_prepayments_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_prepayments_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                        <!-- Row: Ikony statusów -->
+                        <LinearLayout
+                            android:id="@+id/rowIcons"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_purple"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_help"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_icons_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_icons_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ============================== -->
+                <!-- SEKCJA: Uczestnicy             -->
+                <!-- ============================== -->
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_tiny"
+                    android:layout_marginBottom="@dimen/spacing_small"
+                    android:text="@string/tutorial_section_participants"
+                    android:textColor="@color/text_secondary"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.05"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_default"
+                    app:cardCornerRadius="@dimen/corner_radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:divider="@drawable/divider_horizontal_inset"
+                        android:showDividers="middle">
+
+                        <!-- Row: Uczestnicy -->
+                        <LinearLayout
+                            android:id="@+id/rowParticipants"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_blue"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_trip_participant"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_participants_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_participants_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ============================== -->
+                <!-- SEKCJA: Nawigacja              -->
+                <!-- ============================== -->
+                <TextView
+                    style="@style/Text.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_tiny"
+                    android:layout_marginBottom="@dimen/spacing_small"
+                    android:text="@string/tutorial_section_navigation"
+                    android:textColor="@color/text_secondary"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.05"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_default"
+                    app:cardCornerRadius="@dimen/corner_radius_medium"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/divider"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Row: Nawigacja -->
+                        <LinearLayout
+                            android:id="@+id/rowNavigation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="@dimen/padding_default"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground">
+
+                            <FrameLayout
+                                android:layout_width="@dimen/icon_size_large"
+                                android:layout_height="@dimen/icon_size_large">
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/bg_icon_rounded_green"
+                                    android:scaleType="fitXY"/>
+                                <ImageView
+                                    android:layout_width="@dimen/icon_size_large"
+                                    android:layout_height="@dimen/icon_size_large"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_dashboard"/>
+                            </FrameLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="@dimen/spacing_medium">
+                                <TextView
+                                    style="@style/Text.Body"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tutorial_navigation_title"
+                                    android:textStyle="bold"/>
+                                <TextView
+                                    style="@style/Text.Caption"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="@string/tutorial_navigation_short"
+                                    android:textColor="@color/text_secondary"/>
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="@dimen/icon_size_small"
+                                android:layout_height="@dimen/icon_size_small"
+                                android:src="@drawable/ic_chevron_right"
+                                android:contentDescription="@null"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

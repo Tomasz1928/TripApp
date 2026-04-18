@@ -256,12 +256,36 @@ class TripRepository private constructor(context: Context) {
         return result
     }
 
-    suspend fun register(username: String, password: String): Result<AuthResultDto> {
-        val result = graphQL.register(username, password)
+    suspend fun register(username: String, password: String, email: String): Result<AuthResultDto> {
+        val result = graphQL.register(username, password, email)
         result.onSuccess { auth ->
             if (auth.success && auth.user != null) {
                 cachedUserInfo = auth.user
                 cacheManager.saveUserInfo(auth.user)
+            }
+        }
+        return result
+    }
+
+    suspend fun resetPassword(username: String, email: String): Result<AuthResultDto> {
+        return graphQL.resetPassword(username, email)
+    }
+
+    suspend fun changeEmail(newEmail: String): Result<AuthResultDto> {
+        return graphQL.changeEmail(newEmail)
+    }
+
+    suspend fun changePassword(newPassword: String, newPasswordConfirm: String): Result<AuthResultDto> {
+        val result = graphQL.changePassword(newPassword, newPasswordConfirm)
+        result.onSuccess { auth ->
+            if (auth.success) {
+                // Wyczyść sesję — użytkownik musi się zalogować ponownie
+                stopAllSubscriptions()
+                cachedUserInfo = null
+                tripsCache.clear()
+                _tripFlows.clear()
+                sessionManager.clearSession()
+                cacheManager.clearAll()
             }
         }
         return result

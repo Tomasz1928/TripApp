@@ -65,7 +65,13 @@ class GraphQLDataSource() {
             Result.success(AuthResultDto(
                 success = data.success,
                 message = data.message,
-                user = data.user?.let { UserInfoDto(id = it.id.toString(), nickname = it.username) }
+                user = data.user?.let {
+                    UserInfoDto(
+                        id = it.id.toString(),
+                        nickname = it.username,
+                        email = it.email
+                    )
+                }
             ))
         } catch (e: ApolloException) {
             Log.e(TAG, "Login error", e)
@@ -73,19 +79,76 @@ class GraphQLDataSource() {
         }
     }
 
-    suspend fun register(username: String, password: String): Result<AuthResultDto> {
+    suspend fun register(username: String, password: String, email: String): Result<AuthResultDto> {
         return try {
-            val response = client.mutation(RegisterUserMutation(username, password)).execute()
+            val response = client.mutation(RegisterUserMutation(username, password, email)).execute()
             val data = response.data?.registerUser
                 ?: return Result.failure(Exception(response.errors?.firstOrNull()?.message ?: "Register failed"))
 
             Result.success(AuthResultDto(
                 success = data.success,
                 message = data.message,
-                user = data.user?.let { UserInfoDto(id = it.id.toString(), nickname = it.username) }
+                user = data.user?.let {
+                    UserInfoDto(
+                        id = it.id.toString(),
+                        nickname = it.username,
+                        email = it.email
+                    )
+                }
             ))
         } catch (e: ApolloException) {
             Log.e(TAG, "Register error", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun resetPassword(username: String, email: String): Result<AuthResultDto> {
+        return try {
+            val response = client.mutation(ResetPasswordMutation(username, email)).execute()
+            val data = response.data?.resetPassword
+                ?: return Result.failure(Exception(response.errors?.firstOrNull()?.message ?: "Reset failed"))
+
+            Result.success(AuthResultDto(
+                success = data.success,
+                message = data.message,
+                user = null
+            ))
+        } catch (e: ApolloException) {
+            Log.e(TAG, "ResetPassword error", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun changeEmail(newEmail: String): Result<AuthResultDto> {
+        return try {
+            val response = client.mutation(ChangeEmailMutation(newEmail)).execute()
+            val data = response.data?.changeEmail
+                ?: return Result.failure(Exception(response.errors?.firstOrNull()?.message ?: "Change email failed"))
+
+            Result.success(AuthResultDto(
+                success = data.success,
+                message = data.message,
+                user = null
+            ))
+        } catch (e: ApolloException) {
+            Log.e(TAG, "ChangeEmail error", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun changePassword(newPassword: String, newPasswordConfirm: String): Result<AuthResultDto> {
+        return try {
+            val response = client.mutation(ChangePasswordMutation(newPassword, newPasswordConfirm)).execute()
+            val data = response.data?.changePassword
+                ?: return Result.failure(Exception(response.errors?.firstOrNull()?.message ?: "Change password failed"))
+
+            Result.success(AuthResultDto(
+                success = data.success,
+                message = data.message,
+                user = null
+            ))
+        } catch (e: ApolloException) {
+            Log.e(TAG, "ChangePassword error", e)
             Result.failure(e)
         }
     }
@@ -115,7 +178,7 @@ class GraphQLDataSource() {
 
             Result.success(SessionDto(
                 isAuthenticated = data.isAuthenticated,
-                user = data.user?.let { UserInfoDto(id = it.id.toString(), nickname = it.username) }
+                user = data.user?.let { UserInfoDto(id = it.id.toString(), nickname = it.username, email = it.email) }
             ))
         } catch (e: ApolloException) {
             Log.e(TAG, "Session error", e)

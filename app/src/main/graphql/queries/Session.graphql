@@ -1,12 +1,10 @@
-# ============================================================
-# Plik: app/src/main/graphql/com/example/tripapp2/queries/Session.graphql
-# ============================================================
 query SessionQuery {
     session {
         isAuthenticated
         user {
             id
             username
+            email
         }
     }
 }
